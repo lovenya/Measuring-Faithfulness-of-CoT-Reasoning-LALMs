@@ -1,0 +1,55 @@
+## Job Started: Wed 09 Jul 2025 12:16:15 PM EDT | Job: qwen-audio-inference | Job ID: 46093489 ##
+--> Loading system-level modules...
+--> Activating Python virtual environment...
+--> Navigating to the main project directory...
+--> Verifying Initial GPU Status...
+Wed Jul  9 12:16:16 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.148.08             Driver Version: 570.148.08     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA A100-SXM4-40GB          Off |   00000000:41:00.0 Off |                    0 |
+| N/A   29C    P0             53W /  400W |       0MiB /  40960MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+--> Starting Python inference script...
+--- Qwen2-Audio Inference Test ---
+Model Path: ./Qwen2-Audio-7B-Instruct
+Audio Path: ./sample_data/harvard.wav
+CUDA device found: NVIDIA A100-SXM4-40GB
+--> Loading processor and model...
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:03<00:13,  3.33s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:07<00:11,  3.74s/it]Loading checkpoint shards:  60%|██████    | 3/5 [00:11<00:07,  3.81s/it]Loading checkpoint shards:  80%|████████  | 4/5 [00:14<00:03,  3.46s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:15<00:00,  2.79s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:15<00:00,  3.16s/it]
+/lustre06/project/6080535/lovenya/Faithfulness-of-Audio-CoT/run_inference.py:54: FutureWarning: `audios` is deprecated and will be removed in version 4.54.0 for `Qwen2AudioProcessor.__call__`. Use `audio` instead.
+  inputs = processor(text=[text], audios=[audio_array], return_tensors="pt").to(device)
+It is strongly recommended to pass the `sampling_rate` argument to `WhisperFeatureExtractor()`. Failing to do so can result in silent errors that might be hard to debug.
+--> Model and processor loaded successfully.
+--> Preparing inputs for the model...
+--> Inputs prepared.
+--> Generating response from model...
+
+==================================================
+✅ INFERENCE COMPLETE ✅
+
+Model Prompt: What does the person say?
+
+Model Response: system
+You are a helpful assistant.
+user
+Audio 1: 
+What does the person say?
+assistant
+The original content of this audio is:'the stale smell of old beer lingers it takes heat to bring out the odor a cold dip restores health and zest a salt pickle tastes fine with ham tacos al pastor are my favorite a zestful food is the hot cross bun.'
+==================================================
+--> Python script finished.
+## Job Finished: Wed 09 Jul 2025 12:20:47 PM EDT ##
