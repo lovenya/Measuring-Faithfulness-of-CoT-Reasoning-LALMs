@@ -11,7 +11,7 @@ CACHE_PATH = "./data/sakura/animal/hf_cache"
 # Index of the sample we want to extract
 SAMPLE_INDEX = 0
 # Where to save the extracted audio file
-OUTPUT_FILENAME = "extracted_sample_animal_0.wav"
+OUTPUT_FILENAME = "extracted_sample_animal_1.wav"
 
 print("--- Audio Verification Script (Corrected) ---")
 
