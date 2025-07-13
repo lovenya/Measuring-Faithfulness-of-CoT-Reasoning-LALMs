@@ -1,3 +1,12 @@
 Qwen2-Audio-7B-Instruct/
 audio-env/
-data/
+data/mmar/audio/
+data/mmar/hf_cache/
+data/sakura/animal/audio/
+data/sakura/animal/hf_cache/
+data/sakura/emotion/audio/
+data/sakura/emotion/hf_cache/
+data/sakura/gender/audio/
+data/sakura/gender/hf_cache/
+data/sakura/language/audio/
+data/sakura/language/hf_cache/
