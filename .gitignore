@@ -10,3 +10,11 @@ data/sakura/gender/audio/
 data/sakura/gender/hf_cache/
 data/sakura/language/audio/
 data/sakura/language/hf_cache/
+data/sakura_old/animal/audio/
+data/sakura_old/animal/hf_cache/
+data/sakura_old/emotion/audio/
+data/sakura_old/emotion/hf_cache/
+data/sakura_old/gender/audio/
+data/sakura_old/gender/hf_cache/
+data/sakura_old/language/audio/
+data/sakura_old/language/hf_cache/

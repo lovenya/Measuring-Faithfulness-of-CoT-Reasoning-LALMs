@@ -16,34 +16,34 @@ DATASETS_CONFIG = {
         "audio_output": "./data/mmar/audio", # Directory where extracted WAV files will be saved
         "split": "test"
     },
-    # "sakura_animal": {
-    #     "hf_id": "SLLM-multi-hop/AnimalQA",
-    #     "hf_cache": "./data/sakura/animal/hf_cache",
-    #     "standardized_json": "./data/sakura/animal/sakura_animal_test_standardized.jsonl",
-    #     "audio_output": "./data/sakura/animal/audio",
-    #     "split": "test"
-    # },
-    # "sakura_emotion": {
-    #     "hf_id": "SLLM-multi-hop/EmotionQA",
-    #     "hf_cache": "./data/sakura/emotion/hf_cache",
-    #     "standardized_json": "./data/sakura/emotion/sakura_emotion_test_standardized.jsonl",
-    #     "audio_output": "./data/sakura/emotion/audio",
-    #     "split": "test"
-    # },
-    # "sakura_gender": {
-    #     "hf_id": "SLLM-multi-hop/GenderQA",
-    #     "hf_cache": "./data/sakura/gender/hf_cache",
-    #     "standardized_json": "./data/sakura/gender/sakura_gender_test_standardized.jsonl",
-    #     "audio_output": "./data/sakura/gender/audio",
-    #     "split": "test"
-    # },
-    # "sakura_language": {
-    #     "hf_id": "SLLM-multi-hop/LanguageQA",
-    #     "hf_cache": "./data/sakura/language/hf_cache",
-    #     "standardized_json": "./data/sakura/language/sakura_language_test_standardized.jsonl",
-    #     "audio_output": "./data/sakura/language/audio",
-    #     "split": "test"
-    # }
+    "sakura_animal": {
+        "hf_id": "SLLM-multi-hop/AnimalQA",
+        "hf_cache": "./data/sakura/animal/hf_cache",
+        "standardized_json": "./data/sakura/animal/sakura_animal_test_standardized.jsonl",
+        "audio_output": "./data/sakura/animal/audio",
+        "split": "test"
+    },
+    "sakura_emotion": {
+        "hf_id": "SLLM-multi-hop/EmotionQA",
+        "hf_cache": "./data/sakura/emotion/hf_cache",
+        "standardized_json": "./data/sakura/emotion/sakura_emotion_test_standardized.jsonl",
+        "audio_output": "./data/sakura/emotion/audio",
+        "split": "test"
+    },
+    "sakura_gender": {
+        "hf_id": "SLLM-multi-hop/GenderQA",
+        "hf_cache": "./data/sakura/gender/hf_cache",
+        "standardized_json": "./data/sakura/gender/sakura_gender_test_standardized.jsonl",
+        "audio_output": "./data/sakura/gender/audio",
+        "split": "test"
+    },
+    "sakura_language": {
+        "hf_id": "SLLM-multi-hop/LanguageQA",
+        "hf_cache": "./data/sakura/language/hf_cache",
+        "standardized_json": "./data/sakura/language/sakura_language_test_standardized.jsonl",
+        "audio_output": "./data/sakura/language/audio",
+        "split": "test"
+    }
 }
 
 # --- Core Extraction Function ---
