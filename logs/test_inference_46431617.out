@@ -1,0 +1,74 @@
+========================================================
+Starting Slurm Job: Test Inference
+Job ID: 46431617
+Job Name: test_inference
+Running on host: ng11004
+Executing in directory: /project/def-csubakan-ab/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
+Allocated GPU: 0
+========================================================
+Loading modules...
+Activating Python environment...
+Running the Python inference script...
+Using device: cuda
+Loading model and processor from: ./Qwen2-Audio-7B-Instruct
+Model loaded successfully!
+
+=== Testing on sakura_animal ===
+Sample ID: sakura_animal_73_single
+Audio path: data/sakura/animal/audio/sakura_animal_audio_73.wav
+Question: Identify the animal most likely responsible for the sound in this audio clip and choose the most likely one from the options. (a) sheep (b) hen (c) crow (d) cow
+Choices: ['sheep', 'hen', 'crow', 'cow']
+(Ground truth: cow)
+
+=== Raw model output ===
+<|im_end|>
+========================
+
+=== Testing on sakura_emotion ===
+Sample ID: sakura_emotion_116_multi
+Audio path: data/sakura/emotion/audio/sakura_emotion_audio_116.wav
+Question: Which sentence best reflects the same emotion identified in the audio? (a) This thing looks absolutely gross and dirty; I can’t stand it! (b) I’m so excited, I just can’t contain my happiness! (c) I can’t breathe, I’m just so afraid right now. (d) I don’t know how to move on from this loss.
+Choices: ['This thing looks absolutely gross and dirty; I can’t stand it!', 'I’m so excited, I just can’t contain my happiness!', 'I can’t breathe, I’m just so afraid right now.', 'I don’t know how to move on from this loss.']
+(Ground truth: I can’t breathe, I’m just so afraid right now.)
+
+=== Raw model output ===
+<|im_end|>
+========================
+
+=== Testing on sakura_gender ===
+Sample ID: sakura_gender_11_multi
+Audio path: data/sakura/gender/audio/sakura_gender_audio_11.wav
+Question: After carefully analyzing the speaker's voice in the provided audio file, which historical figure most likely shares the same gender as the speaker? (a) Neil Armstrong (b) Mother Teresa
+Choices: ['Neil Armstrong', 'Mother Teresa']
+(Ground truth: Mother Teresa)
+
+=== Raw model output ===
+<|im_end|>
+========================
+
+=== Testing on sakura_language ===
+Sample ID: sakura_language_212_single
+Audio path: data/sakura/language/audio/sakura_language_audio_212.wav
+Question: Listen to the audio carefully, focusing on the speech. Based on your analysis, select the language that the speaker is using from the options provided (a) English (b) Spanish (c) Korean (d) French
+Choices: ['English', 'Spanish', 'Korean', 'French']
+(Ground truth: French)
+
+=== Raw model output ===
+<|im_end|>
+========================
+
+=== Testing on mmar ===
+Sample ID: mmar_288
+Audio path: data/mmar/audio/mmar_audio_288.wav
+Question: Which of the following instruments does the sound structure of the main melody instrument in the audio most resemble?
+Choices: ['Saxophone', 'Oboe', 'Flute', 'Trumpet']
+(Ground truth: Oboe)
+
+=== Raw model output ===
+<|im_end|>
+========================
+Python script finished with exit code: 0
+Python environment deactivated.
+========================================================
+Slurm Job Finished.
+========================================================
