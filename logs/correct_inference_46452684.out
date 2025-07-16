@@ -1,25 +1,15 @@
 ========================================================
 Starting Slurm Job: Testing Sample 3 Inference Code
-Job ID: 46431664
-Job Name: test_sample3_inference
-Running on host: ng11004
+Job ID: 46452684
+Job Name: correct_inference
+Running on host: ng20202
 Executing in directory: /project/def-csubakan-ab/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
 Allocated GPU: 0
 ========================================================
 Loading modules...
 Activating Python environment...
 Running the Python inference script...
-Loading model from ./Qwen2-Audio-7B-Instruct/...
-Model loaded successfully!
-==================================================
-MMAR Sample Inference
-==================================================
-
-Processing: mmar_3
-Question: Is this man drunk?
-Choices: ['Drunk', 'Not drunk']
-Audio: data/mmar/audio/mmar_audio_3.wav
-Python script finished with exit code: 1
+Python script finished with exit code: 2
 Python environment deactivated.
 ========================================================
 Slurm Job Finished.

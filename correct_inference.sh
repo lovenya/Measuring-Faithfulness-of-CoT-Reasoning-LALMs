@@ -11,7 +11,7 @@
 #SBATCH --mem=32G                         # Request 32GB of RAM (safe for a 7B model)
 #SBATCH --time=0-00:30                    # Request 15 minutes (should be ample time for 2 inferences)
 #SBATCH --output=logs/correct_inference_%j.out # Standard output log file in the 'logs' directory
-#SBATCH --error=logs/tcorrect_inference_%j.err  # Standard error log file in the 'logs' directory
+#SBATCH --error=logs/correct_inference_%j.err  # Standard error log file in the 'logs' directory
 
 # --- Job Execution ---
 

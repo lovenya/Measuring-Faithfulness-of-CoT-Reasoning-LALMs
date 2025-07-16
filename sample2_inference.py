@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Qwen2-Audio-Instruct-7B Inference Script (raw output)
+Qwen2-Audio-Instruct-7B Inference Script (chat-template–corrected)
 For SAKURA and MMAR datasets on Compute Canada cluster
 """
 
@@ -8,19 +8,14 @@ import json
 import random
 import torch
 import librosa
-import numpy as np
 from transformers import Qwen2AudioForConditionalGeneration, AutoProcessor
-from pathlib import Path
 import argparse
-import sys
 import os
 
 class AudioInferenceEngine:
     def __init__(self, model_path="./Qwen2-Audio-7B-Instruct", device="auto"):
-        """Initialize the audio inference engine"""
-        self.device = self._setup_device(device)
+        self.device = torch.device("cuda" if torch.cuda.is_available() and device in ("auto","cuda") else "cpu")
         print(f"Using device: {self.device}")
-        
         print(f"Loading model and processor from: {model_path}")
         self.processor = AutoProcessor.from_pretrained(model_path, local_files_only=True)
         self.model = Qwen2AudioForConditionalGeneration.from_pretrained(
@@ -32,132 +27,114 @@ class AudioInferenceEngine:
         if self.device.type != "cuda":
             self.model = self.model.to(self.device)
         print("Model loaded successfully!")
-    
-    def _setup_device(self, device):
-        if device == "auto":
-            return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        else:
-            return torch.device(device)
-    
+
     def load_audio(self, audio_path, target_sr=16000):
         try:
             audio, sr = librosa.load(audio_path, sr=target_sr)
             print(f"Loaded {audio.shape[0]} samples (sr={sr}) from {audio_path}")
-
             return audio
         except Exception as e:
-            print(f"Error loading audio from {audio_path}: {e}")
+            print(f"Error loading audio: {e}")
             return None
-    
-    def format_prompt(self, question, choices):
-        # keep same formatting as before, including the <|AUDIO|> token
-        formatted_choices = [f"({chr(97+i)}) {c}" for i,c in enumerate(choices)]
-        return f"<|AUDIO|> {question} " + " ".join(formatted_choices)
-    
-    def run_inference(self, audio_path, question, choices):
-        audio = self.load_audio(audio_path)
+
+    def format_choices(self, choices):
+        letters = 'abcdefghijklmnopqrstuvwxyz'
+        return " ".join(f"({letters[i]}) {c}" for i, c in enumerate(choices))
+
+    def create_conversation(self, question, choices, audio_path):
+        full_q = f"{question} {self.format_choices(choices)}"
+        return [
+            {"role":"user","content":[
+                {"type":"audio","audio_path":audio_path},
+                {"type":"text","text": full_q}
+            ]}
+        ]
+
+    def run_inference(self, sample):
+        audio = self.load_audio(sample["audio_path"])
         if audio is None:
             return None, "Failed to load audio"
-        
-        prompt = self.format_prompt(question, choices)
-        try:
-            inputs = self.processor(
-                text=[prompt],
-                audios=[audio],
-                return_tensors="pt",
-                padding=True,
-                sampling_rate=16000
+        # Build chat prompt
+        conversation = self.create_conversation(sample["question"], sample["choices"], sample["audio_path"])
+        text = self.processor.apply_chat_template(
+            conversation,
+            add_generation_prompt=True,
+            tokenize=False
+        )
+        # Prepare inputs
+        inputs = self.processor(
+            text=text,
+            audio=[audio],
+            return_tensors="pt",
+            padding=True,
+            sampling_rate=self.processor.feature_extractor.sampling_rate
+        )
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+        # Generate
+        with torch.no_grad():
+            gen_ids = self.model.generate(
+                **inputs,
+                max_new_tokens=50
             )
-            inputs = {k: v.to(self.device) for k,v in inputs.items()}
-            
-            with torch.no_grad():
-                for k,v in inputs.items():
-                    print(k, v.shape)
+        # Decode after prompt
+        start = inputs['input_ids'].shape[1]
+        raw = self.processor.batch_decode(
+            gen_ids[:, start:],
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=True
+        )[0]
+        return raw, None
 
-                generate_ids = self.model.generate(
-                    **inputs,
-                    max_new_tokens=50,
-                    do_sample=False,
-                    temperature=0.0,
-                    pad_token_id=self.processor.tokenizer.eos_token_id
-                )
-            
-            # **Raw decode**: decode everything after the prompt without skipping SPECIAL tokens
-            raw = self.processor.batch_decode(
-                generate_ids[:, inputs['input_ids'].shape[1]:],
-                skip_special_tokens=False,     # keep any special tokens
-                clean_up_tokenization_spaces=False
-            )[0]
-            
-            return raw, None
-        
-        except Exception as e:
-            return None, f"Inference error: {e}"
 
-def load_dataset_sample(dataset_path):
+def load_random_sample(path):
+    with open(path) as f:
+        data = [json.loads(l) for l in f]
+    return random.choice(data)
+
+
+def fix_path(rel):
+    return rel if rel.startswith('data/') else os.path.join('data', rel)
+
+
+def resolve_answer(sample):
+    key = sample.get('answer_key')
     try:
-        with open(dataset_path, 'r') as f:
-            data = [json.loads(line) for line in f]
-        return random.choice(data)
-    except Exception as e:
-        print(f"Error loading dataset: {e}")
-        return None
+        idx = int(key)
+    except:
+        idx = ord(str(key).lower()) - ord('a')
+    choices = sample.get('choices', [])
+    return choices[idx] if 0 <= idx < len(choices) else None
 
-def fix_audio_path(audio_path):
-    if audio_path.startswith('data/data/'):
-        return audio_path.replace('data/data/', 'data/')
-    elif not audio_path.startswith('data/'):
-        return os.path.join('data', audio_path)
-    return audio_path
 
 def main():
-    parser = argparse.ArgumentParser(description="Qwen2-Audio Raw Inference Script")
-    parser.add_argument("--model", default="./Qwen2-Audio-7B-Instruct", help="Local model path")
-    parser.add_argument("--device", default="auto", help="Device to use (auto, cuda, cpu)")
-    parser.add_argument("--dataset", choices=["sakura", "mmar", "both"], default="both")
+    parser = argparse.ArgumentParser(description="Chat-template inference – corrected")
+    parser.add_argument("--model", default="./Qwen2-Audio-7B-Instruct")
+    parser.add_argument("--device", default="auto")
+    parser.add_argument("--dataset", choices=["sakura","mmar","both"], default="both")
     args = parser.parse_args()
 
     engine = AudioInferenceEngine(args.model, args.device)
-
-    datasets = {}
-    if args.dataset in ["sakura", "both"]:
-        datasets.update({
-            "sakura_animal":   "data/sakura/animal/sakura_animal_test_standardized.jsonl",
-            "sakura_emotion":  "data/sakura/emotion/sakura_emotion_test_standardized.jsonl",
-            "sakura_gender":   "data/sakura/gender/sakura_gender_test_standardized.jsonl",
-            "sakura_language": "data/sakura/language/sakura_language_test_standardized.jsonl",
+    tasks = {}
+    if args.dataset in ('sakura','both'):
+        tasks.update({
+            name: f"data/sakura/{typ}/" + name + "_test_standardized.jsonl"
+            for typ,name in [('animal','sakura_animal'),('emotion','sakura_emotion'),('gender','sakura_gender'),('language','sakura_language')]
         })
-    if args.dataset in ["mmar", "both"]:
-        datasets["mmar"] = "data/mmar/mmar_test_standardized.jsonl"
+    if args.dataset in ('mmar','both'):
+        tasks['mmar'] = 'data/mmar/mmar_test_standardized.jsonl'
 
-    for name, path in datasets.items():
+    for name,path in tasks.items():
         if not os.path.exists(path):
-            print(f"Warning: Dataset file not found: {path}")
+            print(f"Missing {path}")
             continue
+        print(f"\n=== {name} ===")
+        sample = load_random_sample(path)
+        sample['audio_path'] = fix_path(sample['audio_path'])
+        print(f"Q: {sample['question']}, Choices: {sample['choices']}")
+        print(f"Ground truth: {resolve_answer(sample)}")
+        resp, err = engine.run_inference(sample)
+        if err: print("Error:", err)
+        else: print("Model says:", resp)
 
-        print(f"\n=== Testing on {name} ===")
-        sample = load_dataset_sample(path)
-        if not sample:
-            continue
-
-        audio_path = fix_audio_path(sample["audio_path"])
-        print(f"Sample ID: {sample['id']}")
-        print(f"Audio path: {audio_path}")
-        print(f"Question: {sample['question']}")
-        print(f"Choices: {sample['choices']}")
-        print(f"(Ground truth: {sample['choices'][sample['answer_key']]})\n")
-
-        if not os.path.exists(audio_path):
-            print(f"Error: Audio file not found: {audio_path}")
-            continue
-
-        raw_response, err = engine.run_inference(audio_path, sample["question"], sample["choices"])
-        if err:
-            print(f"Inference error: {err}")
-        else:
-            print("=== Raw model output ===")
-            print(raw_response)
-            print("========================")
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

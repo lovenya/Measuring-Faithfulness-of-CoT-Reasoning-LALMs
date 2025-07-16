@@ -5,18 +5,18 @@
 
 # --- Slurm Directives ---
 #SBATCH --account=rrg-csubakan   # REQUIRED: Replace with your Compute Canada account name
-#SBATCH --job-name=correct_inference         # Job name for identification
+#SBATCH --job-name=debug_inference         # Job name for identification
 #SBATCH --gres=gpu:1                      # Request 1 GPU
 #SBATCH --cpus-per-task=4                 # Request 4 CPU cores (good for data loading)
 #SBATCH --mem=32G                         # Request 32GB of RAM (safe for a 7B model)
 #SBATCH --time=0-00:30                    # Request 15 minutes (should be ample time for 2 inferences)
-#SBATCH --output=logs/correct_inference_%j.out # Standard output log file in the 'logs' directory
-#SBATCH --error=logs/tcorrect_inference_%j.err  # Standard error log file in the 'logs' directory
+#SBATCH --output=logs/debug_inference_%j.out # Standard output log file in the 'logs' directory
+#SBATCH --error=logs/debug_inference_%j.err  # Standard error log file in the 'logs' directory
 
 # --- Job Execution ---
 
 echo "========================================================"
-echo "Starting Slurm Job: Testing Sample 3 Inference Code"
+echo "Starting Slurm Job: Testing debug inference Code"
 echo "Job ID: ${SLURM_JOB_ID}"
 echo "Job Name: ${SLURM_JOB_NAME}"
 echo "Running on host: $(hostname)"
@@ -40,7 +40,7 @@ source ./audio-env/bin/activate
 # Rationale: This runs our actual test. We pass the --data-root argument as required by your script.
 # The script is expected to be in the same directory from which sbatch is run.
 echo "Running the Python inference script..."
-python sample3_inference.py
+python debug_inference.py
 
 # The exit code of the Python script will be the exit code of the job
 EXIT_CODE=$?

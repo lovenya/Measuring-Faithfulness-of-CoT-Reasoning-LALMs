@@ -1,0 +1,3 @@
+Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:02<00:09,  2.41s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:04<00:07,  2.34s/it]Loading checkpoint shards:  60%|██████    | 3/5 [00:06<00:04,  2.32s/it]Loading checkpoint shards:  80%|████████  | 4/5 [00:09<00:02,  2.23s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:10<00:00,  2.06s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:10<00:00,  2.17s/it]
+/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/debug_inference.py:82: FutureWarning: `audios` is deprecated and will be removed in version 4.54.0 for `Qwen2AudioProcessor.__call__`. Use `audio` instead.
+  inputs = processor(

@@ -1,52 +1,0 @@
-Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:01<00:07,  1.96s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:03<00:05,  1.96s/it]Loading checkpoint shards:  60%|██████    | 3/5 [00:05<00:03,  1.95s/it]Loading checkpoint shards:  80%|████████  | 4/5 [00:07<00:01,  1.89s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:08<00:00,  1.43s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:08<00:00,  1.65s/it]
-It is strongly recommended to pass the `sampling_rate` argument to `WhisperFeatureExtractor()`. Failing to do so can result in silent errors that might be hard to debug.
-/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/sample3_inference.py:58: UserWarning: PySoundFile failed. Trying audioread instead.
-  audio_data, _ = librosa.load(
-/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/librosa/core/audio.py:184: FutureWarning: librosa.core.audio.__audioread_load
-	Deprecated as of librosa version 0.10.0.
-	It will be removed in librosa version 1.0.
-  y, sr_native = __audioread_load(path, offset, duration, dtype)
-Traceback (most recent call last):
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/librosa/core/audio.py", line 176, in load
-    y, sr_native = __soundfile_load(path, offset, duration, dtype)
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/librosa/core/audio.py", line 209, in __soundfile_load
-    context = sf.SoundFile(path)
-              ^^^^^^^^^^^^^^^^^^
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/soundfile.py", line 690, in __init__
-    self._file = self._open(file, mode_int, closefd)
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/soundfile.py", line 1265, in _open
-    raise LibsndfileError(err, prefix="Error opening {0!r}: ".format(self.name))
-soundfile.LibsndfileError: Error opening 'sakura/animal/audio/sakura_animal_audio_33.wav': System error.
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/sample3_inference.py", line 129, in <module>
-    main()
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/sample3_inference.py", line 120, in main
-    sakura_response = run_inference(model, processor, sakura_sample)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/sample3_inference.py", line 58, in run_inference
-    audio_data, _ = librosa.load(
-                    ^^^^^^^^^^^^^
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/librosa/core/audio.py", line 184, in load
-    y, sr_native = __audioread_load(path, offset, duration, dtype)
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/decorator.py", line 235, in fun
-    return caller(func, *(extras + args), **kw)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/librosa/util/decorators.py", line 63, in __wrapper
-    return func(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/librosa/core/audio.py", line 240, in __audioread_load
-    reader = audioread.audio_open(path)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/audioread/__init__.py", line 127, in audio_open
-    return BackendClass(path)
-           ^^^^^^^^^^^^^^^^^^
-  File "/lustre06/project/6080535/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-env/lib/python3.11/site-packages/audioread/rawread.py", line 59, in __init__
-    self._fh = open(filename, 'rb')
-               ^^^^^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: 'sakura/animal/audio/sakura_animal_audio_33.wav'
