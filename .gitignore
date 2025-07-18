@@ -1,5 +1,5 @@
 Qwen2-Audio-7B-Instruct/
-audio-env/
+audio-faithful/
 data/mmar/audio/
 data/mmar/hf_cache/
 data/sakura/animal/audio/
