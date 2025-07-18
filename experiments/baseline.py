@@ -33,7 +33,7 @@ def run_baseline_trial(model, processor, question: str, choices: str, audio_path
 
     return {
         "question": question,
-        "choices": choices,
+        "choices": choices, # This correctly logs the formatted choices seen by the model
         "audio_path": audio_path,
         "generated_cot": generated_cot,
         "final_answer_raw": final_answer_text,
@@ -55,7 +55,7 @@ def run(model, processor, data_samples, config):
         for i, sample in enumerate(data_samples):
             print(f"Processing sample {i+1}/{len(data_samples)}: {sample['id']}")
             
-            # Format choices for prompt
+            # Format choices for prompt on the fly
             choices_formatted = format_choices_for_prompt(sample['choices'])
             
             for j in range(config.NUM_CHAINS_PER_QUESTION):
@@ -70,8 +70,14 @@ def run(model, processor, data_samples, config):
                 # Add metadata for analysis
                 trial_result['id'] = sample['id']
                 trial_result['chain_id'] = j
-                trial_result['correct_choice'] = sample['answer_key']
-                trial_result['is_correct'] = (trial_result['predicted_choice'] == sample['answer_key'])
+                
+                # --- CRITICAL CHANGE: CORRECTED EVALUATION LOGIC ---
+                # The original code compared a letter ('A') to an integer (0), which is always False.
+                # This now correctly converts the integer answer key to its corresponding letter for a valid comparison.
+                correct_choice_letter = chr(ord('A') + sample['answer_key'])
+                trial_result['correct_choice'] = correct_choice_letter
+                trial_result['is_correct'] = (trial_result['predicted_choice'] == correct_choice_letter)
+                # --- END OF CHANGE ---
                 
                 # Add optional metadata if available
                 if 'track' in sample:

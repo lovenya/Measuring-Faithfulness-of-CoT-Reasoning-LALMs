@@ -1,6 +1,8 @@
+# data_loader/data_loader.py
+
 import json
 import os
-
+import random # <--- CHANGE 1: IMPORTED FOR JUMBLING UTILITY
 
 def load_dataset(jsonl_path: str) -> list:
     """
@@ -90,15 +92,59 @@ def get_dataset_info(data_samples: list) -> dict:
 
 def format_choices_for_prompt(choices: list) -> str:
     """
-    Format choices list into a string suitable for prompting.
+    --- CHANGE 2 (REWRITTEN FUNCTION) ---
+    Formats a list of choices into a standardized, enumerated string
+    on the fly. This ensures a consistent format for the model.
+    Example: ["cat", "dog"] -> "(A) cat\n(B) dog"
     
     Args:
         choices (list): List of choice strings.
         
     Returns:
-        str: Formatted choices string.
+        str: Formatted and enumerated choices string.
     """
-    return "\n".join(choices)
+    if not choices:
+        return ""
+    
+    formatted_choices = []
+    for i, choice in enumerate(choices):
+        # chr(ord('A') + i) generates A, B, C, ...
+        letter = chr(ord('A') + i)
+        formatted_choices.append(f"({letter}) {choice}")
+        
+    return "\n".join(formatted_choices)
+
+
+def prepare_jumbled_choices(choices: list, answer_key: int) -> tuple[list, int]:
+    """
+    --- CHANGE 3 (NEW FUNCTION) ---
+    Shuffles the choices and determines the new answer key.
+    This is a utility for experiments testing choice order bias.
+
+    Args:
+        choices (list): The original list of choices.
+        answer_key (int): The index of the correct answer in the original list.
+
+    Returns:
+        tuple[list, int]: A tuple containing:
+            - The new, shuffled list of choices.
+            - The new integer index of the correct answer.
+    """
+    if not choices or answer_key >= len(choices):
+        # Return original values if input is invalid to avoid crashing
+        return choices, answer_key
+
+    # Store the correct answer text
+    correct_answer_text = choices[answer_key]
+
+    # Create a new list to shuffle, preserving the original
+    shuffled_choices = list(choices)
+    random.shuffle(shuffled_choices)
+
+    # Find the new index of the correct answer
+    new_answer_key = shuffled_choices.index(correct_answer_text)
+
+    return shuffled_choices, new_answer_key
 
 
 # Example usage and testing
@@ -107,7 +153,6 @@ if __name__ == "__main__":
     sample_datasets = [
         "mmar_test_standardized.jsonl",
         "sakura_animal_test_standardized.jsonl"
-        
     ]
     
     for dataset_path in sample_datasets:
