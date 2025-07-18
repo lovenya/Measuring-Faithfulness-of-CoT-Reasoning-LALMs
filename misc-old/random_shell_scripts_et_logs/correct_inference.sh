@@ -40,7 +40,7 @@ source ./audio-env/bin/activate
 # Rationale: This runs our actual test. We pass the --data-root argument as required by your script.
 # The script is expected to be in the same directory from which sbatch is run.
 echo "Running the Python inference script..."
-python sample3_inference.py
+python debug_inference.py
 
 # The exit code of the Python script will be the exit code of the job
 EXIT_CODE=$?
