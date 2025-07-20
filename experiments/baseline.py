@@ -1,9 +1,12 @@
-# experiments/baseline_lalm.py
+# experiments/baseline.py
 
 import os
 import json
 from core.lalm_utils import run_inference, parse_answer
 from data_loader.data_loader import format_choices_for_prompt
+
+
+EXPERIMENT_TYPE = "foundational"
 
 
 def run_baseline_trial(model, processor, question: str, choices: str, audio_path: str) -> dict:

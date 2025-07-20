@@ -10,3 +10,7 @@ data/sakura/gender/audio/
 data/sakura/gender/hf_cache/
 data/sakura/language/audio/
 data/sakura/language/hf_cache/
+*.pyc
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
