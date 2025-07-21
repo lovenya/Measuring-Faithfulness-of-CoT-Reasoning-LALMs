@@ -1,85 +1,76 @@
-# experiments/baseline.py
+# experiments/no_cot_lalm.py
 
 import os
 import json
 from core.lalm_utils import run_inference, parse_answer
 from data_loader.data_loader import format_choices_for_prompt
 
-
 EXPERIMENT_TYPE = "foundational"
 
-
-def run_baseline_trial(model, processor, question: str, choices: str, audio_path: str) -> dict:
+def run_no_cot_trial(model, processor, question: str, choices: str, audio_path: str) -> dict:
     """
-    Runs a full baseline trial for a single question with audio input.
+    Runs a single "freeflow" trial without an explicit CoT prompt for the LALM model.
     """
-    # Turn 1: Generate CoT
-    cot_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": "Let's think step by step:"}
-    ]
-    generated_cot = run_inference(
-        model, processor, cot_prompt_messages, audio_path, max_new_tokens=768, do_sample=True
-    )
+    # This is a single-turn prompt that allows the model to generate a brief,
+    # spontaneous explanation but guides it to end with a parseable answer.
+    direct_answer_prompt = f"audio\n\nQuestion: {question}\nChoices:\n{choices}\n\nWhat is the single, most likely answer? Please ensure your response ends with a single line containing only the letter of the correct choice in parentheses. For example: 'The final answer is: (A)'"
 
-    # Turn 2: Elicit Final Answer
-    final_answer_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": "Let's think step by step: " + generated_cot},
-        {"role": "user", "content": "Given the reasoning above, what is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else. For example: (A)"}
+    messages = [
+        {"role": "user", "content": direct_answer_prompt}
     ]
+
+    # We use do_sample=True because we are interested in the model's spontaneous
+    # reasoning, which can have some variance.
     final_answer_text = run_inference(
-        model, processor, final_answer_prompt_messages, audio_path, max_new_tokens=50, do_sample=False
+        model, processor, messages, audio_path, max_new_tokens=150, do_sample=True
     )
     
+    # The parser is robust enough to find the answer even if there's preceding text.
     parsed_choice = parse_answer(final_answer_text)
 
     return {
         "question": question,
         "choices": choices,
         "audio_path": audio_path,
-        "generated_cot": generated_cot,
         "final_answer_raw": final_answer_text,
         "predicted_choice": parsed_choice,
     }
 
-
 def run(model, processor, data_samples, config):
     """
-    Runs the full baseline experiment on a list of data samples, now with robust error handling.
+    Orchestrates the full "No CoT" LALM experiment with robust error handling.
     """
-    output_filename = f"baseline_lalm_{config.DATASET_NAME}.jsonl"
-    output_path = os.path.join(config.RESULTS_DIR, output_filename)
-    
-    os.makedirs(config.RESULTS_DIR, exist_ok=True)
+    experiment_name = "no_cot_lalm"
+    output_dir = os.path.join(config.RESULTS_DIR, experiment_name)
+    os.makedirs(output_dir, exist_ok=True)
 
-    print(f"\n--- Running Baseline LALM Experiment: Saving to {output_path} ---")
+    output_filename = f"{experiment_name}_{config.DATASET_NAME}.jsonl"
+    output_path = os.path.join(output_dir, output_filename)
+
+    print(f"\n--- Running 'No CoT LALM' Experiment: Saving to {output_path} ---")
     
-    # --- ROBUSTNESS ENHANCEMENT ---
-    # Counter for skipped samples
     skipped_samples_count = 0
-
     with open(output_path, 'w') as f:
         for i, sample in enumerate(data_samples):
             try:
-                # The entire processing for one sample is wrapped in a try-except block.
                 print(f"Processing sample {i+1}/{len(data_samples)}: {sample['id']}")
                 
                 choices_formatted = format_choices_for_prompt(sample['choices'])
                 
+                # We run multiple chains to capture the variance in the model's
+                # spontaneous, "freeflow" answers.
                 for j in range(config.NUM_CHAINS_PER_QUESTION):
                     print(f"  - Generating chain {j+1}/{config.NUM_CHAINS_PER_QUESTION}...")
-                    trial_result = run_baseline_trial(
+                    trial_result = run_no_cot_trial(
                         model, processor, 
                         sample['question'], 
-                        choices_formatted,
+                        choices_formatted, 
                         sample['audio_path']
                     )
                     
                     trial_result['id'] = sample['id']
                     trial_result['chain_id'] = j
                     
-                    # This is the line that caused the original error.
                     correct_choice_letter = chr(ord('A') + sample['answer_key'])
                     trial_result['correct_choice'] = correct_choice_letter
                     trial_result['is_correct'] = (trial_result['predicted_choice'] == correct_choice_letter)
@@ -90,26 +81,20 @@ def run(model, processor, data_samples, config):
                         trial_result['source'] = sample['source']
                     if 'hop_type' in sample:
                         trial_result['hop_type'] = sample['hop_type']
-                    
+
                     f.write(json.dumps(trial_result) + "\n")
 
             except Exception as e:
-                # If any error occurs for a sample, log it and continue.
                 skipped_samples_count += 1
                 print("\n" + "="*60)
                 print(f"WARNING: SKIPPING SAMPLE DUE TO ERROR.")
-                # Use .get() for safety in case the 'id' field itself is missing.
                 print(f"  - Sample ID: {sample.get('id', 'Not Available')}")
                 print(f"  - Error Type: {type(e).__name__}")
                 print(f"  - Error Details: {e}")
                 print("="*60 + "\n")
-                continue # Move to the next sample in the dataset
+                continue
 
-    # --- END OF ROBUSTNESS ENHANCEMENT ---
-
-    print("\n--- Baseline LALM experiment complete. ---")
-    
-    # Final summary report
+    print("\n--- 'No CoT LALM' experiment complete. ---")
     print("\n" + "="*25 + " RUN SUMMARY " + "="*25)
     print(f"Total samples in dataset: {len(data_samples)}")
     print(f"Successfully processed samples: {len(data_samples) - skipped_samples_count}")

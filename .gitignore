@@ -14,3 +14,5 @@ data/sakura/language/hf_cache/
 __pycache__/
 */__pycache__/
 */*/__pycache__/
+logs/
+submission_scripts/
