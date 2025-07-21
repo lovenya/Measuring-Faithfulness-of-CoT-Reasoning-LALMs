@@ -18,9 +18,9 @@ from data_loader.data_loader import load_dataset
 DATASET_MAPPING = {
     "mmar": "data/mmar/mmar_test_standardized.jsonl",
     "sakura-animal": "data/sakura/animal/sakura_animal_test_standardized.jsonl",
-    "sakura-emotion": "data/sakura/emotion/sakura_emotion_standardized.jsonl",
-    "sakura-gender": "data/sakura/gender/sakura_gender_standardized.jsonl",
-    "sakura-language": "data/sakura/language/sakura_language_standardized.jsonl",
+    "sakura-emotion": "data/sakura/emotion/sakura_emotion_test_standardized.jsonl",
+    "sakura-gender": "data/sakura/gender/sakura_gender_test_standardized.jsonl",
+    "sakura-language": "data/sakura/language/sakura_language_test_standardized.jsonl",
 }
 
 def main():

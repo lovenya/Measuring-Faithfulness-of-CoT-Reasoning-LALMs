@@ -48,10 +48,7 @@ def run(model, processor, data_samples, config):
     """
     Runs the full baseline experiment on a list of data samples, now with robust error handling.
     """
-    output_filename = f"baseline_lalm_{config.DATASET_NAME}.jsonl"
-    output_path = os.path.join(config.RESULTS_DIR, output_filename)
-    
-    os.makedirs(config.RESULTS_DIR, exist_ok=True)
+    output_path = config.OUTPUT_PATH
 
     print(f"\n--- Running Baseline LALM Experiment: Saving to {output_path} ---")
     

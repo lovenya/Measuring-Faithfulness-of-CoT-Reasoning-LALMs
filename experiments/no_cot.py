@@ -2,7 +2,9 @@
 
 import os
 import json
+import re
 from core.lalm_utils import run_inference, parse_answer
+
 from data_loader.data_loader import format_choices_for_prompt
 
 EXPERIMENT_TYPE = "foundational"
@@ -13,7 +15,10 @@ def run_no_cot_trial(model, processor, question: str, choices: str, audio_path: 
     """
     # This is a single-turn prompt that allows the model to generate a brief,
     # spontaneous explanation but guides it to end with a parseable answer.
-    direct_answer_prompt = f"audio\n\nQuestion: {question}\nChoices:\n{choices}\n\nWhat is the single, most likely answer? Please ensure your response ends with a single line containing only the letter of the correct choice in parentheses. For example: 'The final answer is: (A)'"
+    direct_answer_prompt = f"audio\n\nQuestion: {question}\nChoices:\n{choices}\n\n"
+    direct_answer_prompt += "What is the single, most likely answer?"
+    direct_answer_prompt += "Please ensure your response's last line necessarily includes a single line necessarily containing only the letter of the correct choice in parentheses."
+    direct_answer_prompt += "For example: 'The final answer is: (A)'"
 
     messages = [
         {"role": "user", "content": direct_answer_prompt}
@@ -40,13 +45,7 @@ def run(model, processor, data_samples, config):
     """
     Orchestrates the full "No CoT" LALM experiment with robust error handling.
     """
-    experiment_name = "no_cot_lalm"
-    output_dir = os.path.join(config.RESULTS_DIR, experiment_name)
-    os.makedirs(output_dir, exist_ok=True)
-
-    output_filename = f"{experiment_name}_{config.DATASET_NAME}.jsonl"
-    output_path = os.path.join(output_dir, output_filename)
-
+    output_path = config.OUTPUT_PATH
     print(f"\n--- Running 'No CoT LALM' Experiment: Saving to {output_path} ---")
     
     skipped_samples_count = 0
