@@ -1,0 +1,48 @@
+## Job Started: Mon 21 Jul 2025 05:37:06 AM EDT | Job: bline-mmar-500s-10c | Job ID: 325695 ##
+--> Project Directory: /project/rrg-csubakan/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
+--> Loading system-level modules...
+--> Activating Python virtual environment...
+--> Navigating to the main project directory...
+--> Verifying Initial GPU Status...
+Mon Jul 21 05:37:07 2025       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.158.01             Driver Version: 570.158.01     CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA H100 80GB HBM3          Off |   00000000:5F:00.0 Off |                   On |
+| N/A   29C    P0             68W /  700W |     101MiB /  81559MiB |     N/A      Default |
+|                                         |                        |              Enabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| MIG devices:                                                                            |
++------------------+----------------------------------+-----------+-----------------------+
+| GPU  GI  CI  MIG |                     Memory-Usage |        Vol|        Shared         |
+|      ID  ID  Dev |                       BAR1-Usage | SM     Unc| CE ENC  DEC  OFA  JPG |
+|                  |                                  |        ECC|                       |
+|==================+==================================+===========+=======================|
+|  0    2   0   0  |              44MiB / 40448MiB    | 60      0 |  3   0    3    0    3 |
+|                  |                 0MiB / 65535MiB  |           |                       |
++------------------+----------------------------------+-----------+-----------------------+
+                                                                                         
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+--> Starting Python experiment script for baseline on mmar...
+--- LALM Faithfulness Framework ---
+  - Experiment: baseline
+  - Dataset:    mmar
+-----------------------------------
+Loading experiment module: 'experiments.baseline'...
+Detected experiment type: 'foundational'
+
+Loading model and processor...
+Loading processor from ./Qwen2-Audio-7B-Instruct...
+Loading model from ./Qwen2-Audio-7B-Instruct...
