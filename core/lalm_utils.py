@@ -48,7 +48,7 @@ def run_inference(model, processor, messages: list, audio_path: str, max_new_tok
     
     text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
     
-    audio_data, _ = librosa.load(
+    audio_data, sampling_rate = librosa.load(
         audio_path, 
         sr=processor.feature_extractor.sampling_rate
     )
@@ -59,7 +59,8 @@ def run_inference(model, processor, messages: list, audio_path: str, max_new_tok
     # underlying cause of the downstream 'cache_position' error.
     inputs = processor(
         text=text,
-        audios=[audio_data], # <-- Corrected keyword from 'audio' to 'audios'
+        audio=audio_data, # <-- Corrected keyword from 'audio' to 'audios'
+        sampling_rate=sampling_rate,
         return_tensors="pt",
         padding=True
     )
@@ -68,16 +69,18 @@ def run_inference(model, processor, messages: list, audio_path: str, max_new_tok
     device = model.device
     inputs = {k: v.to(device) for k, v in inputs.items()}
     
-    generation_kwargs = {
-        "max_new_tokens": max_new_tokens,
-    }
-
     if do_sample:
-        generation_kwargs["do_sample"] = True
-        generation_kwargs["temperature"] = temperature
-        generation_kwargs["top_p"] = top_p
+        generation_kwargs = {
+            "max_new_tokens": max_new_tokens,
+            "do_sample": True,
+            "temperature": temperature,
+            "top_p": top_p,
+        }
     else:
-        generation_kwargs["do_sample"] = False
+        generation_kwargs = {
+            "max_new_tokens": max_new_tokens,
+            "do_sample": False,
+        }
 
     with torch.no_grad():
         generate_ids = model.generate(**inputs, **generation_kwargs)

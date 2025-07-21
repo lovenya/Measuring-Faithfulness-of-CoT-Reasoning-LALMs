@@ -15,14 +15,12 @@ from data_loader.data_loader import load_dataset
 # ==============================================================================
 #  Dataset Alias Mapping
 # ==============================================================================
-# This dictionary maps short, user-friendly names to the actual data files.
-# To add a new dataset, just add a new entry here.
 DATASET_MAPPING = {
     "mmar": "data/mmar/mmar_test_standardized.jsonl",
     "sakura-animal": "data/sakura/animal/sakura_animal_test_standardized.jsonl",
-    "sakura-emotion": "data/sakura/emotion/sakura_emotion_test_standardized.jsonl",
-    "sakura-gender": "data/sakura/gender/sakura_gender_test_standardized.jsonl",
-    "sakura-language": "data/sakura/language/sakura_language_test_standardized.jsonl",
+    "sakura-emotion": "data/sakura/emotion/sakura_emotion_standardized.jsonl",
+    "sakura-gender": "data/sakura/gender/sakura_gender_standardized.jsonl",
+    "sakura-language": "data/sakura/language/sakura_language_standardized.jsonl",
 }
 
 def main():
@@ -30,27 +28,9 @@ def main():
         description="Run LALM Faithfulness Experiments.",
         formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument(
-        "--experiment",
-        type=str,
-        required=True,
-        help="The name of the experiment module to run (e.g., 'baseline')."
-    )
-    parser.add_argument(
-        "--dataset",
-        type=str,
-        required=True,
-        choices=DATASET_MAPPING.keys(), # Choices are the short names
-        help="The short name of the dataset to use."
-    )
-    # This new argument is for dependent experiments
-    parser.add_argument(
-        "--baseline-results-file",
-        type=str,
-        default=None,
-        help="(For dependent experiments) Path to a specific baseline results file to use as input.\nIf not provided, a default path will be constructed based on the dataset name."
-    )
-    # Add other config overrides as before
+    parser.add_argument("--experiment", type=str, required=True, help="The name of the experiment module to run (e.g., 'baseline').")
+    parser.add_argument("--dataset", type=str, required=True, choices=DATASET_MAPPING.keys(), help="The short name of the dataset to use.")
+    parser.add_argument("--baseline-results-file", type=str, default=None, help="(For dependent experiments) Path to a specific baseline results file to use as input.")
     parser.add_argument("--num-samples", type=int, default=None)
     parser.add_argument("--num-chains", type=int, default=None)
 
@@ -62,29 +42,37 @@ def main():
     if args.num_chains:
         config.NUM_CHAINS_PER_QUESTION = args.num_chains
     
-    # Use the alias for the output file name
     config.DATASET_NAME = args.dataset
+
+    # Centralized Output Path Management
+    # The orchestrator is now responsible for defining the output path.
+    # This creates the desired structure: results/{experiment_name}/{experiment_name}_{dataset_name}.jsonl
+    experiment_name = args.experiment
+    output_dir = os.path.join(config.RESULTS_DIR, experiment_name)
+    os.makedirs(output_dir, exist_ok=True)
+    
+    output_filename = f"{experiment_name}_{config.DATASET_NAME}.jsonl"
+    output_path = os.path.join(output_dir, output_filename)
+    
+    # We pass the final path to the experiment via the config object.
+    config.OUTPUT_PATH = output_path
+    
 
     print("--- LALM Faithfulness Framework ---")
     print(f"  - Experiment: {args.experiment}")
     print(f"  - Dataset:    {config.DATASET_NAME}")
-    # ... other printouts ...
+    print(f"  - Outputting to: {config.OUTPUT_PATH}")
     print("-" * 35)
 
     # --- 2. Dynamic Experiment Dispatch ---
     try:
         print(f"Loading experiment module: 'experiments.{args.experiment}'...")
         experiment_module = importlib.import_module(f"experiments.{args.experiment}")
-        
-        # Check the experiment's self-declared type
-        EXPERIMENT_TYPE = getattr(experiment_module, 'EXPERIMENT_TYPE', 'unknown')
+        EXPERIMENT_TYPE = getattr(experiment_module, 'EXPERIMENT_TYPE')
         print(f"Detected experiment type: '{EXPERIMENT_TYPE}'")
-
-    except ImportError:
-        print(f"FATAL: Experiment '{args.experiment}' not found. Ensure 'experiments/{args.experiment}.py' exists.")
-        sys.exit(1)
-    except AttributeError:
-        print(f"FATAL: Experiment module '{args.experiment}' is missing the required 'EXPERIMENT_TYPE' variable.")
+    except (ImportError, AttributeError):
+        print(f"FATAL: Could not load experiment '{args.experiment}'.")
+        print(f"Ensure 'experiments/{args.experiment}.py' exists and contains the 'EXPERIMENT_TYPE' variable.")
         sys.exit(1)
 
     # --- 3. Load Model (Common to all experiments) ---
@@ -93,39 +81,25 @@ def main():
 
     # --- 4. Execute based on Experiment Type ---
     if EXPERIMENT_TYPE == "foundational":
-        # These experiments run on raw data.
         print("\nRunning a FOUNDATIONAL experiment...")
         dataset_path = DATASET_MAPPING[args.dataset]
-        print(f"Loading raw data from: {dataset_path}")
         try:
             data_samples = load_dataset(dataset_path)
             if config.NUM_SAMPLES_TO_RUN > 0:
                 data_samples = data_samples[:config.NUM_SAMPLES_TO_RUN]
             print(f"Processing {len(data_samples)} samples.")
-            
-            # Call the experiment's run function with the raw data
             experiment_module.run(model, processor, data_samples, config)
-
         except FileNotFoundError:
             print(f"FATAL: Dataset file not found at '{dataset_path}'.")
             sys.exit(1)
 
     elif EXPERIMENT_TYPE == "dependent":
-        # These experiments depend on baseline results.
-        print("\nRunning an DEPENDENT experiment...")
-        
-        # We must pass the dataset name to the experiment via the config
-        # so it knows which baseline file to load by default.
-        config.DATASET_NAME = args.dataset
+        print("\nRunning a DEPENDENT experiment...")
         config.BASELINE_RESULTS_FILE_OVERRIDE = args.baseline_results_file
-
-        # Call the experiment's run function. Note it has a different signature.
-        # It is responsible for loading its own data from the baseline file.
         experiment_module.run(model, processor, config)
 
     else:
-        print(f"FATAL: Unknown experiment type '{EXPERIMENT_TYPE}' declared in 'experiments/{args.experiment}.py'.")
-        print("Type must be either 'foundational' or 'dependent'.")
+        print(f"FATAL: Unknown experiment type '{EXPERIMENT_TYPE}' in 'experiments/{args.experiment}.py'.")
         sys.exit(1)
 
     print("\n--- Experiment completed successfully! ---")

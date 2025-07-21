@@ -39,13 +39,8 @@ def run(model, processor, data_samples, config):
     Orchestrates the full "No-Reasoning" LALM experiment with robust error handling.
     """
     # --- CHANGE 1: NEW DIRECTORY STRUCTURE ---
-    experiment_name = "no_reasoning_lalm"
-    output_dir = os.path.join(config.RESULTS_DIR, experiment_name)
-    os.makedirs(output_dir, exist_ok=True)
-
-    output_filename = f"{experiment_name}_{config.DATASET_NAME}.jsonl"
-    output_path = os.path.join(output_dir, output_filename)
-    # --- END OF CHANGE ---
+    # NEW, SIMPLIFIED CODE
+    output_path = config.OUTPUT_PATH
 
     print(f"\n--- Running 'No-Reasoning LALM' Experiment: Saving to {output_path} ---")
     
