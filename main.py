@@ -33,6 +33,7 @@ def main():
     parser.add_argument("--baseline-results-file", type=str, default=None, help="(For dependent experiments) Path to a specific baseline results file to use as input.")
     parser.add_argument("--num-samples", type=int, default=None)
     parser.add_argument("--num-chains", type=int, default=None)
+    parser.add_argument('--verbose', action='store_true', help="Enable detailed, line-by-line progress logging for long-running experiments.")
 
     args = parser.parse_args()
 
@@ -43,6 +44,8 @@ def main():
         config.NUM_CHAINS_PER_QUESTION = args.num_chains
     
     config.DATASET_NAME = args.dataset
+    
+    config.VERBOSE = args.verbose
 
     # Centralized Output Path Management
     # The orchestrator is now responsible for defining the output path.
@@ -62,6 +65,7 @@ def main():
     print(f"  - Experiment: {args.experiment}")
     print(f"  - Dataset:    {config.DATASET_NAME}")
     print(f"  - Outputting to: {config.OUTPUT_PATH}")
+    print(f"  - Verbose Logging: {'Enabled' if config.VERBOSE else 'Disabled'}")
     print("-" * 35)
 
     # --- 2. Dynamic Experiment Dispatch ---

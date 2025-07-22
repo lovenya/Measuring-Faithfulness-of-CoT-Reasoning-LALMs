@@ -9,22 +9,18 @@ EXPERIMENT_TYPE = "dependent"
 
 def run_filler_text_trial(model, processor, question: str, choices: str, audio_path: str, target_token_length: int) -> dict:
     """
-    Runs a single trial with filler text of a specific target token length for the LALM.
+    Runs a single trial with filler text and returns the full prompt used.
     """
     filler_text = ""
     if target_token_length > 0:
         filler_unit = "... "
         filler_text = filler_unit * int(target_token_length / 1.5)
-        
-        # --- CORRECTED METHOD CALL ---
-        # We must explicitly use the 'tokenizer' attribute of the processor for text operations.
         while len(processor.tokenizer.encode(filler_text, add_special_tokens=False)) < target_token_length:
             filler_text += filler_unit
-        
         filler_text_tokens = processor.tokenizer.encode(filler_text, add_special_tokens=False)[:target_token_length]
         filler_text = processor.tokenizer.decode(filler_text_tokens, skip_special_tokens=True)
-        # --- END OF CORRECTION ---
 
+    # This is the full prompt object we want to save for transparency.
     final_answer_prompt_messages = [
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
         {"role": "assistant", "content": filler_text},
@@ -37,39 +33,55 @@ def run_filler_text_trial(model, processor, question: str, choices: str, audio_p
     
     parsed_choice = parse_answer(final_answer_text)
 
+    # --- CHANGE: Return the full prompt instead of just the filler text ---
     return {
         "predicted_choice": parsed_choice,
         "target_token_length": target_token_length,
-        "filler_text_used": filler_text
+        "final_prompt_messages": final_answer_prompt_messages # This makes the result self-documenting
     }
+    # --- END OF CHANGE ---
+
 
 def run(model, processor, config):
     """
-    Orchestrates the full percentile-based filler text experiment for LALMs.
+    Orchestrates the full percentile-based filler text experiment.
+    This version is highly optimized and logs the full prompt for each trial.
     """
+    # ... (The rest of the run function is identical to the previous version) ...
+    # 1. Define paths
     experiment_name = "filler_text"
     output_dir = os.path.join(config.RESULTS_DIR, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
-    
     output_path = os.path.join(output_dir, f"{experiment_name}_{config.DATASET_NAME}.jsonl")
 
-    if config.BASELINE_RESULTS_FILE_OVERRIDE:
-        baseline_results_path = config.BASELINE_RESULTS_FILE_OVERRIDE
-    else:
-        baseline_results_path = os.path.join(config.RESULTS_DIR, "baseline", f"baseline_{config.DATASET_NAME}.jsonl")
+    # This experiment now depends on TWO files
+    baseline_results_path = os.path.join(config.RESULTS_DIR, "baseline", f"baseline_{config.DATASET_NAME}.jsonl")
+    no_reasoning_results_path = os.path.join(config.RESULTS_DIR, "no_reasoning", f"no_reasoning_{config.DATASET_NAME}.jsonl")
 
-    if not os.path.exists(baseline_results_path):
-        print(f"FATAL ERROR: Baseline results file not found at '{baseline_results_path}'")
-        return
+    for path in [baseline_results_path, no_reasoning_results_path]:
+        if not os.path.exists(path):
+            print(f"FATAL ERROR: Dependent results file not found at '{path}'")
+            print("Please run both the 'baseline' and 'no_reasoning' experiments first.")
+            return
 
-    print(f"Reading and grouping baseline data from '{baseline_results_path}'...")
+    # 2. Load and process BOTH dependent files
+    print(f"Reading baseline data from '{baseline_results_path}'...")
     trials_by_question = collections.defaultdict(list)
     with open(baseline_results_path, 'r') as f:
         for line in f:
-            trial = json.loads(line)
-            trials_by_question[trial['id']].append(trial)
-    
-    print(f"\n--- Running Percentile Filler Text Experiment: Saving to {output_path} ---")
+            # Using json.loads twice is inefficient, let's fix that.
+            data = json.loads(line)
+            trials_by_question[data['id']].append(data)
+
+    print(f"Reading no-reasoning data from '{no_reasoning_results_path}'...")
+    no_reasoning_results = {}
+    with open(no_reasoning_results_path, 'r') as f:
+        for line in f:
+            res = json.loads(line)
+            no_reasoning_results[res['id']] = res
+
+    # 3. Run the filler text experiment
+    print(f"\n--- Running Optimized Percentile Filler Text Experiment: Saving to {output_path} ---")
     
     skipped_questions_count = 0
     total_questions = len(trials_by_question)
@@ -77,22 +89,36 @@ def run(model, processor, config):
     with open(output_path, 'w') as f:
         for i, (q_id, question_trials) in enumerate(trials_by_question.items()):
             try:
-                print(f"Processing question {i+1}/{total_questions}: ID {q_id}")
+                if config.VERBOSE:
+                    print(f"Processing question {i+1}/{total_questions}: ID {q_id}")
                 
-                max_len = 0
-                for trial in question_trials:
-                    # --- CORRECTED METHOD CALL ---
-                    # Explicitly use the 'tokenizer' attribute here as well.
-                    cot_len = len(processor.tokenizer.encode(trial['generated_cot']))
-                    # --- END OF CORRECTION ---
-                    if cot_len > max_len:
-                        max_len = cot_len
+                if q_id in no_reasoning_results:
+                    nr_result = no_reasoning_results[q_id]
+                    zero_percentile_result = {
+                        "id": q_id,
+                        "percentile": 0,
+                        "target_token_length": 0,
+                        "predicted_choice": nr_result['predicted_choice'],
+                        "correct_choice": nr_result['correct_choice'],
+                        "is_correct": nr_result['is_correct']
+                    }
+                    f.write(json.dumps(zero_percentile_result) + "\n")
+                else:
+                    print(f"  - WARNING: ID {q_id} not found in no_reasoning results. Skipping 0% point.")
+
+                max_len = max(len(processor.tokenizer.encode(t['generated_cot'])) for t in question_trials)
                 
-                print(f"  - Max CoT length for this question: {max_len} tokens")
+                if config.VERBOSE:
+                    print(f"  - Max CoT length for this question: {max_len} tokens")
                 
+
+                if max_len == 0:
+                    print("  - INFO: All CoTs for this question were empty. Skipping 5-100% trials.")
+                    continue
+
                 sample_info = question_trials[0]
                 
-                for percentile in range(0, 101, 5):
+                for percentile in range(5, 101, 5):
                     target_len = int((percentile / 100) * max_len)
                     
                     trial_result = run_filler_text_trial(
@@ -121,9 +147,4 @@ def run(model, processor, config):
                 continue
 
     print("\n--- Percentile filler text experiment complete. ---")
-    print("\n" + "="*25 + " RUN SUMMARY " + "="*25)
-    print(f"Total unique questions in baseline file: {total_questions}")
-    print(f"Successfully processed questions: {total_questions - skipped_questions_count}")
-    print(f"Skipped questions due to errors: {skipped_questions_count}")
-    print(f"Results saved to: {output_path}")
-    print("="*65)
+    
