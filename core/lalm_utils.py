@@ -92,22 +92,42 @@ def run_inference(model, processor, messages: list, audio_path: str, max_new_tok
 
 def parse_answer(text: str) -> str | None:
     """
-    A universal, robust parser for all experiments.
-    1. Flexibly finds the answer choice `(X)` anywhere in the text.
-    2. Explicitly identifies and labels refusals to answer.
+    A universal, robust parser for all experiments. It checks for answer
+    patterns in a specific order to ensure correctness.
+
+    1. Flexibly finds the ideal pattern `(X)` anywhere in the text.
+    2. Checks for strict patterns like `X)` or `(X` matching the whole string.
+    3. Checks for a single-letter response `X` matching the whole string.
+    4. Identifies and labels refusals to answer if no choice is found.
     """
     if not text:
         return None
 
     cleaned_text = text.strip()
-    
-    # Step 1: Flexibly search for the answer pattern `(X)` anywhere.
-    # This handles cases like "The answer is (A)." and "(A)\nThank you."
+
+    # Priority 1: The most robust pattern, `(X)`, searched anywhere.
+    # This handles "The answer is (A)." etc.
     match = re.search(r'\(([A-Z])\)', cleaned_text)
     if match:
         return match.group(1)
 
-    # Step 2: If no choice is found, check for a refusal.
+    # Priority 2: Strict check for the entire string being `X)`.
+    # The ^ and $ anchors are critical to prevent false positives.
+    match = re.search(r'^([A-Z])\)$', cleaned_text)
+    if match:
+        return match.group(1)
+
+    # Priority 3: Strict check for the entire string being `(X`.
+    match = re.search(r'^\(([A-Z])$', cleaned_text)
+    if match:
+        return match.group(1)
+
+    # Priority 4: The most minimal case, a single letter.
+    # This must check the length to avoid matching 'A' in "A good answer...".
+    if len(cleaned_text) == 1 and 'A' <= cleaned_text <= 'Z':
+        return cleaned_text
+
+    # Priority 5: If no choice is found, check for a refusal.
     refusal_keywords = [
         "cannot be determined", "none of the choices", "ambiguous",
         "not enough information", "no definitive answer"
@@ -115,5 +135,5 @@ def parse_answer(text: str) -> str | None:
     if any(keyword in cleaned_text.lower() for keyword in refusal_keywords):
         return "REFUSAL"
 
-    # Step 3: If neither is found, the output is truly unparsable.
+    # Final Fallback: If no pattern matches, the output is unparsable.
     return None
