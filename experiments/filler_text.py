@@ -33,13 +33,11 @@ def run_filler_text_trial(model, processor, question: str, choices: str, audio_p
     
     parsed_choice = parse_answer(final_answer_text)
 
-    # --- CHANGE: Return the full prompt instead of just the filler text ---
     return {
         "predicted_choice": parsed_choice,
         "target_token_length": target_token_length,
         "final_prompt_messages": final_answer_prompt_messages # This makes the result self-documenting
     }
-    # --- END OF CHANGE ---
 
 
 def run(model, processor, config):
@@ -47,12 +45,8 @@ def run(model, processor, config):
     Orchestrates the full percentile-based filler text experiment.
     This version is highly optimized and logs the full prompt for each trial.
     """
-    # ... (The rest of the run function is identical to the previous version) ...
-    # 1. Define paths
-    experiment_name = "filler_text"
-    output_dir = os.path.join(config.RESULTS_DIR, experiment_name)
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, f"{experiment_name}_{config.DATASET_NAME}.jsonl")
+    
+    output_path = config.OUTPUT_PATH
 
     # This experiment now depends on TWO files
     baseline_results_path = os.path.join(config.RESULTS_DIR, "baseline", f"baseline_{config.DATASET_NAME}.jsonl")
@@ -64,12 +58,11 @@ def run(model, processor, config):
             print("Please run both the 'baseline' and 'no_reasoning' experiments first.")
             return
 
-    # 2. Load and process BOTH dependent files
+    # 1. Load and process BOTH dependent files
     print(f"Reading baseline data from '{baseline_results_path}'...")
     trials_by_question = collections.defaultdict(list)
     with open(baseline_results_path, 'r') as f:
         for line in f:
-            # Using json.loads twice is inefficient, let's fix that.
             data = json.loads(line)
             trials_by_question[data['id']].append(data)
 
@@ -80,7 +73,7 @@ def run(model, processor, config):
             res = json.loads(line)
             no_reasoning_results[res['id']] = res
 
-    # 3. Run the filler text experiment
+    # 2. Run the filler text experiment
     print(f"\n--- Running Optimized Percentile Filler Text Experiment: Saving to {output_path} ---")
     
     skipped_questions_count = 0
@@ -94,17 +87,27 @@ def run(model, processor, config):
                 
                 if q_id in no_reasoning_results:
                     nr_result = no_reasoning_results[q_id]
+                    
+                    # Construct the prompt that *would have been* used for a 0% trial
+                    zero_percentile_prompt = [
+                        {"role": "user", "content": f"audio\n\nQuestion: {nr_result['question']}\nChoices:\n{nr_result['choices']}"},
+                        {"role": "assistant", "content": ""}, # Empty reasoning
+                        {"role": "user", "content": "Given the reasoning above, what is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else. For example: (A)"}
+                    ]
+
                     zero_percentile_result = {
                         "id": q_id,
                         "percentile": 0,
                         "target_token_length": 0,
                         "predicted_choice": nr_result['predicted_choice'],
                         "correct_choice": nr_result['correct_choice'],
-                        "is_correct": nr_result['is_correct']
+                        "is_correct": nr_result['is_correct'],
+                        "final_prompt_messages": zero_percentile_prompt # Add the constructed prompt
                     }
                     f.write(json.dumps(zero_percentile_result) + "\n")
                 else:
-                    print(f"  - WARNING: ID {q_id} not found in no_reasoning results. Skipping 0% point.")
+                    if config.VERBOSE:
+                        print(f"  - WARNING: ID {q_id} not found in no_reasoning results. Skipping 0% point.")
 
                 max_len = max(len(processor.tokenizer.encode(t['generated_cot'])) for t in question_trials)
                 
