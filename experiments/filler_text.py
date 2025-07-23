@@ -36,7 +36,8 @@ def run_filler_text_trial(model, processor, question: str, choices: str, audio_p
     return {
         "predicted_choice": parsed_choice,
         "target_token_length": target_token_length,
-        "final_prompt_messages": final_answer_prompt_messages # This makes the result self-documenting
+        "final_prompt_messages": final_answer_prompt_messages, # This makes the result self-documenting
+        "final_answer_raw": final_answer_text
     }
 
 
@@ -72,15 +73,26 @@ def run(model, processor, config):
         for line in f:
             res = json.loads(line)
             no_reasoning_results[res['id']] = res
+            
+            
+    all_questions_to_process = list(trials_by_question.items())
+    
+    # If --num-samples is provided, slice the list of questions.
+    if config.NUM_SAMPLES_TO_RUN > 0:
+        print(f"\nINFO: --num-samples set to {config.NUM_SAMPLES_TO_RUN}. Processing a subset of questions.")
+        samples_to_process = all_questions_to_process[:config.NUM_SAMPLES_TO_RUN]
+    else:
+        samples_to_process = all_questions_to_process
 
     # 2. Run the filler text experiment
     print(f"\n--- Running Optimized Percentile Filler Text Experiment: Saving to {output_path} ---")
+    print(f"Processing {len(samples_to_process)} unique questions.")
     
     skipped_questions_count = 0
     total_questions = len(trials_by_question)
 
     with open(output_path, 'w') as f:
-        for i, (q_id, question_trials) in enumerate(trials_by_question.items()):
+        for i, (q_id, question_trials) in enumerate(samples_to_process):
             try:
                 if config.VERBOSE:
                     print(f"Processing question {i+1}/{total_questions}: ID {q_id}")
@@ -102,7 +114,8 @@ def run(model, processor, config):
                         "predicted_choice": nr_result['predicted_choice'],
                         "correct_choice": nr_result['correct_choice'],
                         "is_correct": nr_result['is_correct'],
-                        "final_prompt_messages": zero_percentile_prompt # Add the constructed prompt
+                        "final_prompt_messages": zero_percentile_prompt,
+                        "final_answer_raw": nr_result.get('final_answer_raw', '')
                     }
                     f.write(json.dumps(zero_percentile_result) + "\n")
                 else:
@@ -124,6 +137,7 @@ def run(model, processor, config):
                 for percentile in range(5, 101, 5):
                     target_len = int((percentile / 100) * max_len)
                     
+                    # 1. Run the trial to get the results dictionary.
                     trial_result = run_filler_text_trial(
                         model, processor, 
                         sample_info['question'], 
@@ -131,13 +145,27 @@ def run(model, processor, config):
                         sample_info['audio_path'],
                         target_len
                     )
-
+                    
+                    # 2. Add metadata to the dictionary you just received.
                     trial_result['id'] = q_id
                     trial_result['percentile'] = percentile
                     trial_result['correct_choice'] = sample_info['correct_choice']
                     trial_result['is_correct'] = (trial_result['predicted_choice'] == sample_info['correct_choice'])
                     
-                    f.write(json.dumps(trial_result) + "\n")
+                    # 3. Reorder the dictionary keys for readability before writing.
+                    final_ordered_result = {
+                        "id": trial_result['id'],
+                        "percentile": trial_result['percentile'],
+                        "target_token_length": trial_result['target_token_length'],
+                        "predicted_choice": trial_result['predicted_choice'],
+                        "correct_choice": trial_result['correct_choice'],
+                        "is_correct": trial_result['is_correct'],
+                        "final_prompt_messages": trial_result['final_prompt_messages'],
+                        "final_answer_raw": trial_result['final_answer_raw']
+                    }
+                    # --- END OF BUG FIX ---
+                    
+                    f.write(json.dumps(final_ordered_result) + "\n")
 
             except Exception as e:
                 skipped_questions_count += 1
@@ -150,4 +178,7 @@ def run(model, processor, config):
                 continue
 
     print("\n--- Percentile filler text experiment complete. ---")
+    print(f"Total unique questions processed: {len(samples_to_process)}")
+    print(f"Skipped questions due to errors: {skipped_questions_count}")
+    print(f"Results saved to: {config.OUTPUT_PATH}")
     
