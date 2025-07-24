@@ -4,7 +4,7 @@ import os
 import json
 import collections
 import nltk
-from core.lalm_utils import run_inference, parse_answer
+from core.lalm_utils import run_inference, run_text_only_inference, parse_answer
 
 EXPERIMENT_TYPE = "dependent"
 
@@ -25,12 +25,9 @@ def get_paraphrased_text(model, processor, text_to_paraphrase: str) -> str:
     prompt = f"Please rewrite the following text, conveying exactly the same information but using different wording. Text: \"{text_to_paraphrase}\""
     messages = [{"role": "user", "content": prompt}]
     
-    # We create a dummy audio path for this text-only inference call.
-    # This is a pragmatic way to reuse our run_inference function.
-    dummy_audio_path = "" 
-
-    paraphrased_text = run_inference(
-        model, processor, messages, dummy_audio_path, max_new_tokens=768, do_sample=True, temperature=0.7
+    # Call the new, specialized function that does not require an audio path, is text only.
+    paraphrased_text = run_text_only_inference(
+        model, processor, messages, max_new_tokens=768, do_sample=True, temperature=0.7
     )
     return paraphrased_text
 
