@@ -90,6 +90,33 @@ def run_inference(model, processor, messages: list, audio_path: str, max_new_tok
     return response
 
 
+def run_text_only_inference(model, processor, messages: list, max_new_tokens: int, temperature: float = 0.7, top_p: float = 0.9, do_sample: bool = True):
+    """
+    Runs inference on the model for a text-only task (no audio input).
+    This is a specialized function for tasks like paraphrasing.
+    """
+    # This workflow is simpler: no audio processing, no multi-modal message construction.
+    text = processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+    
+    # The processor call only includes text.
+    inputs = processor(text=text, return_tensors="pt", padding=True)
+
+    device = model.device
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+    
+    if do_sample:
+        generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": True, "temperature": temperature, "top_p": top_p}
+    else:
+        generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": False}
+
+    with torch.no_grad():
+        generate_ids = model.generate(**inputs, **generation_kwargs)
+        generate_ids = generate_ids[:, inputs['input_ids'].size(1):]
+        response = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+    
+    return response
+
+
 def parse_answer(text: str) -> str | None:
     """
     A universal, robust parser for all experiments. It checks for answer

@@ -5,6 +5,10 @@ import json
 import collections
 from core.lalm_utils import run_inference, parse_answer
 
+
+# TODO: Have tonuse the filler text utils from the core folder
+
+
 EXPERIMENT_TYPE = "dependent"
 
 def run_filler_text_trial(model, processor, question: str, choices: str, audio_path: str, target_token_length: int) -> dict:
