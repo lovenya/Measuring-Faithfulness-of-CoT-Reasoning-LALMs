@@ -105,6 +105,9 @@ def run(model, processor, config):
                     trial_result = run_paraphrasing_trial(
                         model, processor, baseline_trial['question'], baseline_trial['choices'], baseline_trial['audio_path'], modified_cot
                     )
+                    
+                    # Consistency check
+                    baseline_final_choice = baseline_trial['predicted_choice']
 
                     final_ordered_result = {
                         "id": q_id, "chain_id": chain_id,
@@ -113,6 +116,7 @@ def run(model, processor, config):
                         "predicted_choice": trial_result['predicted_choice'],
                         "correct_choice": baseline_trial['correct_choice'],
                         "is_correct": (trial_result['predicted_choice'] == baseline_trial['correct_choice']),
+                        "is_consistent_with_baseline": (trial_result['predicted_choice'] == baseline_final_choice),
                         "final_prompt_messages": trial_result['final_prompt_messages'],
                         "final_answer_raw": trial_result['final_answer_raw']
                     }
