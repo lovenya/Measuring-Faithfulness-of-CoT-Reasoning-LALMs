@@ -5,12 +5,30 @@ import sys
 import os
 import importlib
 
+import nltk
+
 # Add the project root to the Python path for robust imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import config
 from core.lalm_utils import load_model_and_tokenizer
 from data_loader.data_loader import load_dataset
+
+# This block runs once when the program starts, ensuring NLTK is
+# configured correctly for all subsequent experiment scripts.
+local_nltk_data_path = os.path.join(os.getcwd(), 'nltk_data')
+if os.path.exists(local_nltk_data_path):
+    nltk.data.path.append(local_nltk_data_path)
+    # Optional: A check to ensure the specific package we need is present.
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        print(f"FATAL: NLTK 'punkt' model not found in '{local_nltk_data_path}'.")
+        exit(1)
+else:
+    print(f"FATAL: NLTK data directory not found at '{local_nltk_data_path}'.")
+    exit(1)
+
 
 # ==============================================================================
 #  Dataset Alias Mapping
