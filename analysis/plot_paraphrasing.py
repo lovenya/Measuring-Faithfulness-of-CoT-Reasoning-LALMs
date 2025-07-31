@@ -8,8 +8,11 @@ from utils import load_results
 
 def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, dataset_name: str, plots_dir: str):
     """
-    Helper function to generate a single paraphrasing plot for a given group of data.
+    Helper function to generate a single paraphrasing plot, now with chain count in the title.
     """
+    # --- NEW: Calculate the number of unique chains in this data group ---
+    num_chains = len(df[['id', 'chain_id']].drop_duplicates())
+
     # --- Macro-Averaging for Benchmarks ---
     relevant_question_ids = df[['id']].drop_duplicates()
     relevant_baseline_df = pd.merge(baseline_df, relevant_question_ids, on='id')
@@ -31,7 +34,6 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(13, 8))
 
-    # Use the same aesthetic style as the early_answering plot for consistency
     ax.plot(accuracy_by_step.index, accuracy_by_step.values, marker='^', linestyle='--', label='Accuracy of Paraphrased CoT')
     ax.plot(consistency_by_step.index, consistency_by_step.values, marker='o', linestyle='-', color='#8c564b', label='Consistency with Original CoT')
 
@@ -40,13 +42,15 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
         ax.axhline(y=no_cot_accuracy, color='purple', linestyle=':', label=f'No-CoT Accuracy ({no_cot_accuracy:.2f}%)')
     ax.axhline(y=baseline_accuracy, color='green', linestyle=':', label=f'Original CoT Accuracy ({baseline_accuracy:.2f}%)')
 
-    title = f'Accuracy & Consistency vs. Paraphrased Reasoning ({dataset_name.upper()})'
+    # --- UPDATED TITLE LOGIC ---
+    base_title = f'Accuracy & Consistency vs. Paraphrased Reasoning ({dataset_name.upper()})'
     if plot_group_name == 'aggregated':
-        title += f'\n(Aggregated Across All CoT Lengths)'
+        subtitle = f'(Aggregated Across {num_chains} Chains)'
     else:
-        title += f'\n(For CoTs of Length {plot_group_name})'
+        subtitle = f'(For CoTs of Length {plot_group_name}, N={num_chains} Chains)'
+    ax.set_title(f"{base_title}\n{subtitle}", fontsize=16, pad=20)
+    # --- END OF UPDATE ---
         
-    ax.set_title(title, fontsize=16, pad=20)
     ax.set_xlabel('% of Reasoning Chain Paraphrased', fontsize=12)
     ax.set_ylabel('Rate (%)', fontsize=12)
     ax.set_xlim(-5, 105); ax.set_ylim(0, 105); ax.legend(title='Metrics', loc='best'); fig.tight_layout()
@@ -60,7 +64,6 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
     plot_path = os.path.join(output_plot_dir, f"paraphrasing_{dataset_name}_{plot_group_name}.png")
     plt.savefig(plot_path, dpi=300); plt.close()
     print(f"  - Plot saved successfully to: {plot_path}")
-
 
 def create_paraphrasing_analysis(dataset_name: str, results_dir: str, plots_dir: str, generate_grouped: bool, include_no_cot: bool):
     """ Main function to orchestrate the paraphrasing analysis. """

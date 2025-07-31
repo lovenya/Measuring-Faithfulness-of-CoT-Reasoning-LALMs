@@ -8,44 +8,36 @@ from utils import load_results
 
 def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, dataset_name: str, plots_dir: str):
     """
-    Helper function to generate a single, correctly binned and averaged plot.
+    Helper function to generate a single, correctly binned and averaged plot with the chain count in the title.
     """
+    # --- NEW: Calculate the number of unique chains in this data group ---
+    num_chains = len(df[['id', 'chain_id']].drop_duplicates())
+
     # --- Macro-Averaging for Benchmarks ---
     relevant_question_ids = df[['id']].drop_duplicates()
     relevant_baseline_df = pd.merge(baseline_df, relevant_question_ids, on='id')
     relevant_no_reasoning_df = pd.merge(no_reasoning_df, relevant_question_ids, on='id')
-    
     baseline_accuracy = relevant_baseline_df.groupby('id')['is_correct'].mean().mean() * 100
     no_reasoning_accuracy = relevant_no_reasoning_df.groupby('id')['is_correct'].mean().mean() * 100
     
-    # Calculate no_cot accuracy if data is provided
     no_cot_accuracy = None
     if no_cot_df is not None:
         relevant_no_cot_df = pd.merge(no_cot_df, relevant_question_ids, on='id')
         if not relevant_no_cot_df.empty:
             no_cot_accuracy = relevant_no_cot_df.groupby('id')['is_correct'].mean().mean() * 100
 
-    # BINNING AND AVERAGING
-    # 1. Create clean, common bins for the x-axis (e.g., 0, 5, 10, ...)
+    # --- Binning and Averaging ---
     df['percent_binned'] = (df['percent_reasoning_provided'] / 5).round() * 5
-    
-    # 2. Group by the binned percentages and then calculate the mean for each bin.
     accuracy_by_step = df.groupby('percent_binned')['is_correct'].mean() * 100
     consistency_by_step = df.groupby('percent_binned')['is_consistent_with_baseline'].mean() * 100
-    # 
 
-    
-    # --- Plotting with New Aesthetics ---
+    # --- Plotting ---
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(13, 8))
 
-    # Accuracy: Solid line with triangles
-    ax.plot(accuracy_by_step.index, accuracy_by_step.values, 
-            marker='o', linestyle='--', label='Accuracy at Step')
-            
-    # Consistency: Dashed line with circles, using a subtle brown color
-    ax.plot(consistency_by_step.index, consistency_by_step.values, 
-            marker='^', linestyle='-', color='#8c564b', label='Consistency with Final Answer')
+    # Use the standard aesthetic style
+    ax.plot(accuracy_by_step.index, accuracy_by_step.values, marker='^', linestyle='--', label='Accuracy at Step')
+    ax.plot(consistency_by_step.index, consistency_by_step.values, marker='o', linestyle='-', color='#8c564b', label='Consistency with Final Answer')
 
     # Benchmark lines
     ax.axhline(y=no_reasoning_accuracy, color='red', linestyle=':', label=f'No-Reasoning Accuracy ({no_reasoning_accuracy:.2f}%)')
@@ -53,14 +45,15 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
         ax.axhline(y=no_cot_accuracy, color='purple', linestyle=':', label=f'No-CoT (Freeflow) Accuracy ({no_cot_accuracy:.2f}%)')
     ax.axhline(y=baseline_accuracy, color='green', linestyle=':', label=f'Final CoT Accuracy ({baseline_accuracy:.2f}%)')
 
-    # --- Formatting ---
-    title = f'Accuracy & Consistency vs. Reasoning Progression ({dataset_name.upper()})'
+    # --- UPDATED: DYNAMIC TITLE WITH CHAIN COUNT ---
+    base_title = f'Accuracy & Consistency vs. Reasoning Progression ({dataset_name.upper()})'
     if plot_group_name == 'aggregated':
-        title += f'\n(Aggregated Across All CoT Lengths)'
+        subtitle = f'(Aggregated Across {num_chains} Chains)'
     else:
-        title += f'\n(For CoTs of Length {plot_group_name})'
+        subtitle = f'(For CoTs of Length {plot_group_name}, N={num_chains} Chains)'
+    ax.set_title(f"{base_title}\n{subtitle}", fontsize=16, pad=20)
+    # --- END OF UPDATE ---
         
-    ax.set_title(title, fontsize=16, pad=20)
     ax.set_xlabel('% of Reasoning Chain Provided', fontsize=12)
     ax.set_ylabel('Rate (%)', fontsize=12)
     ax.set_xlim(-5, 105)
@@ -78,7 +71,7 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
     plt.savefig(plot_path, dpi=300)
     plt.close()
     print(f"  - Plot saved successfully to: {plot_path}")
-
+    
 
 def create_early_answering_analysis(dataset_name: str, results_dir: str, plots_dir: str, generate_grouped: bool, include_no_cot: bool):
     """ Main function to orchestrate the early answering analysis. """
