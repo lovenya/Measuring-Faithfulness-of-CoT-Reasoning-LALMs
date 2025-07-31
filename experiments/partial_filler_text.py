@@ -4,6 +4,7 @@ import os
 import json
 import collections
 import nltk
+from core.filler_text_utils import create_word_level_masked_cot, run_filler_trial
 from core.lalm_utils import run_inference, parse_answer
 
 # This experiment depends on the output of a foundational run.
@@ -43,7 +44,7 @@ def run_partial_filler_trial(model, processor, question: str, choices: str, audi
 
 def run(model, processor, config):
     """
-    Orchestrates the partial filler text experiment, adhering to the new SOP.
+    Orchestrates the WORD-LEVEL partial filler text experiment (corruption from start).
     """
     # 1. Load dependent data
     baseline_results_path = os.path.join(config.RESULTS_DIR, "baseline", f"baseline_{config.DATASET_NAME}.jsonl")
@@ -52,78 +53,56 @@ def run(model, processor, config):
         return
 
     print(f"Reading and grouping baseline data from '{baseline_results_path}'...")
-    all_baseline_trials = []
-    with open(baseline_results_path, 'r') as f:
-        for line in f:
-            all_baseline_trials.append(json.loads(line))
+    all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
             
-    # Handle --num-samples by filtering to the first N unique questions
     if config.NUM_SAMPLES_TO_RUN > 0:
         trials_by_question = collections.defaultdict(list)
         for trial in all_baseline_trials:
             trials_by_question[trial['id']].append(trial)
-        
         unique_question_ids = list(trials_by_question.keys())[:config.NUM_SAMPLES_TO_RUN]
         samples_to_process = [trial for q_id in unique_question_ids for trial in trials_by_question[q_id]]
     else:
         samples_to_process = all_baseline_trials
 
     # 2. Run the experiment
-    print(f"\n--- Running Partial Filler Text Experiment: Saving to {config.OUTPUT_PATH} ---")
+    print(f"\n--- Running WORD-LEVEL Partial Filler (Start) Experiment: Saving to {config.OUTPUT_PATH} ---")
     print(f"Processing {len(samples_to_process)} total trials.")
     
     skipped_trials_count = 0
     with open(config.OUTPUT_PATH, 'w') as f:
         for i, baseline_trial in enumerate(samples_to_process):
             try:
-                q_id = baseline_trial['id']
-                chain_id = baseline_trial['chain_id']
+                q_id, chain_id = baseline_trial['id'], baseline_trial['chain_id']
                 if config.VERBOSE:
                     print(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
 
+                # Directly use the pre-sanitized CoT from the baseline file.
                 sanitized_cot = baseline_trial['sanitized_cot']
-                sentences = nltk.sent_tokenize(sanitized_cot)
-                total_sentences = len(sentences)
                 
-                if total_sentences == 0:
-                    if config.VERBOSE:
-                        print(f"  - INFO: CoT for trial {q_id}/{chain_id} is empty. Skipping.")
-                    continue
-
-                for percentile in range(0, 101, 10):
-                    num_sentences_to_replace = int((percentile / 100) * total_sentences)
-                    part_to_replace = " ".join(sentences[:num_sentences_to_replace])
-                    remaining_part = " ".join(sentences[num_sentences_to_replace:])
+                # Loop through percentiles with a finer granularity
+                for percentile in range(0, 101, 5):
                     
-                    target_token_length = len(processor.tokenizer.encode(part_to_replace, add_special_tokens=False))
-                    filler_text = ""
-                    if target_token_length > 0:
-                        filler_unit = "... "
-                        filler_text = filler_unit * int(target_token_length / 1.5)
-                        while len(processor.tokenizer.encode(filler_text, add_special_tokens=False)) < target_token_length:
-                            filler_text += filler_unit
-                        filler_text_tokens = processor.tokenizer.encode(filler_text, add_special_tokens=False)[:target_token_length]
-                        filler_text = processor.tokenizer.decode(filler_text_tokens, skip_special_tokens=True)
-
-                    modified_cot = (filler_text + " " + remaining_part).strip()
-
-                    trial_result = run_partial_filler_trial(
-                        model, processor, baseline_trial['question'], baseline_trial['choices'], baseline_trial['audio_path'], modified_cot
+                    # --- THE NEW, SIMPLIFIED LOGIC ---
+                    # Call the centralized utility to perform word-level masking from the start.
+                    modified_cot = create_word_level_masked_cot(sanitized_cot, percentile, mode='start')
+                    
+                    # Run the trial with the newly modified CoT
+                    trial_result = run_filler_trial(
+                        model, processor, 
+                        baseline_trial['question'], 
+                        baseline_trial['choices'], 
+                        baseline_trial['audio_path'], 
+                        modified_cot
                     )
 
-                    trial_result['id'] = q_id
-                    trial_result['chain_id'] = chain_id
-                    trial_result['percent_replaced'] = percentile
-                    trial_result['correct_choice'] = baseline_trial['correct_choice']
-                    trial_result['is_correct'] = (trial_result['predicted_choice'] == baseline_trial['correct_choice'])
-                    
+                    # Add metadata and save according to our SOP
                     final_ordered_result = {
-                        "id": trial_result['id'],
-                        "chain_id": trial_result['chain_id'],
-                        "percent_replaced": trial_result['percent_replaced'],
+                        "id": q_id,
+                        "chain_id": chain_id,
+                        "percent_replaced": percentile,
                         "predicted_choice": trial_result['predicted_choice'],
-                        "correct_choice": trial_result['correct_choice'],
-                        "is_correct": trial_result['is_correct'],
+                        "correct_choice": baseline_trial['correct_choice'],
+                        "is_correct": (trial_result['predicted_choice'] == baseline_trial['correct_choice']),
                         "final_prompt_messages": trial_result['final_prompt_messages'],
                         "final_answer_raw": trial_result['final_answer_raw']
                     }
@@ -140,7 +119,7 @@ def run(model, processor, config):
                 continue
 
     # Final summary
-    print("\n--- Partial Filler Text experiment complete. ---")
+    print("\n--- WORD-LEVEL Partial Filler (Start) experiment complete. ---")
     print(f"Total trials processed: {len(samples_to_process)}")
     print(f"Skipped trials due to errors: {skipped_trials_count}")
     print(f"Results saved to: {config.OUTPUT_PATH}")

@@ -3,6 +3,43 @@
 import random
 from core.lalm_utils import run_inference, parse_answer
 
+
+def create_word_level_masked_cot(cot_text: str, percentile: int, mode: str) -> str:
+    """
+    Creates a modified CoT by replacing a percentage of WORDS with filler text.
+
+    Args:
+        cot_text (str): The sanitized Chain-of-Thought.
+        percentile (int): The percentage of words to replace (0-100).
+        mode (str): The method of replacement ('start', 'end', or 'random').
+
+    Returns:
+        str: The CoT with words replaced by '...'.
+    """
+    words = cot_text.split()
+    total_words = len(words)
+    if total_words == 0:
+        return ""
+
+    num_to_replace = int((percentile / 100) * total_words)
+
+    if mode == 'start':
+        # Replace the first N words
+        new_words = ["..."] * num_to_replace + words[num_to_replace:]
+    elif mode == 'end':
+        # Replace the last N words
+        new_words = words[:-num_to_replace] + ["..."] * num_to_replace if num_to_replace > 0 else words
+    elif mode == 'random':
+        # Replace a random sample of N words
+        indices_to_replace = set(random.sample(range(total_words), num_to_replace))
+        new_words = [word if i not in indices_to_replace else "..." for i, word in enumerate(words)]
+    else:
+        # Should not happen, but good practice to handle
+        return cot_text
+
+    return " ".join(new_words)
+
+
 def create_word_level_masked_cot(cot_text: str, percentile: int, mode: str) -> str:
     """
     Creates a modified CoT by replacing a percentage of WORDS with filler text.
