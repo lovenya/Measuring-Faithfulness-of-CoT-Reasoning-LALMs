@@ -81,8 +81,8 @@ def run(model, processor, config):
                 if config.VERBOSE:
                     print(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
 
-                original_cot = baseline_trial['generated_cot']
-                sentences = nltk.sent_tokenize(original_cot)
+                sanitized_cot = baseline_trial['sanitized_cot']
+                sentences = nltk.sent_tokenize(sanitized_cot)
                 total_sentences = len(sentences)
                 
                 if total_sentences == 0:

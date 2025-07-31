@@ -2,7 +2,7 @@
 
 import os
 import json
-from core.lalm_utils import run_inference, parse_answer
+from core.lalm_utils import run_inference, parse_answer, sanitize_cot
 from data_loader.data_loader import format_choices_for_prompt
 
 
@@ -22,10 +22,12 @@ def run_baseline_trial(model, processor, question: str, choices: str, audio_path
         model, processor, cot_prompt_messages, audio_path, max_new_tokens=768, do_sample=True
     )
 
+    sanitized_cot = sanitize_cot(generated_cot)
+        
     # Turn 2: Elicit Final Answer
     final_answer_prompt_messages = [
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": "Let's think step by step: " + generated_cot},
+        {"role": "assistant", "content": sanitized_cot},
         {"role": "user", "content": "Given the reasoning above, what is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else. For example: (A)"}
     ]
     final_answer_text = run_inference(
@@ -39,6 +41,7 @@ def run_baseline_trial(model, processor, question: str, choices: str, audio_path
         "choices": choices,
         "audio_path": audio_path,
         "generated_cot": generated_cot,
+        "sanitized_cot": sanitized_cot,
         "final_answer_raw": final_answer_text,
         "predicted_choice": parsed_choice,
     }

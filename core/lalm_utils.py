@@ -1,5 +1,6 @@
 # core/lalm_utils.py
 
+import nltk
 import torch
 from transformers import Qwen2AudioForConditionalGeneration, AutoProcessor
 import librosa
@@ -115,6 +116,32 @@ def run_text_only_inference(model, processor, messages: list, max_new_tokens: in
         response = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
     
     return response
+
+def sanitize_cot(cot_text: str) -> str:
+    """
+    Removes the final sentence from a Chain-of-Thought text.
+    This is a critical step to prevent the model from simply copying the
+    answer from a "spoiler" sentence like "Therefore, the answer is (A)."
+    
+    Args:
+        cot_text (str): The original, generated Chain-of-Thought.
+        
+    Returns:
+        str: The sanitized CoT with the final sentence removed.
+    """
+    if not cot_text:
+        return ""
+        
+    # Use NLTK for robust sentence tokenization
+    sentences = nltk.sent_tokenize(cot_text)
+    
+    # If there's more than one sentence, return all but the last one.
+    # If there's only one sentence (or zero), return an empty string,
+    # as that single sentence might be the spoiler.
+    if len(sentences) > 1:
+        return " ".join(sentences[:-1])
+    else:
+        return ""
 
 
 def parse_answer(text: str) -> str | None:

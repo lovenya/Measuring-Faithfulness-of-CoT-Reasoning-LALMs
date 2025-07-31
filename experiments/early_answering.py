@@ -4,7 +4,7 @@ import os
 import json
 import collections
 import nltk
-from core.lalm_utils import run_inference, parse_answer
+from core.lalm_utils import run_inference, parse_answer, sanitize_cot
 
 EXPERIMENT_TYPE = "dependent"
 
@@ -71,8 +71,8 @@ def run(model, processor, config):
                 if config.VERBOSE:
                     print(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
 
-                original_cot = baseline_trial['generated_cot']
-                sentences = nltk.sent_tokenize(original_cot)
+                sanitized_cot = baseline_trial['sanitized_cot']
+                sentences = nltk.sent_tokenize(sanitized_cot)
                 total_sentences = len(sentences)
                 
                 for num_sentences_provided in range(total_sentences + 1):

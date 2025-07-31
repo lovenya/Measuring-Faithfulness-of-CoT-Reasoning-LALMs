@@ -49,8 +49,8 @@ def run(model, processor, config):
                 if config.VERBOSE:
                     print(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
 
-                original_cot = baseline_trial['generated_cot']
-                sentences = nltk.sent_tokenize(original_cot)
+                sanitized_cot = baseline_trial['sanitized_cot']
+                sentences = nltk.sent_tokenize(sanitized_cot)
                 total_sentences = len(sentences)
                 if total_sentences == 0: continue
 
@@ -60,7 +60,7 @@ def run(model, processor, config):
                     # --- FLIPPED LOGIC ---
                     if num_to_replace == 0:
                         part_to_replace = ""
-                        remaining_part = original_cot
+                        remaining_part = sanitized_cot
                     else:
                         # Replace the LAST num_to_replace sentences
                         part_to_replace = " ".join(sentences[-num_to_replace:])
