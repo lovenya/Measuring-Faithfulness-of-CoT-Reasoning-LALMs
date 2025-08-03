@@ -184,7 +184,7 @@ def parse_answer(text: str) -> str | None:
     # Priority 5: If no choice is found, check for a refusal.
     refusal_keywords = [
         "cannot be determined", "none of the choices", "ambiguous",
-        "not enough information", "no definitive answer"
+        "not enough information", "no definitive answer", "not have enough information", "cannot determine"
     ]
     if any(keyword in cleaned_text.lower() for keyword in refusal_keywords):
         return "REFUSAL"
