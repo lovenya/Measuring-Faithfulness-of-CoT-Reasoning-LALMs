@@ -129,7 +129,7 @@ if __name__ == "__main__":
             dataset_names = sorted([f.replace('baseline_', '').replace('.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('.jsonl')])
             print(f"Found datasets: {dataset_names}")
             for dataset in dataset_names:
-                create_paraphrasing_analysis(dataset, args.results_dir, args.plots_dir, args.include_no_cot)
+                create_paraphrasing_analysis(dataset, args.results_dir, args.plots_dir, args.grouped, args.include_no_cot)
         except FileNotFoundError:
             print(f"Could not find baseline directory at {baseline_dir}. Cannot run for 'all' datasets.")
             
