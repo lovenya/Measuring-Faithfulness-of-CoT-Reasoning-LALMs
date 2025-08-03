@@ -55,7 +55,7 @@ def run(model, processor, data_samples, config):
 
     print(f"\n--- Running Baseline LALM Experiment: Saving to {output_path} ---")
     
-    # --- ROBUSTNESS ENHANCEMENT ---
+    
     # Counter for skipped samples
     skipped_samples_count = 0
 
@@ -105,7 +105,6 @@ def run(model, processor, data_samples, config):
                 print("="*60 + "\n")
                 continue # Move to the next sample in the dataset
 
-    # --- END OF ROBUSTNESS ENHANCEMENT ---
 
     print("\n--- Baseline LALM experiment complete. ---")
     

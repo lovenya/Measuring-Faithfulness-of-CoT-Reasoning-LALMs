@@ -12,6 +12,9 @@ NUM_SAMPLES_TO_RUN = 0
 # This can be overridden with the --num-chains flag for testing.
 NUM_CHAINS_PER_QUESTION = 10
 
+# SNR Levels for Noise Robustness Experiment
+SNR_LEVELS_TO_TEST = [20, 10, 5, 0, -5, -10]
+
 # --- Global Variables (Managed by main.py) ---
 # These are placeholders that will be dynamically set by the orchestrator.
 # Do not change them here.
