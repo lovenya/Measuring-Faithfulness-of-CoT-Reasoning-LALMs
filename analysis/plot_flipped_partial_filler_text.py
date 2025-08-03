@@ -7,10 +7,13 @@ import argparse
 from utils import load_results
 
 def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, dataset_name: str, plots_dir: str):
-    """ Helper function to generate a single plot for a given group of data, showing both accuracy and consistency. """
+    """
+    Generates and saves a single plot for a given group of flipped partial filler text data.
+    Correctly applies binning ONLY to the aggregated plot.
+    """
     num_chains = len(df[['id', 'chain_id']].drop_duplicates())
     
-    # Macro-average benchmarks for the relevant subset of questions
+    # --- Context-Aware Benchmark Calculation ---
     relevant_question_ids = df[['id']].drop_duplicates()
     relevant_baseline_df = pd.merge(baseline_df, relevant_question_ids, on='id')
     relevant_no_reasoning_df = pd.merge(no_reasoning_df, relevant_question_ids, on='id')
@@ -22,33 +25,33 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
         if not relevant_no_cot_df.empty:
             no_cot_accuracy = relevant_no_cot_df.groupby('id')['is_correct'].mean().mean() * 100
 
-    # --- UPDATED: Calculate BOTH curves ---
-    accuracy_curve = df.groupby('percent_replaced')['is_correct'].mean() * 100
-    consistency_curve = df.groupby('percent_replaced')['is_consistent_with_baseline'].mean() * 100
+    # --- Curve Generation with Conditional Binning ---
+    if plot_group_name == 'aggregated':
+        df['percent_binned'] = (df['percent_replaced'] / 5).round() * 5
+        accuracy_curve = df.groupby('percent_binned')['is_correct'].mean() * 100
+        consistency_curve = df.groupby('percent_binned')['is_consistent_with_baseline'].mean() * 100
+    else:
+        accuracy_curve = df.groupby('percent_replaced')['is_correct'].mean() * 100
+        consistency_curve = df.groupby('percent_replaced')['is_consistent_with_baseline'].mean() * 100
     
-    # The 0% point for both curves is the baseline accuracy.
-    accuracy_curve[0] = consistency_curve[0] = baseline_accuracy
+    # Correctly define the 0% point for both curves.
+    accuracy_curve[0] = baseline_accuracy
+    consistency_curve[0] = 100.0
     accuracy_curve.sort_index(inplace=True)
     consistency_curve.sort_index(inplace=True)
-    # --- END OF UPDATE ---
 
+    # --- Plotting ---
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(13, 8))
 
-    # --- UPDATED: Plot BOTH curves with standard aesthetics ---
-    ax.plot(accuracy_curve.index, accuracy_curve.values, 
-            marker='^', linestyle='--', label='Accuracy')
-    ax.plot(consistency_curve.index, consistency_curve.values, 
-            marker='o', linestyle='-', color='#8c564b', label='Consistency with Original Answer')
+    ax.plot(accuracy_curve.index, accuracy_curve.values, marker='^', linestyle='--', label='Accuracy')
+    ax.plot(consistency_curve.index, consistency_curve.values, marker='o', linestyle='-', color='#8c564b', label='Consistency with Original Answer')
 
-    # Plot benchmarks
     ax.axhline(y=no_reasoning_accuracy, color='red', linestyle=':', label=f'No-Reasoning Accuracy ({no_reasoning_accuracy:.2f}%)')
     if no_cot_accuracy is not None:
         ax.axhline(y=no_cot_accuracy, color='purple', linestyle=':', label=f'No-CoT Accuracy ({no_cot_accuracy:.2f}%)')
     ax.axhline(y=baseline_accuracy, color='green', linestyle='--', label=f'Original CoT Accuracy ({baseline_accuracy:.2f}%)')
-    # --- END OF UPDATE ---
 
-    # Update title to reflect both metrics
     base_title = f'Accuracy & Consistency vs. CoT Corruption from End ({dataset_name.upper()})'
     if plot_group_name == 'aggregated':
         subtitle = f'(Aggregated Across {num_chains} Chains)'
@@ -60,7 +63,6 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
     ax.set_ylabel('Rate (%)', fontsize=12)
     ax.set_xlim(-5, 105); ax.set_ylim(0, 105); ax.legend(title='Metrics', loc='best'); fig.tight_layout()
 
-    # Saving logic is unchanged
     if plot_group_name == 'aggregated':
         output_plot_dir = os.path.join(plots_dir, 'flipped_partial_filler_text', dataset_name, 'aggregated')
     else:
@@ -85,9 +87,15 @@ def create_analysis(dataset_name: str, results_dir: str, plots_dir: str, generat
         print("  - Skipping plot due to missing one or more required result files.")
         return
 
-    # This logic remains correct
+    # --- Data Preparation ---
+    # Add the 'is_consistent_with_baseline' column by merging with baseline predictions.
+    baseline_predictions = baseline_df[['id', 'chain_id', 'predicted_choice']].rename(columns={'predicted_choice': 'baseline_predicted_choice'})
+    combined_df = pd.merge(partial_df, baseline_predictions, on=['id', 'chain_id'], how='inner')
+    combined_df['is_consistent_with_baseline'] = (combined_df['predicted_choice'] == combined_df['baseline_predicted_choice'])
+
+    # Merge with early_answering data to get total_sentences_in_chain for grouping.
     sentence_counts = early_df[['id', 'chain_id', 'total_sentences_in_chain']].drop_duplicates()
-    combined_df = pd.merge(partial_df, sentence_counts, on=['id', 'chain_id'], how='inner')
+    combined_df = pd.merge(combined_df, sentence_counts, on=['id', 'chain_id'], how='inner')
 
     print("Generating main aggregated plot...")
     plot_single_graph(combined_df, baseline_df, no_reasoning_df, no_cot_df, 'aggregated', dataset_name, plots_dir)
@@ -103,7 +111,6 @@ def create_analysis(dataset_name: str, results_dir: str, plots_dir: str, generat
 
 
 if __name__ == "__main__":
-    # This part remains correct
     parser = argparse.ArgumentParser(description="Generate plots for flipped partial filler text (from end).")
     parser.add_argument('--dataset', type=str, required=True, help="Dataset to analyze ('mmar' or 'all').")
     parser.add_argument('--results_dir', type=str, default='./results')
@@ -113,9 +120,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     if args.dataset == 'all':
-        baseline_dir = os.path.join(args.results_dir, 'baseline')
-        dataset_names = sorted([f.replace('baseline_', '').replace('.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('.jsonl')])
-        for dataset in dataset_names:
-            create_analysis(dataset, args.results_dir, args.plots_dir, args.grouped, args.include_no_cot)
+        try:
+            baseline_dir = os.path.join(args.results_dir, 'baseline')
+            dataset_names = sorted([f.replace('baseline_', '').replace('.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('.jsonl')])
+            for dataset in dataset_names:
+                create_analysis(dataset, args.results_dir, args.plots_dir, args.grouped, args.include_no_cot)
+        except FileNotFoundError:
+            print(f"Could not find baseline directory at {baseline_dir}. Cannot run for 'all' datasets.")
     else:
         create_analysis(args.dataset, args.results_dir, args.plots_dir, args.grouped, args.include_no_cot)

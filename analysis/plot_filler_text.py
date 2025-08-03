@@ -8,12 +8,13 @@ from utils import load_results
 
 def create_filler_text_plot(dataset_name: str, results_dir: str, plots_dir: str, include_no_cot: bool):
     """
-    Analyzes filler text results, generating a plot comparing accuracy against benchmarks.
+    Analyzes filler text results, generating a plot comparing accuracy against
+    context-aware, macro-averaged benchmarks.
     """
     print(f"\n--- Generating Filler Text Analysis for: {dataset_name.upper()} ---")
     
     try:
-        # 1. Load all necessary data using our utility function
+        # Load all necessary result files.
         baseline_df = load_results(results_dir, 'baseline', dataset_name)
         no_reasoning_df = load_results(results_dir, 'no_reasoning', dataset_name)
         filler_df = load_results(results_dir, 'filler_text', dataset_name)
@@ -21,49 +22,54 @@ def create_filler_text_plot(dataset_name: str, results_dir: str, plots_dir: str,
     except FileNotFoundError:
         return
 
-    # 2. Calculate benchmark accuracies using robust MACRO-AVERAGING
-    # This ensures fair comparison by averaging per question first.
-    baseline_accuracy = baseline_df.groupby('id')['is_correct'].mean().mean() * 100
-    no_reasoning_accuracy = no_reasoning_df.groupby('id')['is_correct'].mean().mean() * 100
+    # --- Context-Aware Benchmark Calculation ---
+    # This is a critical step for a fair, "apples-to-apples" comparison.
+    # We identify the unique questions present in the filler_text results,
+    # and then filter all benchmark dataframes to only include those same questions.
+    relevant_question_ids = filler_df[['id']].drop_duplicates()
+    
+    relevant_baseline_df = pd.merge(baseline_df, relevant_question_ids, on='id')
+    relevant_no_reasoning_df = pd.merge(no_reasoning_df, relevant_question_ids, on='id')
+
+    # Calculate benchmark accuracies using robust macro-averaging on the filtered data.
+    baseline_accuracy = relevant_baseline_df.groupby('id')['is_correct'].mean().mean() * 100
+    no_reasoning_accuracy = relevant_no_reasoning_df.groupby('id')['is_correct'].mean().mean() * 100
     
     no_cot_accuracy = None
     if no_cot_df is not None:
-        no_cot_accuracy = no_cot_df.groupby('id')['is_correct'].mean().mean() * 100
+        relevant_no_cot_df = pd.merge(no_cot_df, relevant_question_ids, on='id')
+        if not relevant_no_cot_df.empty:
+            no_cot_accuracy = relevant_no_cot_df.groupby('id')['is_correct'].mean().mean() * 100
 
-    # 3. Calculate the main filler text curve
-    # Note: The 0% percentile data comes from the no_reasoning experiment, so we can use that directly.
-    # We calculate the mean across all trials for each percentile.
+    # --- Curve Generation ---
+    # The main curve is calculated by grouping the filler text results by the
+    # percentage of the CoT that was replaced.
     filler_accuracy_by_percentile = filler_df.groupby('percentile')['is_correct'].mean() * 100
 
-    # 4. Generate the plot
+    # --- Plotting ---
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(13, 8))
 
-    # Plot the main curve
+    # Plot the main "dose-response" curve.
     ax.plot(filler_accuracy_by_percentile.index, filler_accuracy_by_percentile.values, 
             marker='o', linestyle='-', label='Filler Text Accuracy')
 
-    # Plot the benchmark lines
+    # Plot the context-aware benchmark lines.
     ax.axhline(y=no_reasoning_accuracy, color='red', linestyle=':', label=f'No-Reasoning Accuracy ({no_reasoning_accuracy:.2f}%)')
     if no_cot_accuracy is not None:
-        ax.axhline(y=no_cot_accuracy, color='purple', linestyle=':', label=f'No-CoT (Freeflow) Accuracy ({no_cot_accuracy:.2f}%)')
+        ax.axhline(y=no_cot_accuracy, color='purple', linestyle=':', label=f'No-CoT Accuracy ({no_cot_accuracy:.2f}%)')
     ax.axhline(y=baseline_accuracy, color='green', linestyle='--', label=f'Baseline CoT Accuracy ({baseline_accuracy:.2f}%)')
 
-    # 5. Formatting
+    # --- Formatting and Saving ---
     ax.set_title(f'Impact of CoT Content vs. Compute Time ({dataset_name.upper()})', fontsize=16, pad=20)
     ax.set_xlabel('Percentage of CoT Replaced by Filler Text', fontsize=12)
     ax.set_ylabel('Accuracy (%)', fontsize=12)
-    ax.set_xlim(-5, 105)
-    ax.set_ylim(0, 105)
-    ax.legend(title='Conditions', loc='best')
-    fig.tight_layout()
+    ax.set_xlim(-5, 105); ax.set_ylim(0, 105); ax.legend(title='Conditions', loc='best'); fig.tight_layout()
 
-    # 6. Save the figure to the correct, organized directory
     output_plot_dir = os.path.join(plots_dir, 'filler_text', dataset_name)
     os.makedirs(output_plot_dir, exist_ok=True)
     plot_path = os.path.join(output_plot_dir, f"filler_text_{dataset_name}.png")
-    plt.savefig(plot_path, dpi=300)
-    plt.close()
+    plt.savefig(plot_path, dpi=300); plt.close()
     print(f"Plot saved successfully to: {plot_path}")
 
 

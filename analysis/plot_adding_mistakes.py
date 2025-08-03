@@ -8,58 +8,63 @@ from utils import load_results
 
 def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, dataset_name: str, plots_dir: str):
     """
-    Helper function to generate a single 'Adding Mistakes' plot.
-    This version correctly applies binning ONLY to the aggregated plot.
+    Generates and saves a single plot for a given group of 'Adding Mistakes' data.
+    This function correctly filters data and applies binning ONLY to the 'aggregated' plot.
     """
-    # --- Calculate N for the title ---
+    # Calculate the number of unique reasoning chains included in this specific plot.
     num_chains = len(df[['id', 'chain_id']].drop_duplicates())
 
-    # --- Macro-Averaging for Benchmarks ---
-    # (This section is unchanged)
+    # --- Benchmark Calculation ---
+    # To ensure a fair comparison, benchmarks are calculated only on the subset of questions
+    # that are actually present in the current data frame (df).
     relevant_question_ids = df[['id']].drop_duplicates()
     relevant_baseline_df = pd.merge(baseline_df, relevant_question_ids, on='id')
     relevant_no_reasoning_df = pd.merge(no_reasoning_df, relevant_question_ids, on='id')
+    
+    # Use robust macro-averaging (average per question, then average the averages).
     baseline_accuracy = relevant_baseline_df.groupby('id')['is_correct'].mean().mean() * 100
     no_reasoning_accuracy = relevant_no_reasoning_df.groupby('id')['is_correct'].mean().mean() * 100
+    
     no_cot_accuracy = None
     if no_cot_df is not None:
         relevant_no_cot_df = pd.merge(no_cot_df, relevant_question_ids, on='id')
         if not relevant_no_cot_df.empty:
             no_cot_accuracy = relevant_no_cot_df.groupby('id')['is_correct'].mean().mean() * 100
 
-    # --- THE FIX: CONDITIONAL BINNING ---
-    # First, filter the data as we agreed
+    # --- Data Filtering and Curve Generation ---
+    # Methodological Step: Exclude trials where the mistake is in the last 10% of the CoT.
+    # This prevents the creation of a misleading '100%' bin from rounding.
     df_filtered = df[df['percent_before_mistake'] <= 90].copy()
     if df_filtered.empty:
         print(f"  - Skipping plot for '{plot_group_name}' as no data remains after filtering >90%.")
         return
 
+    # Conditionally apply binning based on the plot type.
     if plot_group_name == 'aggregated':
-        # For the aggregated plot, we MUST bin to create a common x-axis.
+        # For the aggregated plot, binning is necessary to create a common x-axis.
         df_filtered['percent_binned'] = (df_filtered['percent_before_mistake'] / 10).round() * 10
         accuracy_curve = df_filtered.groupby('percent_binned')['is_correct'].mean() * 100
         consistency_curve = df_filtered.groupby('percent_binned')['is_consistent_with_baseline'].mean() * 100
     else:
-        # For grouped plots, we use the raw, precise percentages. NO BINNING.
+        # For grouped plots, use the raw, precise percentages to maintain data fidelity.
         accuracy_curve = df_filtered.groupby('percent_before_mistake')['is_correct'].mean() * 100
         consistency_curve = df_filtered.groupby('percent_before_mistake')['is_consistent_with_baseline'].mean() * 100
-    # --- END OF FIX ---
 
     # --- Plotting ---
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(13, 8))
 
-    ax.plot(accuracy_curve.index, accuracy_curve.values, 
-            marker='^', linestyle='--', label='Accuracy After Mistake')
-    ax.plot(consistency_curve.index, consistency_curve.values, 
-            marker='o', linestyle='-', color='#8c564b', label='Consistency with Original Answer')
+    # Plot the two main curves with our standard aesthetic style.
+    ax.plot(accuracy_curve.index, accuracy_curve.values, marker='^', linestyle='--', label='Accuracy After Mistake')
+    ax.plot(consistency_curve.index, consistency_curve.values, marker='o', linestyle='-', color='#8c564b', label='Consistency with Original Answer')
 
-    # (The rest of the plotting code is unchanged)
+    # Plot the horizontal benchmark lines for context.
     ax.axhline(y=no_reasoning_accuracy, color='red', linestyle=':', label=f'No-Reasoning Accuracy ({no_reasoning_accuracy:.2f}%)')
     if no_cot_accuracy is not None:
         ax.axhline(y=no_cot_accuracy, color='purple', linestyle=':', label=f'No-CoT Accuracy ({no_cot_accuracy:.2f}%)')
     ax.axhline(y=baseline_accuracy, color='green', linestyle='--', label=f'Original CoT Accuracy ({baseline_accuracy:.2f}%)')
 
+    # Create a clear, two-line title that includes the chain count.
     base_title = f'Accuracy & Consistency vs. Position of Introduced Mistake ({dataset_name.upper()})'
     if plot_group_name == 'aggregated':
         subtitle = f'(Aggregated Across {num_chains} Chains)'
@@ -67,10 +72,12 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
         subtitle = f'(For CoTs of Length {plot_group_name}, N={num_chains} Chains)'
     ax.set_title(f"{base_title}\n{subtitle}", fontsize=16, pad=20)
         
+    # Set labels and limits for a clean, readable plot.
     ax.set_xlabel('% of Reasoning Chain Before Mistake', fontsize=12)
     ax.set_ylabel('Rate (%)', fontsize=12)
     ax.set_xlim(-5, 95); ax.set_ylim(0, 105); ax.legend(title='Metrics', loc='best'); fig.tight_layout()
 
+    # --- Save Figure to Organized Directory ---
     if plot_group_name == 'aggregated':
         output_plot_dir = os.path.join(plots_dir, 'adding_mistakes', dataset_name, 'aggregated')
     else:
@@ -97,18 +104,20 @@ def create_adding_mistakes_analysis(dataset_name: str, results_dir: str, plots_d
         print("No valid 'Adding Mistakes' data to plot.")
         return
 
+    # Calculate the percentage of the CoT that precedes the introduced mistake.
     mistakes_df['percent_before_mistake'] = ((mistakes_df['mistake_position'] - 1) / mistakes_df['total_sentences_in_chain']) * 100
 
-    # 1. Always generate the main, aggregated plot
+    # Always generate the main, high-level aggregated plot.
     print("Generating main aggregated plot...")
     plot_single_graph(mistakes_df, baseline_df, no_reasoning_df, no_cot_df, 'aggregated', dataset_name, plots_dir)
 
-    # 2. Optionally, generate per-length grouped plots
+    # If requested, generate the more detailed per-length plots.
     if generate_grouped:
         print("\nGenerating per-length grouped plots...")
         grouped_by_total_steps = mistakes_df.groupby('total_sentences_in_chain')
         for total_steps, group_df in grouped_by_total_steps:
-            # Check for a meaningful number of chains to plot
+            # To avoid noisy plots, only generate a grouped plot if there's a sufficient
+            # number of data points (e.g., more than 10 unique chains).
             if len(group_df[['id', 'chain_id']].drop_duplicates()) > 10:
                 plot_single_graph(group_df, baseline_df, no_reasoning_df, no_cot_df, f'{total_steps}_sentences', dataset_name, plots_dir)
             else:
