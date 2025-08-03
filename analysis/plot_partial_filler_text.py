@@ -7,9 +7,10 @@ import argparse
 from utils import load_results
 
 def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, dataset_name: str, plots_dir: str):
-    """ Helper function to generate a single partial filler text plot for a given group of data. """
+    """ Helper function to generate a single plot for a given group of data, showing both accuracy and consistency. """
     num_chains = len(df[['id', 'chain_id']].drop_duplicates())
     
+    # Macro-average benchmarks for the relevant subset of questions
     relevant_question_ids = df[['id']].drop_duplicates()
     relevant_baseline_df = pd.merge(baseline_df, relevant_question_ids, on='id')
     relevant_no_reasoning_df = pd.merge(no_reasoning_df, relevant_question_ids, on='id')
@@ -21,20 +22,34 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
         if not relevant_no_cot_df.empty:
             no_cot_accuracy = relevant_no_cot_df.groupby('id')['is_correct'].mean().mean() * 100
 
+    # --- UPDATED: Calculate BOTH curves ---
     accuracy_curve = df.groupby('percent_replaced')['is_correct'].mean() * 100
-    accuracy_curve[0] = baseline_accuracy
+    consistency_curve = df.groupby('percent_replaced')['is_consistent_with_baseline'].mean() * 100
+    
+    # The 0% point for both curves is the baseline accuracy.
+    accuracy_curve[0] = consistency_curve[0] = baseline_accuracy
     accuracy_curve.sort_index(inplace=True)
+    consistency_curve.sort_index(inplace=True)
+    # --- END OF UPDATE ---
 
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(13, 8))
 
-    ax.plot(accuracy_curve.index, accuracy_curve.values, marker='o', linestyle='-', label='Accuracy with Partial Filler')
+    # --- UPDATED: Plot BOTH curves with standard aesthetics ---
+    ax.plot(accuracy_curve.index, accuracy_curve.values, 
+            marker='^', linestyle='--', label='Accuracy')
+    ax.plot(consistency_curve.index, consistency_curve.values, 
+            marker='o', linestyle='-', color='#8c564b', label='Consistency with Original Answer')
+
+    # Plot benchmarks
     ax.axhline(y=no_reasoning_accuracy, color='red', linestyle=':', label=f'No-Reasoning Accuracy ({no_reasoning_accuracy:.2f}%)')
     if no_cot_accuracy is not None:
         ax.axhline(y=no_cot_accuracy, color='purple', linestyle=':', label=f'No-CoT Accuracy ({no_cot_accuracy:.2f}%)')
     ax.axhline(y=baseline_accuracy, color='green', linestyle='--', label=f'Original CoT Accuracy ({baseline_accuracy:.2f}%)')
+    # --- END OF UPDATE ---
 
-    base_title = f'Accuracy vs. CoT Corruption from Start ({dataset_name.upper()})'
+    # Update title to reflect both metrics
+    base_title = f'Accuracy & Consistency vs. CoT Corruption from Start ({dataset_name.upper()})'
     if plot_group_name == 'aggregated':
         subtitle = f'(Aggregated Across {num_chains} Chains)'
     else:
@@ -42,9 +57,10 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
     ax.set_title(f"{base_title}\n{subtitle}", fontsize=16, pad=20)
         
     ax.set_xlabel('% of Initial Reasoning Replaced by Filler', fontsize=12)
-    ax.set_ylabel('Accuracy (%)', fontsize=12)
-    ax.set_xlim(-5, 105); ax.set_ylim(0, 105); ax.legend(title='Conditions', loc='best'); fig.tight_layout()
+    ax.set_ylabel('Rate (%)', fontsize=12)
+    ax.set_xlim(-5, 105); ax.set_ylim(0, 105); ax.legend(title='Metrics', loc='best'); fig.tight_layout()
 
+    # Saving logic is unchanged
     if plot_group_name == 'aggregated':
         output_plot_dir = os.path.join(plots_dir, 'partial_filler_text', dataset_name, 'aggregated')
     else:
@@ -69,7 +85,7 @@ def create_analysis(dataset_name: str, results_dir: str, plots_dir: str, generat
         print("  - Skipping plot due to missing one or more required result files.")
         return
 
-    # --- Add total_sentences_in_chain to the partial_filler_df for grouping ---
+    # This logic remains correct
     sentence_counts = early_df[['id', 'chain_id', 'total_sentences_in_chain']].drop_duplicates()
     combined_df = pd.merge(partial_df, sentence_counts, on=['id', 'chain_id'], how='inner')
 
@@ -80,7 +96,6 @@ def create_analysis(dataset_name: str, results_dir: str, plots_dir: str, generat
         print("\nGenerating per-length grouped plots...")
         grouped_by_total_steps = combined_df.groupby('total_sentences_in_chain')
         for total_steps, group_df in grouped_by_total_steps:
-            # Check for a meaningful number of chains to plot
             if len(group_df[['id', 'chain_id']].drop_duplicates()) > 10:
                 plot_single_graph(group_df, baseline_df, no_reasoning_df, no_cot_df, f'{total_steps}_sentences', dataset_name, plots_dir)
             else:
@@ -88,6 +103,7 @@ def create_analysis(dataset_name: str, results_dir: str, plots_dir: str, generat
 
 
 if __name__ == "__main__":
+    # This part remains correct
     parser = argparse.ArgumentParser(description="Generate plots for partial filler text (from start).")
     parser.add_argument('--dataset', type=str, required=True, help="Dataset to analyze ('mmar' or 'all').")
     parser.add_argument('--results_dir', type=str, default='./results')
