@@ -8,15 +8,20 @@ from utils import load_results
 
 def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, dataset_name: str, plots_dir: str):
     """
-    Helper function to generate a single, correctly binned and averaged plot with the chain count in the title.
+    Generates and saves a single plot for a given group of early answering data.
+    This function correctly applies data point binning ONLY to the main 'aggregated' plot.
     """
-    # --- NEW: Calculate the number of unique chains in this data group ---
+    # Calculate the number of unique reasoning chains included in this specific plot.
     num_chains = len(df[['id', 'chain_id']].drop_duplicates())
-
-    # --- Macro-Averaging for Benchmarks ---
+    
+    # --- Benchmark Calculation ---
+    # To ensure a fair comparison, benchmarks are calculated only on the subset of questions
+    # that are actually present in the current data frame (df).
     relevant_question_ids = df[['id']].drop_duplicates()
     relevant_baseline_df = pd.merge(baseline_df, relevant_question_ids, on='id')
     relevant_no_reasoning_df = pd.merge(no_reasoning_df, relevant_question_ids, on='id')
+    
+    # Use robust macro-averaging (average per question, then average the averages).
     baseline_accuracy = relevant_baseline_df.groupby('id')['is_correct'].mean().mean() * 100
     no_reasoning_accuracy = relevant_no_reasoning_df.groupby('id')['is_correct'].mean().mean() * 100
     
@@ -26,52 +31,59 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
         if not relevant_no_cot_df.empty:
             no_cot_accuracy = relevant_no_cot_df.groupby('id')['is_correct'].mean().mean() * 100
 
-    # --- Binning and Averaging ---
-    df['percent_binned'] = (df['percent_reasoning_provided'] / 5).round() * 5
-    accuracy_by_step = df.groupby('percent_binned')['is_correct'].mean() * 100
-    consistency_by_step = df.groupby('percent_binned')['is_consistent_with_baseline'].mean() * 100
+    # --- Curve Generation with Conditional Binning ---
+    # This is a critical step for methodological correctness.
+    if plot_group_name == 'aggregated':
+        # For the aggregated plot, which combines CoTs of many different lengths,
+        # we must bin the x-axis values into common buckets (e.g., 5%, 10%)
+        # to create a single, coherent curve.
+        df['percent_binned'] = (df['percent_reasoning_provided'] / 5).round() * 5
+        accuracy_curve = df.groupby('percent_binned')['is_correct'].mean() * 100
+        consistency_curve = df.groupby('percent_binned')['is_consistent_with_baseline'].mean() * 100
+    else:
+        # For grouped plots, which only contain CoTs of a single length (e.g., 4 sentences),
+        # the x-axis points are already precise and consistent (0%, 25%, 50%, etc.).
+        # Binning is unnecessary and would distort the data, so we group by the raw percentages.
+        accuracy_curve = df.groupby('percent_reasoning_provided')['is_correct'].mean() * 100
+        consistency_curve = df.groupby('percent_reasoning_provided')['is_consistent_with_baseline'].mean() * 100
 
     # --- Plotting ---
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(13, 8))
 
-    # Use the standard aesthetic style
-    ax.plot(accuracy_by_step.index, accuracy_by_step.values, marker='^', linestyle='--', label='Accuracy at Step')
-    ax.plot(consistency_by_step.index, consistency_by_step.values, marker='o', linestyle='-', color='#8c564b', label='Consistency with Final Answer')
+    # Plot the two main curves with our standard aesthetic style.
+    ax.plot(accuracy_curve.index, accuracy_curve.values, marker='^', linestyle='--', label='Accuracy at Step')
+    ax.plot(consistency_curve.index, consistency_curve.values, marker='o', linestyle='-', color='#8c564b', label='Consistency with Final Answer')
 
-    # Benchmark lines
+    # Plot the horizontal benchmark lines for context.
     ax.axhline(y=no_reasoning_accuracy, color='red', linestyle=':', label=f'No-Reasoning Accuracy ({no_reasoning_accuracy:.2f}%)')
     if no_cot_accuracy is not None:
-        ax.axhline(y=no_cot_accuracy, color='purple', linestyle=':', label=f'No-CoT (Freeflow) Accuracy ({no_cot_accuracy:.2f}%)')
-    ax.axhline(y=baseline_accuracy, color='green', linestyle=':', label=f'Final CoT Accuracy ({baseline_accuracy:.2f}%)')
+        ax.axhline(y=no_cot_accuracy, color='purple', linestyle=':', label=f'No-CoT Accuracy ({no_cot_accuracy:.2f}%)')
+    ax.axhline(y=baseline_accuracy, color='green', linestyle='--', label=f'Final CoT Accuracy ({baseline_accuracy:.2f}%)')
 
-    # --- UPDATED: DYNAMIC TITLE WITH CHAIN COUNT ---
+    # Create a clear, two-line title that includes the chain count.
     base_title = f'Accuracy & Consistency vs. Reasoning Progression ({dataset_name.upper()})'
     if plot_group_name == 'aggregated':
         subtitle = f'(Aggregated Across {num_chains} Chains)'
     else:
         subtitle = f'(For CoTs of Length {plot_group_name}, N={num_chains} Chains)'
     ax.set_title(f"{base_title}\n{subtitle}", fontsize=16, pad=20)
-    # --- END OF UPDATE ---
         
+    # Set labels and limits for a clean, readable plot.
     ax.set_xlabel('% of Reasoning Chain Provided', fontsize=12)
     ax.set_ylabel('Rate (%)', fontsize=12)
-    ax.set_xlim(-5, 105)
-    ax.set_ylim(0, 105)
-    ax.legend(title='Metrics', loc='best')
-    fig.tight_layout()
+    ax.set_xlim(-5, 105); ax.set_ylim(0, 105); ax.legend(title='Metrics', loc='best'); fig.tight_layout()
 
-    # --- Save Figure ---
+    # --- Save Figure to Organized Directory ---
     if plot_group_name == 'aggregated':
         output_plot_dir = os.path.join(plots_dir, 'early_answering', dataset_name, 'aggregated')
     else:
         output_plot_dir = os.path.join(plots_dir, 'early_answering', dataset_name, 'grouped')
     os.makedirs(output_plot_dir, exist_ok=True)
     plot_path = os.path.join(output_plot_dir, f"early_answering_{dataset_name}_{plot_group_name}.png")
-    plt.savefig(plot_path, dpi=300)
-    plt.close()
+    plt.savefig(plot_path, dpi=300); plt.close()
     print(f"  - Plot saved successfully to: {plot_path}")
-    
+
 
 def create_early_answering_analysis(dataset_name: str, results_dir: str, plots_dir: str, generate_grouped: bool, include_no_cot: bool):
     """ Main function to orchestrate the early answering analysis. """
@@ -85,21 +97,27 @@ def create_early_answering_analysis(dataset_name: str, results_dir: str, plots_d
     except FileNotFoundError:
         return
 
+    # Filter out any trials where the sanitized CoT was empty.
     early_df = early_df[early_df['total_sentences_in_chain'] > 0].copy()
     if early_df.empty:
-        print("No valid early answering data to plot.")
+        print("No valid early answering data to plot (all CoTs might have been empty).")
         return
 
+    # Calculate the percentage of the CoT provided at each step. This is our primary x-axis variable.
     early_df['percent_reasoning_provided'] = (early_df['num_sentences_provided'] / early_df['total_sentences_in_chain']) * 100
 
+    # Always generate the main, high-level aggregated plot.
     print("Generating main aggregated plot...")
     plot_single_graph(early_df, baseline_df, no_reasoning_df, no_cot_df, 'aggregated', dataset_name, plots_dir)
 
+    # If requested, generate the more detailed per-length plots.
     if generate_grouped:
         print("\nGenerating per-length grouped plots...")
         grouped_by_total_steps = early_df.groupby('total_sentences_in_chain')
         for total_steps, group_df in grouped_by_total_steps:
-            if len(group_df['chain_id'].unique()) * len(group_df['id'].unique()) > 10:
+            # To avoid noisy plots, only generate a grouped plot if there's a sufficient
+            # number of data points (e.g., more than 10 unique chains).
+            if len(group_df[['id', 'chain_id']].drop_duplicates()) > 10:
                 plot_single_graph(group_df, baseline_df, no_reasoning_df, no_cot_df, f'{total_steps}_sentences', dataset_name, plots_dir)
             else:
                 print(f"  - Skipping plot for CoTs of length {total_steps} due to insufficient data.")
