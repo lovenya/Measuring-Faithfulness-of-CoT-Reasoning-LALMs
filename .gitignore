@@ -10,6 +10,16 @@ data/sakura/gender/audio/
 data/sakura/gender/hf_cache/
 data/sakura/language/audio/
 data/sakura/language/hf_cache/
+data/mmar_noisy/audio/
+data/mmar_noisy/hf_cache/
+data/sakura_noisy/animal/audio/
+data/sakura_noisy/animal/hf_cache/
+data/sakura_noisy/emotion/audio/
+data/sakura_noisy/emotion/hf_cache/
+data/sakura_noisy/gender/audio/
+data/sakura_noisy/gender/hf_cache/
+data/sakura_noisy/language/audio/
+data/sakura_noisy/language/hf_cache/
 *.pyc
 __pycache__/
 */__pycache__/
