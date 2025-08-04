@@ -34,21 +34,7 @@ else:
 #  Dataset Alias Mapping
 # ==============================================================================
 
-DATASET_MAPPING = {
-    # --- Original Clean Datasets ---
-    "mmar": "data/mmar/mmar_test_standardized.jsonl",
-    "sakura-animal": "data/sakura/animal/sakura_animal_test_standardized.jsonl",
-    "sakura-emotion": "data/sakura/emotion/sakura_emotion_standardized.jsonl",
-    "sakura-gender": "data/sakura/gender/sakura_gender_standardized.jsonl",
-    "sakura-language": "data/sakura/language/sakura_language_standardized.jsonl",
 
-    # --- NEW: Noisy Datasets ---
-    "mmar-noisy": "data/mmar_noisy/mmar_noisy_standardized.jsonl",
-    "sakura-animal-noisy": "data/sakura_noisy/animal/animal_noisy_standardized.jsonl",
-    "sakura-emotion-noisy": "data/sakura_noisy/emotion/emotion_noisy_standardized.jsonl",
-    "sakura-gender-noisy": "data/sakura_noisy/gender/gender_noisy_standardized.jsonl",
-    "sakura-language-noisy": "data/sakura_noisy/language/language_noisy_standardized.jsonl",
-}
 
 def main():
     parser = argparse.ArgumentParser(
@@ -56,7 +42,7 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument("--experiment", type=str, required=True, help="The name of the experiment module to run (e.g., 'baseline').")
-    parser.add_argument("--dataset", type=str, required=True, choices=DATASET_MAPPING.keys(), help="The short name of the dataset to use.")
+    parser.add_argument("--dataset", type=str, required=True, choices=config.DATASET_MAPPING.keys(), help="The short name of the dataset to use.")
     parser.add_argument("--baseline-results-file", type=str, default=None, help="(For dependent experiments) Path to a specific baseline results file to use as input.")
     parser.add_argument("--num-samples", type=int, default=None)
     parser.add_argument("--num-chains", type=int, default=None)
@@ -71,9 +57,10 @@ def main():
         config.NUM_CHAINS_PER_QUESTION = args.num_chains
     
     config.DATASET_NAME = args.dataset
-    
     config.VERBOSE = args.verbose
 
+    config.DATASET_MAPPING = config.DATASET_MAPPING
+    
     # Centralized Output Path Management
     # The orchestrator is now responsible for defining the output path.
     # This creates the desired structure: results/{experiment_name}/{experiment_name}_{dataset_name}.jsonl
@@ -113,7 +100,7 @@ def main():
     # --- 4. Execute based on Experiment Type ---
     if EXPERIMENT_TYPE == "foundational":
         print("\nRunning a FOUNDATIONAL experiment...")
-        dataset_path = DATASET_MAPPING[args.dataset]
+        dataset_path = config.DATASET_MAPPING[args.dataset]
         try:
             data_samples = load_dataset(dataset_path)
             if config.NUM_SAMPLES_TO_RUN > 0:
