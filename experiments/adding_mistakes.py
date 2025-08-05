@@ -4,7 +4,7 @@ import os
 import json
 import collections
 import nltk
-from core.lalm_utils import run_inference, run_text_only_inference, parse_answer
+from core.lalm_utils import run_inference, run_text_only_inference, parse_answer, sanitize_cot
 
 EXPERIMENT_TYPE = "dependent"
 
@@ -128,8 +128,10 @@ def run(model, processor, config):
                     
                     fully_corrupted_cot = (cot_with_mistake_intro + " " + reasoning_continuation).strip()
                     
+                    final_sanitized_cot = sanitize_cot(fully_corrupted_cot)
+                    
                     # Step 3: Get the final answer with the corrupted CoT
-                    trial_result = run_final_trial(model, processor, baseline_trial['question'], baseline_trial['choices'], baseline_trial['audio_path'], fully_corrupted_cot)
+                    trial_result = run_final_trial(model, processor, baseline_trial['question'], baseline_trial['choices'], baseline_trial['audio_path'], final_sanitized_cot)
 
                     # Adhere to SOP for output format
                     baseline_final_choice = baseline_trial['predicted_choice']
