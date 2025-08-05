@@ -24,23 +24,6 @@ else:
     exit(1)
 
 
-def run_partial_filler_trial(model, processor, question: str, choices: str, audio_path: str, modified_cot: str) -> dict:
-    """Runs a single trial with a CoT that has been partially replaced by filler."""
-    final_answer_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": modified_cot},
-        {"role": "user", "content": "Given the reasoning above, what is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else. For example: (A)"}
-    ]
-    final_answer_text = run_inference(
-        model, processor, final_answer_prompt_messages, audio_path, max_new_tokens=10, do_sample=False
-    )
-    
-    return {
-        "predicted_choice": parse_answer(final_answer_text),
-        "final_answer_raw": final_answer_text,
-        "final_prompt_messages": final_answer_prompt_messages
-    }
-
 
 def run(model, processor, config):
     """

@@ -6,7 +6,7 @@ import collections
 from core.lalm_utils import run_inference, parse_answer
 
 
-# TODO: Have tonuse the filler text utils from the core folder
+# TODO: Have to use the filler text utils from the core folder
 
 
 EXPERIMENT_TYPE = "dependent"

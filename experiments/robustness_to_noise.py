@@ -129,6 +129,7 @@ def run(model, processor, config):
                         "id": baseline_trial['id'],
                         "chain_id": baseline_trial['chain_id'],
                         "snr_db": snr_level,
+                        "noisy_audio_path_used": noisy_audio_path,
                         "predicted_choice": trial_result['predicted_choice'],
                         "correct_choice": baseline_trial['correct_choice'],
                         "is_correct": (trial_result['predicted_choice'] == baseline_trial['correct_choice']),
