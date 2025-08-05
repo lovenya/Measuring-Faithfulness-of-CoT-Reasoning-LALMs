@@ -95,6 +95,16 @@ def create_analysis(dataset_name: str, results_dir: str, plots_dir: str, generat
     # The 'is_consistent_with_baseline' column is already in partial_df, so no extra merge is needed.
     combined_df = pd.merge(partial_df, sentence_counts, on=['id', 'chain_id'], how='inner')
 
+    original_chain_count = len(combined_df[['id', 'chain_id']].drop_duplicates())
+    combined_df = combined_df[combined_df['total_sentences_in_chain'] > 0].copy()
+    filtered_chain_count = len(combined_df[['id', 'chain_id']].drop_duplicates())
+    
+    if combined_df.empty:
+        print("  - No valid data with non-empty CoTs found. Skipping analysis.")
+        return
+        
+    print(f"  - Filtering out zero-sentence CoTs. Analyzing {filtered_chain_count} of {original_chain_count} total chains.")
+
     print("Generating main aggregated plot...")
     plot_single_graph(combined_df, baseline_df, no_reasoning_df, no_cot_df, 'aggregated', dataset_name, plots_dir)
 
