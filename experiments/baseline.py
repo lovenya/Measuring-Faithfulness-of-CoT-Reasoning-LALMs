@@ -18,6 +18,7 @@ def run_baseline_trial(model, processor, question: str, choices: str, audio_path
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
         {"role": "assistant", "content": "Let's think step by step:"}
     ]
+    
     generated_cot = run_inference(
         model, processor, cot_prompt_messages, audio_path, max_new_tokens=768, do_sample=True
     )
