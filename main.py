@@ -49,8 +49,14 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter
     )
     
-    # We dynamically create the list of dataset choices from our config file, so we only have to update it in one place.
-    dataset_choices = sorted(list(set([k.split('-')[0] for k in config.DATASET_MAPPING.keys()])))
+    dataset_choices = [
+        "mmar",
+        "sakura-animal",
+        "sakura-emotion",
+        "sakura-gender",
+        "sakura-language"
+    ]
+    
     parser.add_argument("--dataset", type=str, required=True, choices=dataset_choices, help="The base name of the dataset to use (e.g., 'mmar', 'sakura-animal').")
     parser.add_argument("--experiment", type=str, required=True, help="The name of the experiment module to run (e.g., 'baseline').")
     
