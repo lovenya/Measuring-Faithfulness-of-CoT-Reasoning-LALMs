@@ -34,35 +34,50 @@ def run_early_answering_trial(model, processor, question: str, choices: str, aud
 
 def run(model, processor, config):
     """
-    Orchestrates the full early answering experiment. This version is now fully
-    condition-aware, loading the correct baseline data from the correct directory.
+    Orchestrates the full early answering experiment. This version is now optimized
+    to reuse pre-computed 'no_reasoning' results for the zero-sentence step.
     """
-    # --- 1. Condition-Aware Path Construction ---
-    # This block correctly constructs the path to the necessary baseline results file,
-    # accounting for both the condition-specific directory and the condition-specific filename.
+    # --- 1. Condition-Aware Path Construction for BOTH Dependencies ---
+    # This experiment depends on two foundational results: the 'baseline' for the CoTs,
+    # and 'no_reasoning' for the 0-sentence step. We must load both from the correct
+    # condition-specific directories.
+
+    # --- Path for Baseline Data ---
     if config.CONDITION == 'default':
-        # For the default condition, results are in the standard 'results/baseline' directory.
         baseline_results_dir = os.path.join(config.RESULTS_DIR, 'baseline')
         baseline_filename = f"baseline_{config.DATASET_NAME}.jsonl"
     else:
-        # For other conditions, results are in a dedicated subdirectory,
-        # e.g., 'results/transcribed_audio_experiments/baseline/'.
         condition_specific_results_dir = f"{config.CONDITION}_experiments"
         baseline_results_dir = os.path.join(config.RESULTS_DIR, condition_specific_results_dir, 'baseline')
         baseline_filename = f"baseline_{config.DATASET_NAME}_{config.CONDITION}.jsonl"
-
-    # Construct the full, final path to the baseline file.
     baseline_results_path = os.path.join(baseline_results_dir, baseline_filename)
 
-    if not os.path.exists(baseline_results_path):
-        print(f"FATAL ERROR: Baseline results file not found for condition '{config.CONDITION}'.")
-        print(f"Looked for: '{baseline_results_path}'")
-        return
+    # --- Path for No-Reasoning Data ---
+    if config.CONDITION == 'default':
+        no_reasoning_results_dir = os.path.join(config.RESULTS_DIR, 'no_reasoning')
+        no_reasoning_filename = f"no_reasoning_{config.DATASET_NAME}.jsonl"
+    else:
+        condition_specific_results_dir = f"{config.CONDITION}_experiments"
+        no_reasoning_results_dir = os.path.join(config.RESULTS_DIR, condition_specific_results_dir, 'no_reasoning')
+        no_reasoning_filename = f"no_reasoning_{config.DATASET_NAME}_{config.CONDITION}.jsonl"
+    no_reasoning_results_path = os.path.join(no_reasoning_results_dir, no_reasoning_filename)
 
-    print(f"Reading baseline data for condition '{config.CONDITION}' from '{baseline_results_path}'...")
-    all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
+    # --- Load Data ---
+    try:
+        print(f"Reading baseline data for condition '{config.CONDITION}' from '{baseline_results_path}'...")
+        all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
+        print(f"Reading no-reasoning data for condition '{config.CONDITION}' from '{no_reasoning_results_path}'...")
+        all_no_reasoning_trials = [json.loads(line) for line in open(no_reasoning_results_path, 'r')]
+    except FileNotFoundError as e:
+        print(f"FATAL ERROR: A required foundational results file was not found. Details: {e}")
+        return
             
-    # Standard logic to handle the --num-samples flag for quick test runs.
+    # --- 2. Prepare Data for Efficient Processing ---
+    # Create a lookup dictionary for the no-reasoning results for instant access.
+    # The key is a tuple of (id, chain_id) for uniqueness.
+    no_reasoning_lookup = {(res['id'], res['chain_id']): res for res in all_no_reasoning_trials}
+
+    # Standard logic to handle the --num-samples flag.
     if config.NUM_SAMPLES_TO_RUN > 0:
         trials_by_question = collections.defaultdict(list)
         for trial in all_baseline_trials:
@@ -72,9 +87,9 @@ def run(model, processor, config):
     else:
         samples_to_process = all_baseline_trials
 
-    # --- 2. Run the Experiment ---
+    # --- 3. Run the Experiment ---
     output_path = config.OUTPUT_PATH
-    print(f"\n--- Running Early Answering Experiment ({config.CONDITION} condition): Saving to {output_path} ---")
+    print(f"\n--- Running OPTIMIZED Early Answering Experiment ({config.CONDITION} condition): Saving to {output_path} ---")
     print(f"Processing {len(samples_to_process)} total trials.")
     
     skipped_trials_count = 0
@@ -89,29 +104,50 @@ def run(model, processor, config):
                 sentences = nltk.sent_tokenize(sanitized_cot)
                 total_sentences = len(sentences)
                 
-                for num_sentences_provided in range(total_sentences + 1):
+                # --- THE CRITICAL OPTIMIZATION ---
+                # Step A: Handle the 0-sentence case by reusing pre-computed results.
+                lookup_key = (q_id, chain_id)
+                nr_result = no_reasoning_lookup.get(lookup_key)
+
+                if nr_result:
+                    # Construct the result dictionary for the 0-sentence step.
+                    zero_sentence_result = {
+                        "id": q_id, "chain_id": chain_id,
+                        "num_sentences_provided": 0,
+                        "total_sentences_in_chain": total_sentences,
+                        "predicted_choice": nr_result['predicted_choice'],
+                        "correct_choice": baseline_trial['correct_choice'],
+                        "is_correct": (nr_result['predicted_choice'] == baseline_trial['correct_choice']),
+                        "corresponding_baseline_predicted_choice": baseline_trial['predicted_choice'],
+                        "is_consistent_with_baseline": (nr_result['predicted_choice'] == baseline_trial['predicted_choice']),
+                        "final_prompt_messages": nr_result['final_prompt_messages'],
+                        "final_answer_raw": nr_result['final_answer_raw']
+                    }
+                    f.write(json.dumps(zero_sentence_result, ensure_ascii=False) + "\n")
+                else:
+                    if config.VERBOSE:
+                        print(f"  - WARNING: No-reasoning result not found for {lookup_key}. Skipping 0-sentence step.")
+
+                # Step B: Run new inferences ONLY for steps 1 through N.
+                for num_sentences_provided in range(1, total_sentences + 1):
                     truncated_cot = " ".join(sentences[:num_sentences_provided])
                     
                     trial_result = run_early_answering_trial(
                         model, processor, baseline_trial['question'], baseline_trial['choices'], baseline_trial['audio_path'], truncated_cot
                     )
-
-                    baseline_final_choice = baseline_trial['predicted_choice']
                     
                     final_ordered_result = {
-                        "id": q_id,
-                        "chain_id": chain_id,
+                        "id": q_id, "chain_id": chain_id,
                         "num_sentences_provided": num_sentences_provided,
                         "total_sentences_in_chain": total_sentences,
                         "predicted_choice": trial_result['predicted_choice'],
                         "correct_choice": baseline_trial['correct_choice'],
                         "is_correct": (trial_result['predicted_choice'] == baseline_trial['correct_choice']),
-                        "corresponding_baseline_predicted_choice": baseline_final_choice,
-                        "is_consistent_with_baseline": (trial_result['predicted_choice'] == baseline_final_choice),
+                        "corresponding_baseline_predicted_choice": baseline_trial['predicted_choice'],
+                        "is_consistent_with_baseline": (trial_result['predicted_choice'] == baseline_trial['predicted_choice']),
                         "final_prompt_messages": trial_result['final_prompt_messages'],
                         "final_answer_raw": trial_result['final_answer_raw']
                     }
-
                     f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
 
             except Exception as e:
