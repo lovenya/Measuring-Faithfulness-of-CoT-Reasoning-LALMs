@@ -74,21 +74,31 @@ def run_final_trial(model, processor, question: str, choices: str, audio_path: s
 
 
 def run(model, processor, config):
-    """ Orchestrates the full 'Adding Mistakes' experiment, now fully condition-aware. """
-    
+    """ 
+    Orchestrates the full 'Adding Mistakes' experiment. This version is now fully
+    condition-aware, loading the correct baseline data from the correct directory.
+    """
     # --- 1. Condition-Aware Path Construction ---
-    # This is a critical correction. We now build the path to the baseline results file
-    # by taking the current experimental condition into account. This ensures we load
-    # the correct CoTs and reference answers for our consistency checks.
+    # This block correctly constructs the path to the necessary baseline results file,
+    # accounting for both the condition-specific directory and the condition-specific filename.
     if config.CONDITION == 'default':
+        # For the default condition, results are in the standard 'results/baseline' directory.
+        baseline_results_dir = os.path.join(config.RESULTS_DIR, 'baseline')
         baseline_filename = f"baseline_{config.DATASET_NAME}.jsonl"
+    
     else:
+        # For other conditions, results are in a dedicated subdirectory,
+        # e.g., 'results/transcribed_audio_experiments/baseline/'.
+        condition_specific_results_dir = f"{config.CONDITION}_experiments"
+        baseline_results_dir = os.path.join(config.RESULTS_DIR, condition_specific_results_dir, 'baseline')
         baseline_filename = f"baseline_{config.DATASET_NAME}_{config.CONDITION}.jsonl"
-    
-    baseline_results_path = os.path.join(config.RESULTS_DIR, "baseline", baseline_filename)
-    
+
+    # Then, construct the full, final path to the baseline file.
+    baseline_results_path = os.path.join(baseline_results_dir, baseline_filename)
+
     if not os.path.exists(baseline_results_path):
-        print(f"FATAL ERROR: Baseline results file not found for condition '{config.CONDITION}' at '{baseline_results_path}'")
+        print(f"FATAL ERROR: Baseline results file not found for condition '{config.CONDITION}'.")
+        print(f"Looked for: '{baseline_results_path}'")
         return
 
     print(f"Reading baseline data for condition '{config.CONDITION}' from '{baseline_results_path}'...")
@@ -117,13 +127,11 @@ def run(model, processor, config):
                 if config.VERBOSE:
                     print(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
 
-                # We always use the pre-sanitized CoT from the baseline run.
                 sanitized_cot = baseline_trial['sanitized_cot']
                 sentences = nltk.sent_tokenize(sanitized_cot)
                 total_sentences = len(sentences)
                 if total_sentences == 0: continue
 
-                # Loop through each sentence, making it the point of error.
                 for mistake_idx in range(total_sentences):
                     if config.VERBOSE:
                         print(f"  - Introducing mistake at sentence {mistake_idx + 1}/{total_sentences}...")
@@ -137,14 +145,10 @@ def run(model, processor, config):
                     
                     fully_corrupted_cot = (cot_with_mistake_intro + " " + reasoning_continuation).strip()
                     
-                    # This is a critical step: we must sanitize the *newly generated* CoT as well
-                    # to remove any "spoiler" sentences it might have added.
                     final_sanitized_corrupted_cot = sanitize_cot(fully_corrupted_cot)
                     
                     trial_result = run_final_trial(model, processor, baseline_trial['question'], baseline_trial['choices'], baseline_trial['audio_path'], final_sanitized_corrupted_cot)
 
-                    # The consistency check is now correctly performed against the baseline
-                    # result from the appropriate condition.
                     baseline_final_choice = baseline_trial['predicted_choice']
                     final_ordered_result = {
                         "id": q_id, "chain_id": chain_id,
@@ -159,11 +163,9 @@ def run(model, processor, config):
                         "final_answer_raw": trial_result['final_answer_raw']
                     }
                     
-                    # This ensures our output JSONL is human-readable, especially for datasets with non-English text.
                     f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
 
             except Exception as e:
-                # Standard robust error handling.
                 skipped_trials_count += 1
                 print("\n" + "="*60)
                 print(f"WARNING: SKIPPING TRIAL DUE TO ERROR.")
