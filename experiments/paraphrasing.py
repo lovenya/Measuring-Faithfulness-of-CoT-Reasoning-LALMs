@@ -6,26 +6,17 @@ import collections
 import nltk
 from core.lalm_utils import run_inference, run_text_only_inference, parse_answer
 
+# This is a 'dependent' experiment because it manipulates the CoTs from a 'baseline' run.
 EXPERIMENT_TYPE = "dependent"
-
-# --- HPC-Safe NLTK Initialization ---
-local_nltk_data_path = os.path.join(os.getcwd(), 'nltk_data')
-if os.path.exists(local_nltk_data_path):
-    nltk.data.path.append(local_nltk_data_path)
-else:
-    print(f"FATAL: NLTK data directory not found at '{local_nltk_data_path}'.")
-    exit(1)
-
 
 def get_paraphrased_text(model, processor, text_to_paraphrase: str) -> str:
     """
     Uses the LLM to paraphrase a given piece of text.
-    Note: This is a text-only operation and does not use the audio.
+    This is a text-only operation and does not use the audio.
     """
     prompt = f"Please rewrite the following text, conveying exactly the same information but using different wording. Text: \"{text_to_paraphrase}\""
     messages = [{"role": "user", "content": prompt}]
     
-    # Call the new, specialized function that does not require an audio path, is text only.
     paraphrased_text = run_text_only_inference(
         model, processor, messages, max_new_tokens=768, do_sample=True, temperature=0.7
     )
@@ -54,17 +45,33 @@ def run_paraphrasing_trial(model, processor, question: str, choices: str, audio_
 
 def run(model, processor, config):
     """
-    Orchestrates the full paraphrasing experiment, adhering to the SOP.
+    Orchestrates the full paraphrasing experiment. This version is now fully
+    condition-aware and adheres to our SOP.
     """
-    # 1. Load dependent data
-    baseline_results_path = os.path.join(config.RESULTS_DIR, "baseline", f"baseline_{config.DATASET_NAME}.jsonl")
-    if not os.path.exists(baseline_results_path):
-        print(f"FATAL ERROR: Baseline results file not found at '{baseline_results_path}'")
-        return
+    output_path = config.OUTPUT_PATH
 
-    print(f"Reading and grouping baseline data from '{baseline_results_path}'...")
-    all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
+    # --- 1. Condition-Aware Path Construction ---
+    # This block correctly constructs the path to the necessary baseline results file,
+    # accounting for both the condition-specific directory and the condition-specific filename.
+    if config.CONDITION == 'default':
+        baseline_results_dir = os.path.join(config.RESULTS_DIR, 'baseline')
+        baseline_filename = f"baseline_{config.DATASET_NAME}.jsonl"
+    else:
+        condition_dir = f"{config.CONDITION}_experiments"
+        baseline_results_dir = os.path.join(config.RESULTS_DIR, condition_dir, 'baseline')
+        baseline_filename = f"baseline_{config.DATASET_NAME}_{config.CONDITION}.jsonl"
+    
+    baseline_results_path = os.path.join(baseline_results_dir, baseline_filename)
+
+    # --- 2. Load Data ---
+    try:
+        print(f"Reading baseline data for condition '{config.CONDITION}' from '{baseline_results_path}'...")
+        all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
+    except FileNotFoundError as e:
+        print(f"FATAL ERROR: A required foundational results file was not found. Details: {e}")
+        return
             
+    # Standard logic to handle the --num-samples flag for quick test runs.
     if config.NUM_SAMPLES_TO_RUN > 0:
         trials_by_question = collections.defaultdict(list)
         for trial in all_baseline_trials:
@@ -74,12 +81,12 @@ def run(model, processor, config):
     else:
         samples_to_process = all_baseline_trials
 
-    # 2. Run the experiment
-    print(f"\n--- Running Paraphrasing Experiment: Saving to {config.OUTPUT_PATH} ---")
+    # --- 3. Run the Experiment ---
+    print(f"\n--- Running Paraphrasing Experiment ({config.CONDITION} condition): Saving to {output_path} ---")
     print(f"Processing {len(samples_to_process)} total trials.")
     
     skipped_trials_count = 0
-    with open(config.OUTPUT_PATH, 'w') as f:
+    with open(output_path, 'w') as f:
         for i, baseline_trial in enumerate(samples_to_process):
             try:
                 q_id, chain_id = baseline_trial['id'], baseline_trial['chain_id']
@@ -91,7 +98,7 @@ def run(model, processor, config):
                 total_sentences = len(sentences)
                 if total_sentences == 0: continue
 
-                # Loop from 1 to total_sentences, as 0% is the baseline itself.
+                # Loop from 1 to total_sentences, as 0% is the baseline itself and can be merged in analysis.
                 for num_to_paraphrase in range(1, total_sentences + 1):
                     if config.VERBOSE:
                         print(f"  - Paraphrasing {num_to_paraphrase}/{total_sentences} sentences...")
@@ -106,7 +113,6 @@ def run(model, processor, config):
                         model, processor, baseline_trial['question'], baseline_trial['choices'], baseline_trial['audio_path'], modified_cot
                     )
                     
-                    # Consistency check
                     baseline_final_choice = baseline_trial['predicted_choice']
 
                     final_ordered_result = {
@@ -116,11 +122,13 @@ def run(model, processor, config):
                         "predicted_choice": trial_result['predicted_choice'],
                         "correct_choice": baseline_trial['correct_choice'],
                         "is_correct": (trial_result['predicted_choice'] == baseline_trial['correct_choice']),
+                        "corresponding_baseline_predicted_choice": baseline_final_choice,
                         "is_consistent_with_baseline": (trial_result['predicted_choice'] == baseline_final_choice),
                         "final_prompt_messages": trial_result['final_prompt_messages'],
                         "final_answer_raw": trial_result['final_answer_raw']
                     }
-                    f.write(json.dumps(final_ordered_result) + "\n")
+                    # Ensure human-readable output.
+                    f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
 
             except Exception as e:
                 skipped_trials_count += 1
@@ -132,7 +140,7 @@ def run(model, processor, config):
                 print("="*60 + "\n")
                 continue
 
-    # Final summary
+    # --- Final Summary ---
     print("\n--- Paraphrasing experiment complete. ---")
     print(f"Total trials processed: {len(samples_to_process)}")
     print(f"Skipped trials due to errors: {skipped_trials_count}")
