@@ -4,22 +4,16 @@ import os
 import json
 import collections
 import nltk
-from core.lalm_utils import run_inference, parse_answer, sanitize_cot
+from core.lalm_utils import run_inference, parse_answer
 
+# This is a 'dependent' experiment because it relies on the CoTs generated
+# by a 'baseline' run to perform its analysis.
 EXPERIMENT_TYPE = "dependent"
-
-# --- HPC-Safe NLTK Initialization ---
-local_nltk_data_path = os.path.join(os.getcwd(), 'nltk_data')
-if os.path.exists(local_nltk_data_path):
-    nltk.data.path.append(local_nltk_data_path)
-else:
-    print(f"FATAL: NLTK data directory not found at '{local_nltk_data_path}'.")
-    exit(1)
-
 
 def run_early_answering_trial(model, processor, question: str, choices: str, audio_path: str, truncated_cot: str) -> dict:
     """
     Runs a single trial with a CoT that has been truncated to a specific number of sentences.
+    This is the core inference step for the experiment.
     """
     final_answer_prompt_messages = [
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
@@ -30,6 +24,7 @@ def run_early_answering_trial(model, processor, question: str, choices: str, aud
         model, processor, final_answer_prompt_messages, audio_path, max_new_tokens=10, do_sample=False
     )
     
+    # Return a self-documenting dictionary, per our SOP.
     return {
         "predicted_choice": parse_answer(final_answer_text),
         "final_answer_raw": final_answer_text,
@@ -39,17 +34,35 @@ def run_early_answering_trial(model, processor, question: str, choices: str, aud
 
 def run(model, processor, config):
     """
-    Orchestrates the full early answering experiment, including both accuracy and consistency checks.
+    Orchestrates the full early answering experiment. This version is now fully
+    condition-aware, loading the correct baseline data from the correct directory.
     """
-    # 1. Load dependent data
-    baseline_results_path = os.path.join(config.RESULTS_DIR, "baseline", f"baseline_{config.DATASET_NAME}.jsonl")
+    # --- 1. Condition-Aware Path Construction ---
+    # This block correctly constructs the path to the necessary baseline results file,
+    # accounting for both the condition-specific directory and the condition-specific filename.
+    if config.CONDITION == 'default':
+        # For the default condition, results are in the standard 'results/baseline' directory.
+        baseline_results_dir = os.path.join(config.RESULTS_DIR, 'baseline')
+        baseline_filename = f"baseline_{config.DATASET_NAME}.jsonl"
+    else:
+        # For other conditions, results are in a dedicated subdirectory,
+        # e.g., 'results/transcribed_audio_experiments/baseline/'.
+        condition_specific_results_dir = f"{config.CONDITION}_experiments"
+        baseline_results_dir = os.path.join(config.RESULTS_DIR, condition_specific_results_dir, 'baseline')
+        baseline_filename = f"baseline_{config.DATASET_NAME}_{config.CONDITION}.jsonl"
+
+    # Construct the full, final path to the baseline file.
+    baseline_results_path = os.path.join(baseline_results_dir, baseline_filename)
+
     if not os.path.exists(baseline_results_path):
-        print(f"FATAL ERROR: Baseline results file not found at '{baseline_results_path}'")
+        print(f"FATAL ERROR: Baseline results file not found for condition '{config.CONDITION}'.")
+        print(f"Looked for: '{baseline_results_path}'")
         return
 
-    print(f"Reading and grouping baseline data from '{baseline_results_path}'...")
+    print(f"Reading baseline data for condition '{config.CONDITION}' from '{baseline_results_path}'...")
     all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
             
+    # Standard logic to handle the --num-samples flag for quick test runs.
     if config.NUM_SAMPLES_TO_RUN > 0:
         trials_by_question = collections.defaultdict(list)
         for trial in all_baseline_trials:
@@ -59,12 +72,13 @@ def run(model, processor, config):
     else:
         samples_to_process = all_baseline_trials
 
-    # 2. Run the experiment
-    print(f"\n--- Running Early Answering Experiment: Saving to {config.OUTPUT_PATH} ---")
+    # --- 2. Run the Experiment ---
+    output_path = config.OUTPUT_PATH
+    print(f"\n--- Running Early Answering Experiment ({config.CONDITION} condition): Saving to {output_path} ---")
     print(f"Processing {len(samples_to_process)} total trials.")
     
     skipped_trials_count = 0
-    with open(config.OUTPUT_PATH, 'w') as f:
+    with open(output_path, 'w') as f:
         for i, baseline_trial in enumerate(samples_to_process):
             try:
                 q_id, chain_id = baseline_trial['id'], baseline_trial['chain_id']
@@ -82,7 +96,6 @@ def run(model, processor, config):
                         model, processor, baseline_trial['question'], baseline_trial['choices'], baseline_trial['audio_path'], truncated_cot
                     )
 
-                    # --- YOUR SUPERIOR LOGIC IMPLEMENTED HERE ---
                     baseline_final_choice = baseline_trial['predicted_choice']
                     
                     final_ordered_result = {
@@ -98,9 +111,8 @@ def run(model, processor, config):
                         "final_prompt_messages": trial_result['final_prompt_messages'],
                         "final_answer_raw": trial_result['final_answer_raw']
                     }
-                    # --- END OF IMPLEMENTATION ---
 
-                    f.write(json.dumps(final_ordered_result) + "\n")
+                    f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
 
             except Exception as e:
                 skipped_trials_count += 1
@@ -112,7 +124,7 @@ def run(model, processor, config):
                 print("="*60 + "\n")
                 continue
 
-    # Final summary
+    # Standard final summary report.
     print("\n--- Early Answering experiment complete. ---")
     print(f"Total trials processed: {len(samples_to_process)}")
     print(f"Skipped trials due to errors: {skipped_trials_count}")
