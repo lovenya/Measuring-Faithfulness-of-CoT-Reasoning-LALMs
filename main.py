@@ -89,19 +89,28 @@ def main():
     config.CONDITION = args.condition # This makes the current condition globally known.
 
     # --- 2. Centralized Path Management ---
-    # To keep our experiment scripts clean, the orchestrator is responsible for figuring out
-    # exactly where the results should be saved.
+    # This block now intelligently constructs the output directory based on the
+    # experimental condition, ensuring our results are perfectly organized.
     experiment_name = args.experiment
-    
-    # We create a clear, descriptive filename that includes the experiment, dataset, and condition.
-    # This makes our results folders easy to navigate and understand.
-    output_filename = f"{experiment_name}_{args.dataset}_{args.condition}.jsonl"
-    
-    output_dir = os.path.join(config.RESULTS_DIR, experiment_name)
+
+    if config.CONDITION == 'default':
+        # For the default condition, we use the standard results directory.
+        output_dir = os.path.join(config.RESULTS_DIR, experiment_name)
+    else:
+        # For any other condition (like 'transcribed_audio'), we create a dedicated
+        # subdirectory to keep the results separate and clean.
+        # e.g., 'results/transcribed_audio_experiments/baseline/'
+        condition_specific_results_dir = f"{config.CONDITION}_experiments"
+        output_dir = os.path.join(config.RESULTS_DIR, condition_specific_results_dir, experiment_name)
+
     os.makedirs(output_dir, exist_ok=True)
-    
-    # We save the final, complete path to the config object, so the experiment script
-    # doesn't need to think about it at all. It just saves to 'config.OUTPUT_PATH'.
+
+    # The rest of the path logic remains the same, but now uses our new, smarter output_dir.
+    if config.CONDITION == 'default':
+        output_filename = f"{experiment_name}_{args.dataset}.jsonl"
+    else:
+        output_filename = f"{experiment_name}_{args.dataset}_{config.CONDITION}.jsonl"
+
     config.OUTPUT_PATH = os.path.join(output_dir, output_filename)
     
     # This is the logic that intelligently finds the right data file to load based on the user's command.
