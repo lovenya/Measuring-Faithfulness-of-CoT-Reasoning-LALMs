@@ -6,33 +6,32 @@ from typing import List, Optional
 def load_results(results_dir: str, experiment_name: str, dataset_name: str, condition: Optional[str] = None) -> pd.DataFrame:
     """
     Loads results from a specified experiment's JSONL file into a pandas DataFrame.
-    This version is now condition-aware.
-
-    Args:
-        results_dir (str): The root directory for results (e.g., './results').
-        experiment_name (str): The name of the experiment (e.g., 'baseline').
-        dataset_name (str): The short name of the dataset (e.g., 'mmar').
-        condition (Optional[str]): The experimental condition (e.g., 'default', 'transcribed_audio').
-                                   If None, assumes the old filename format.
-
-    Returns:
-        pd.DataFrame: A DataFrame containing the loaded data.
+    This version is now condition-aware and backward-compatible.
     """
     # --- THE CRITICAL FIX ---
-    # Construct the filename based on whether a condition is provided.
+    # This logic now correctly handles our file naming history.
     if condition:
-        # New, condition-aware filename format
+        # For new conditions, construct the specific filename.
         filename = f"{experiment_name}_{dataset_name}_{condition}.jsonl"
+        file_path = os.path.join(results_dir, experiment_name, filename)
+        
+        # This is the key change: if the condition is 'default', we must also
+        # check for the old filename format for backward compatibility.
+        if condition == 'default' and not os.path.exists(file_path):
+            print(f"  - INFO: Could not find '{filename}'. Falling back to original filename format.")
+            old_filename = f"{experiment_name}_{dataset_name}.jsonl"
+            file_path = os.path.join(results_dir, experiment_name, old_filename)
     else:
-        # Old, original filename format for backward compatibility
+        # If no condition is specified, use the original filename format.
         filename = f"{experiment_name}_{dataset_name}.jsonl"
+        file_path = os.path.join(results_dir, experiment_name, filename)
     # --- END OF FIX ---
-
-    file_path = os.path.join(results_dir, experiment_name, filename)
     
     if not os.path.exists(file_path):
-        print(f"FATAL: Results file not found at '{file_path}'.")
-        raise FileNotFoundError(f"Required data file not found: {file_path}")
+        print(f"FATAL: Results file not found. Checked for: '{filename}'")
+        if condition == 'default':
+            print(f"       Also checked for: '{old_filename}'")
+        raise FileNotFoundError(f"Required data file not found.")
     
     print(f"Loading data from: {file_path}")
     return pd.read_json(file_path, lines=True)
