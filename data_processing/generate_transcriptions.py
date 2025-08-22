@@ -79,7 +79,8 @@ def process_single_dataset(model, processor, source_dir: str, output_dir: str):
     
     with open(output_jsonl_path, 'w') as f:
         for entry in new_jsonl_data:
-            f.write(json.dumps(entry) + '\n')
+            # This ensures our output JSONL is human-readable, especially for non-English text.
+            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
     
     print(f"  - Successfully generated {len(new_jsonl_data)} transcriptions.")
     print(f"  - New JSONL file created at: {output_jsonl_path}")
