@@ -24,10 +24,10 @@ DATASET_MAPPING = {
     
     # --- 'transcribed_audio' condition datasets ---
     "mmar-transcribed_audio": "data/mmar_transcribed/mmar_transcribed_audio_standardized.jsonl",
-    "sakura-animal-transcribed_audio": "data/sakura_transcribed/animal/sakura_animal_transcribed_audio_standardized.jsonl",
-    "sakura-emotion-transcribed_audio": "data/sakura_transcribed/emotion/sakura_emotion_transcribed_audio_standardized.jsonl",
-    "sakura-gender-transcribed_audio": "data/sakura_transcribed/gender/sakura_gender_transcribed_audio_standardized.jsonl",
-    "sakura-language-transcribed_audio": "data/sakura_transcribed/language/sakura_language_transcribed_audio_standardized.jsonl",
+    "sakura-animal-transcribed_audio": "data/sakura_transcribed/animal/animal_transcribed_audio_standardized.jsonl",
+    "sakura-emotion-transcribed_audio": "data/sakura_transcribed/emotion/emotion_transcribed_audio_standardized.jsonl",
+    "sakura-gender-transcribed_audio": "data/sakura_transcribed/gender/gender_transcribed_audio_standardized.jsonl",
+    "sakura-language-transcribed_audio": "data/sakura_transcribed/language/language_transcribed_audio_standardized.jsonl",
 }
 
 # --- Experiment Default Parameters ---
