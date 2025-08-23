@@ -57,26 +57,29 @@ def run(model, processor, data_samples, config):
                 choices_formatted = format_choices_for_prompt(sample['choices'])
                 
                 # This is a deterministic experiment, so we only need to run it once per question.
-                # We iterate through the number of chains to create a result for each one,
-                # ensuring our data structure is consistent with the baseline results.
+                # We only need to run the expensive inference a single time for each question.
+                cached_result = None
+                
+                # We still loop to create one entry per chain_id for structural consistency
+                # with the baseline results file, which makes downstream analysis easier.
                 for j in range(config.NUM_CHAINS_PER_QUESTION):
-                    if j == 0:
-                        # We only need to run the inference once.
-                        trial_result = run_no_reasoning_trial(
+                    
+                    if cached_result is None:
+                        # If this is the first loop (or we haven't run the inference yet),
+                        # run it now and store the result.
+                        cached_result = run_no_reasoning_trial(
                             model, processor, 
                             sample['question'], 
                             choices_formatted, 
                             sample['audio_path']
                         )
-                        # Store the result to reuse for other chains.
-                        cached_result = trial_result.copy()
-                    else:
-                        # For subsequent chains, reuse the cached result.
-                        trial_result = cached_result.copy()
 
+                    # For every loop, we start with a fresh copy of the cached result.
+                    trial_result = cached_result.copy()
+
+                    # Now, we add the metadata that is unique to this specific entry.
                     trial_result['id'] = sample['id']
-                    # Add chain_id for consistency with other result files.
-                    trial_result['chain_id'] = j
+                    trial_result['chain_id'] = j # This is the only thing that changes in the loop
                     
                     correct_choice_letter = chr(ord('A') + sample['answer_key'])
                     trial_result['correct_choice'] = correct_choice_letter
@@ -86,7 +89,6 @@ def run(model, processor, data_samples, config):
                     if 'source' in sample: trial_result['source'] = sample['source']
                     if 'hop_type' in sample: trial_result['hop_type'] = sample['hop_type']
 
-                    # Ensure human-readable output.
                     f.write(json.dumps(trial_result, ensure_ascii=False) + "\n")
 
             except Exception as e:
