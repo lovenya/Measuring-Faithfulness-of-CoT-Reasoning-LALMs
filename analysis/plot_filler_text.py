@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
-from utils import load_results
+from .utils import load_results
 
 def create_filler_text_plot(dataset_name: str, results_dir: str, plots_dir: str, include_no_cot: bool):
     """
