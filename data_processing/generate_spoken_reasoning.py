@@ -136,10 +136,22 @@ if __name__ == "__main__":
 
     # --- Load the TTS Model Once ---
     # This is a heavyweight operation, so we do it once at the very start.
-    print("Initializing Coqui TTS model... (This may take a moment)")
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    tts = TTS(TTS_MODEL_PATH).to(device)
-    print(f"TTS model loaded successfully onto device: {device}")
+    print("Initializing Coqui TTS model from local files... (This may take a moment)")
+    
+    # Instead of the high-level constructor, we use a more explicit method
+    # that is designed for loading from a local, offline directory.
+    # We point it directly to the model's configuration file.
+    from TTS.utils.manage import ModelManager
+    from TTS.utils.synthesizer import Synthesizer
+
+    # This is the new, robust way to initialize the model for offline use.
+    synthesizer = Synthesizer(
+        tts_checkpoint=os.path.join(TTS_MODEL_PATH, "model.pth"),
+        tts_config_path=os.path.join(TTS_MODEL_PATH, "config.json"),
+        use_cuda=torch.cuda.is_available(),
+    )
+
+    print("TTS model loaded successfully.")
 
     experiments_to_process = VALID_EXPERIMENTS if args.experiment == 'all' else [args.experiment]
     
@@ -155,6 +167,6 @@ if __name__ == "__main__":
 
     for exp_name in experiments_to_process:
         for dataset_name in dataset_names:
-            process_dataset(tts, exp_name, dataset_name, args.results_dir, args.output_dir)
+            process_dataset(synthesizer, exp_name, dataset_name, args.results_dir, args.output_dir)
 
     print("\nSpoken reasoning generation complete.")
