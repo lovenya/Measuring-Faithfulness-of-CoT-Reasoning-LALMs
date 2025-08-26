@@ -30,4 +30,4 @@ nltk_data/
 tts-env/
 results/
 plots/
-data/
+data/tts_models/XTTS-v2/
