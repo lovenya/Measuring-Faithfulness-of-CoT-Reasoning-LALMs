@@ -14,7 +14,7 @@ from core.lalm_utils import load_model_and_tokenizer, run_inference
 
 # This prompt is now focused specifically on captioning non-speech sounds,
 # as the ASR component is handled separately by Whisper.
-CAPTIONING_PROMPT = "Describe only the non-speech sounds in this audio, such as music, environmental noises, or animal sounds. Ignore any spoken words. If there are no non-speech sounds, respond with 'No non-speech sounds detected.'"
+CAPTIONING_PROMPT = "Generate the caption in English:"
 
 def process_dataset_for_captioning(model, processor, source_dir: str, output_dir: str):
     """
