@@ -20,9 +20,9 @@ except ImportError:
     exit(1)
 
 # This is a critical "monkey patch" based on our successful test script.
-# Newer versions of PyTorch have a stricter default for loading model files.
+# Newer versions of PyTorch have a stricter default for loading model files for security.
 # This patch tells the TTS library's loading function to be less strict,
-# ensuring we can correctly load the pre-trained Coqui model checkpoint.
+# ensuring we can correctly load the pre-trained Coqui model checkpoint we downloaded.
 original_load_fsspec = io.load_fsspec
 def patched_load_fsspec(path, map_location=None, **kwargs):
     kwargs['weights_only'] = False
@@ -33,10 +33,12 @@ io.load_fsspec = patched_load_fsspec
 def setup_tts_model(model_dir: str) -> Xtts:
     """
     Handles the setup and loading of the local, offline Coqui XTTS-v2 model.
-    This is a heavyweight, time-consuming operation, so we do it only once
-    at the beginning of the script.
+    This is a heavyweight, time-consuming operation, so our script is designed
+    to call this function only once at the very beginning for efficiency.
     """
-    print("--- Setting up Coqui TTS Model ---")
+    start_time = time.time()
+    print(f"[{time.time() - start_time:.2f}s] --- Setting up Coqui TTS Model ---")
+    
     config_path = os.path.join(model_dir, "config.json")
     model_file = os.path.join(model_dir, "model.pth")
     vocab_file = os.path.join(model_dir, "vocab.json")
@@ -45,21 +47,26 @@ def setup_tts_model(model_dir: str) -> Xtts:
     for f in [config_path, model_file, vocab_file]:
         if not os.path.exists(f):
             raise FileNotFoundError(f"FATAL: Required TTS model file not found at {f}")
-
-    print("All model files found. Loading model configuration...")
+    
+    print(f"[{time.time() - start_time:.2f}s] All model files found. Loading model configuration...")
     config = XttsConfig()
     config.load_json(config_path)
+    print(f"[{time.time() - start_time:.2f}s] ✓ Configuration loaded.")
     
-    print("Initializing model from configuration...")
+    print(f"[{time.time() - start_time:.2f}s] Initializing model from configuration...")
     model = Xtts.init_from_config(config)
+    print(f"[{time.time() - start_time:.2f}s] ✓ Model initialized.")
     
-    print("Loading model weights from checkpoint...")
+    print(f"[{time.time() - start_time:.2f}s] Loading model weights from checkpoint... (This is often the slowest step)")
     model.load_checkpoint(config, checkpoint_dir=model_dir, use_deepspeed=False)
+    print(f"[{time.time() - start_time:.2f}s] ✓ Model weights loaded.")
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Moving TTS model to device: {device}")
+    print(f"[{time.time() - start_time:.2f}s] Moving TTS model to device: {device}...")
     model.to(device)
-    print("--- TTS Model setup complete and ready for inference. ---")
+    print(f"[{time.time() - start_time:.2f}s] ✓ Model moved to GPU.")
+    
+    print(f"[{time.time() - start_time:.2f}s] --- TTS Model setup complete and ready for inference. ---")
     return model
 
 
@@ -70,13 +77,14 @@ def process_dataset(tts_model: Xtts, speaker_wav: str, experiment_name: str, dat
     """
     print(f"\n--- Processing Dataset: {dataset_name.upper()} for Experiment: {experiment_name.upper()} ---")
 
-    # We construct the path to the input file based on the 'default' condition results.
+    # We construct the path to the input file based on the 'default' condition results,
+    # as these contain the text we need to convert to speech.
     input_jsonl_path = os.path.join(results_dir, experiment_name, f"{experiment_name}_{dataset_name}.jsonl")
     if not os.path.exists(input_jsonl_path):
         print(f"  - WARNING: Results file not found, skipping: {input_jsonl_path}")
         return
 
-    # We create the structured output directory for the new audio files.
+    # We create the structured output directory for the new audio files, mirroring our results structure.
     # e.g., 'spoken_reasoning/audio/early_answering/mmar/'
     output_dir = os.path.join(output_audio_root, experiment_name, dataset_name)
     os.makedirs(output_dir, exist_ok=True)
@@ -86,23 +94,25 @@ def process_dataset(tts_model: Xtts, speaker_wav: str, experiment_name: str, dat
     print(f"  - Found {len(all_trials)} trials to process.")
     print(f"  - Saving generated audio to: {output_dir}")
 
+    files_generated_this_run = 0
     for i, trial in enumerate(all_trials):
         try:
             # --- Step 1: Extract the correct reasoning text ---
             # This logic correctly handles the different JSON structures between the
-            # 'baseline' experiment and all other 'dependent' experiments.
+            # 'baseline' experiment (which has a top-level key) and all other 'dependent'
+            # experiments (where the text is nested inside the prompt messages).
             if experiment_name == 'baseline':
                 text_to_speak = trial.get('sanitized_cot', '')
             else:
-                # For dependent experiments, the manipulated text is in the assistant's message.
                 text_to_speak = trial.get('final_prompt_messages', [{}, {'content': ''}])[1]['content']
 
-            # If the reasoning text is empty, there's nothing to convert, so we skip it.
+            # If the reasoning text is empty, there's nothing to convert, so we just skip it.
             if not text_to_speak.strip():
                 continue
 
             # --- Step 2: Construct the unique, predictable output filename ---
             # This is crucial for our final experiment scripts to be able to find the correct audio file.
+            # The name contains all the metadata needed to uniquely identify the trial.
             base_name = f"{experiment_name}_{trial['id']}_{trial['chain_id']}"
             if experiment_name == 'early_answering':
                 filename = f"{base_name}_step_{trial['num_sentences_provided']}.wav"
@@ -116,16 +126,18 @@ def process_dataset(tts_model: Xtts, speaker_wav: str, experiment_name: str, dat
             output_wav_path = os.path.join(output_dir, filename)
 
             # --- Step 3: Check for existence (The HPC Restartability Feature) ---
-            # If a long job fails, we can simply restart it. This check ensures
-            # we don't waste time re-generating audio that already exists.
+            # If a long job fails or times out, we can simply restart it. This check ensures
+            # we don't waste time re-generating audio that has already been successfully created.
             if os.path.exists(output_wav_path):
                 continue
             
-            if i % 100 == 0: # Print a progress update every 100 trials
-                 print(f"  - Generating audio for trial {i+1}/{len(all_trials)} -> {filename}")
+            # We print a progress update periodically to show that the script is working.
+            if files_generated_this_run % 20 == 0:
+                 print(f"  - [Trial {i+1}/{len(all_trials)}] Generating: {filename}")
 
             # --- Step 4: Run TTS Inference ---
-            # We synthesize the audio using our consistent reference speaker.
+            # We synthesize the audio using our single, consistent reference speaker to ensure
+            # the voice is a controlled variable in our experiments.
             outputs = tts_model.synthesize(
                 text_to_speak, tts_model.config, speaker_wav=speaker_wav,
                 language="en", enable_text_splitting=True
@@ -139,6 +151,7 @@ def process_dataset(tts_model: Xtts, speaker_wav: str, experiment_name: str, dat
             # --- Step 5: Save the Audio File ---
             # The native sample rate for the XTTS-v2 model is 24000 Hz.
             torchaudio.save(output_wav_path, audio_tensor.cpu(), sample_rate=24000)
+            files_generated_this_run += 1
 
         except Exception as e:
             # If TTS fails for a single, problematic piece of text, we log the error

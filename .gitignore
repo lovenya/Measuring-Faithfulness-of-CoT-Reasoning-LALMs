@@ -34,3 +34,6 @@ tts_models/XTTS-v2/
 whisper_env
 asr_models
 old_comparitive_plots/
+
+# this is where tts results are going in
+spoken_reasoning/audio
