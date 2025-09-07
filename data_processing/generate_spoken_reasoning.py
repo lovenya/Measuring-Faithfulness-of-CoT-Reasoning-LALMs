@@ -6,10 +6,18 @@ import argparse
 import torch
 import torchaudio
 import time
+import multiprocessing as mp # Import the multiprocessing library
 
-# This script is designed to be run in a dedicated Conda environment.
-# We perform this import check first to give the user a clear error message
-# if they are in the wrong environment, saving them from cryptic downstream errors.
+# --- THE CRITICAL FIX for HPC HANGS ---
+# This is a standard solution for a common problem on HPC clusters where
+# libraries that use multiprocessing (like TTS and its dependencies) can hang
+# when interacting with CUDA.
+# By setting the start method to 'spawn', we ensure that any new background
+# processes are created in a clean, safe way, avoiding deadlocks.
+# This MUST be done at the very top of the script, inside the if __name__ == "__main__": block.
+# We will place the call inside the main block.
+
+# (The rest of the script, from the TTS import down to the main function, is unchanged)
 try:
     from TTS.tts.configs.xtts_config import XttsConfig
     from TTS.tts.models.xtts import Xtts
@@ -161,6 +169,13 @@ def process_dataset(tts_model: Xtts, speaker_wav: str, experiment_name: str, dat
 
 
 if __name__ == "__main__":
+    
+    try:
+        mp.set_start_method('spawn')
+    except RuntimeError:
+        # This might raise an error if the context is already set, which is fine.
+        pass
+    
     parser = argparse.ArgumentParser(
         description="Generate spoken reasoning audio files from experiment results using Coqui TTS.",
         formatter_class=argparse.RawTextHelpFormatter
