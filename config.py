@@ -4,6 +4,8 @@
 MODEL_PATH = "./Qwen2-Audio-7B-Instruct" 
 RESULTS_DIR = "./results"
 
+WHISPER_MODEL_PATH = "./asr_models/whisper-large-v3"
+
 # --- Dataset Alias Mapping ---
 # This is the single source of truth for all dataset paths.
 # The keys are designed to be constructed from the command-line arguments.
