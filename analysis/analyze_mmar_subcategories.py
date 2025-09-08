@@ -220,8 +220,14 @@ def main():
             # This is scientifically better than fixed-width bins because it guarantees each bin
             # has an equal number of samples, making our statistics reliable.
             try:
-                baseline_df['duration_bin'] = pd.qcut(baseline_df['duration'], 10, duplicates='drop')
-                no_reasoning_df['duration_bin'] = pd.qcut(no_reasoning_df['duration'], 10, duplicates='drop')
+                # 1. We create the bins based on the baseline data ONLY. This gives us
+                #    a single, authoritative set of bin edges.
+                baseline_df['duration_bin'], bin_edges = pd.qcut(baseline_df['duration'], 10, duplicates='drop', retbins=True)
+                
+                # 2. We then apply these EXACT SAME bin edges to the no_reasoning data.
+                #    This guarantees that a sample with a given duration will fall into the
+                #    exact same bin in both dataframes.
+                no_reasoning_df['duration_bin'] = pd.cut(no_reasoning_df['duration'], bins=bin_edges, include_lowest=True)
 
                 # This is crucial for interpretability. We need to know what "Bin 5" actually means.
                 logging.info("\n--- Audio Duration Bin Ranges (Deciles) ---")
