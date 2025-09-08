@@ -9,6 +9,7 @@ tts_models/XTTS-v2/
 audio-faithful/
 tts-env/
 whisper_env/
+audio-analysis-env/
 
 # Data
 data/**/audio/
