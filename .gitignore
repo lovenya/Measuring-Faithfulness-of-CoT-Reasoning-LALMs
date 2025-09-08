@@ -2,7 +2,7 @@ Qwen2-Audio-7B-Instruct/
 
 # Other models
 asr_models/
-tts_models/XTTS-v2
+tts_models/XTTS-v2/
 
 
 # Envs
@@ -10,17 +10,22 @@ audio-faithful/
 tts-env/
 whisper_env/
 
+# Data
 data/**/audio/
 data/**/hf_cache/
 data/**/**/audio/
 data/**/**/hf_cache/
 
+# Data (input/intermediate) - ASR + AAC
 data/**/asr
 data/**/**/asr
 data/**/captioning
 data/**/**/captioning
 
+# Data (input/intermediate) - TTS
+spoken_reasoning/audio
 
+# .pyc files
 *.pyc
 __pycache__/
 */__pycache__/
@@ -39,5 +44,3 @@ plots/
 
 old_comparitive_plots/
 
-# this is where tts results are going in
-spoken_reasoning/audio
