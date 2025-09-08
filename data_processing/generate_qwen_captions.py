@@ -16,6 +16,8 @@ from core.lalm_utils import load_model_and_tokenizer, run_inference
 # as the ASR component is handled separately by Whisper.
 CAPTIONING_PROMPT = "Generate the caption in English:"
 
+prompt_with_placeholder = f"audio\n\n{CAPTIONING_PROMPT}"
+
 def process_dataset_for_captioning(model, processor, source_dir: str, output_dir: str):
     """
     Processes a single dataset directory, running Qwen-Audio to generate a caption
@@ -55,10 +57,10 @@ def process_dataset_for_captioning(model, processor, source_dir: str, output_dir
         if config.VERBOSE:
             print(f"  - Captioning (AAC) {i+1}/{len(original_data)}: {audio_file.name}")
         try:
-            messages = [{"role": "user", "content": CAPTIONING_PROMPT}]
+            messages = [{"role": "user", "content": prompt_with_placeholder}]
             # We use deterministic inference to get the single most likely caption.
             caption_text = run_inference(
-                model, processor, messages, str(audio_file), max_new_tokens=256, do_sample=False
+                model, processor, messages, str(audio_file), max_new_tokens=512, do_sample=False
             )
             # Save the raw text output to the file.
             with open(output_txt_path, 'w', encoding='utf-8') as f:
