@@ -1,38 +1,42 @@
 Qwen2-Audio-7B-Instruct/
+
+# Other models
+asr_models/
+tts_models/XTTS-v2
+
+
+# Envs
 audio-faithful/
-data/mmar/audio/
-data/mmar/hf_cache/
-data/sakura/animal/audio/
-data/sakura/animal/hf_cache/
-data/sakura/emotion/audio/
-data/sakura/emotion/hf_cache/
-data/sakura/gender/audio/
-data/sakura/gender/hf_cache/
-data/sakura/language/audio/
-data/sakura/language/hf_cache/
-data/mmar_noisy/audio/
-data/mmar_noisy/hf_cache/
-data/sakura_noisy/animal/audio/
-data/sakura_noisy/animal/hf_cache/
-data/sakura_noisy/emotion/audio/
-data/sakura_noisy/emotion/hf_cache/
-data/sakura_noisy/gender/audio/
-data/sakura_noisy/gender/hf_cache/
-data/sakura_noisy/language/audio/
-data/sakura_noisy/language/hf_cache/
+tts-env/
+whisper_env/
+
+data/**/audio/
+data/**/hf_cache/
+data/**/**/audio/
+data/**/**/hf_cache/
+
+data/**/asr
+data/**/**/asr
+data/**/captioning
+data/**/**/captioning
+
+
 *.pyc
 __pycache__/
 */__pycache__/
 */*/__pycache__/
+
+# Cluster specific stuff
 logs/
 submission_scripts/
+
+
 nltk_data/
-tts-env/
+
+# Output files
 results/
 plots/
-tts_models/XTTS-v2/
-whisper_env
-asr_models
+
 old_comparitive_plots/
 
 # this is where tts results are going in
