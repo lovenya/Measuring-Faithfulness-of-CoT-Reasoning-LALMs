@@ -120,7 +120,7 @@ def main():
         metadata_df = pd.read_json(standardized_file_path, lines=True)
         
         # We only need a few key columns from the metadata file for our merge.
-        metadata_cols = ['id', 'modality', 'category', 'sub-category', 'audio_path']
+        metadata_cols = ['id', 'modality', 'category', 'sub-category']
         metadata_df = metadata_df[[col for col in metadata_cols if col in metadata_df.columns]]
 
     except FileNotFoundError:
