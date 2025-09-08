@@ -19,7 +19,7 @@ import config
 # --- Core Transcription Logic (Adapted from your proven script) ---
 # This section contains the essential functions for loading audio and running
 # Whisper inference. We've encapsulated your battle-tested logic here to ensure
-# it's used consistently for every audio file.
+# it's used consistently and correctly for every audio file.
 # ==============================================================================
 
 def load_audio(path, target_sr=16000):
@@ -38,45 +38,60 @@ def load_audio(path, target_sr=16000):
         speech = resampler(speech)
     return speech.numpy(), target_sr
 
-def transcribe_audio_file(model, processor, audio_path, device, max_new_tokens, num_beams):
+def forced_decoder_prompt_length(forced_decoder_ids):
+    """A small helper to safely calculate the length of the forced decoder IDs."""
+    if not forced_decoder_ids: return 0
+    try:
+        if any(isinstance(x, (list, tuple)) for x in forced_decoder_ids):
+            return sum(len(x) for x in forced_decoder_ids)
+        return len(forced_decoder_ids)
+    except Exception:
+        return 0
+
+def transcribe_audio_file(model, processor, audio_path, device, requested_max_new_tokens, num_beams):
     """
-    This is the main workhorse function. It takes a single audio file,
-    processes it, and returns the transcribed text using your robust inference logic.
+    This is the main workhorse function, built from your proven script. It takes a
+    single audio file, processes it, and returns the transcribed text.
     """
-    # First, we load and prepare the audio data.
+    # First, we load and prepare the audio data into the correct format.
     speech_array, sampling_rate = load_audio(audio_path, target_sr=16000)
     
     # The processor converts the raw audio waveform into the 'features' the model expects.
+    # We ensure these features are on the GPU and have the same data type (e.g., float16)
+    # as the model to prevent any mismatches.
     inputs = processor(speech_array, sampling_rate=sampling_rate, return_tensors="pt")
-    # We ensure the input features are on the correct device (the GPU) and have the
-    # same data type (like float16) as the model to prevent mismatches.
     input_features = inputs.input_features.to(device).to(model.dtype)
     
     # The attention mask tells the model which parts of the input to pay attention to.
     # For audio, we want it to consider the entire input.
     attention_mask = torch.ones(input_features.shape[:-1], dtype=torch.long, device=device)
     
-    # We force the model to perform English transcription. This improves accuracy.
+    # This is a key step for accuracy: we force the model to perform English transcription.
     forced_decoder_ids = processor.get_decoder_prompt_ids(language="english", task="transcribe")
     
-    # This is a safety check to ensure we don't ask the model to generate more tokens
-    # than it's physically capable of, preventing potential errors.
+    # --- The Critical Fix for the Max Length Error ---
+    # This is the robust logic from your script that calculates the maximum number of
+    # new tokens we can safely generate without crashing the model. It accounts for the
+    # length of the forced prompt and leaves a safety buffer, preventing the off-by-one
+    # error we previously encountered.
     max_target_positions = getattr(model.config, "max_target_positions", 448)
-    decoder_prompt_len = len(forced_decoder_ids[0]) if forced_decoder_ids else 0
+    decoder_prompt_len = forced_decoder_prompt_length(forced_decoder_ids)
     available_for_generation = max_target_positions - decoder_prompt_len
     if available_for_generation <= 1:
         raise RuntimeError("Not enough room for generation after setting forced decoder IDs.")
-    safe_max_new_tokens = min(max_new_tokens, max(1, available_for_generation - 1))
+    safe_max_new_tokens = min(requested_max_new_tokens, max(1, available_for_generation - 1))
     
-    # We bundle all the generation parameters together.
-    gen_kwargs = dict(max_new_tokens=safe_max_new_tokens, num_beams=num_beams, forced_decoder_ids=forced_decoder_ids)
+    # We bundle all the generation parameters together for the model.
+    gen_kwargs = dict(max_new_tokens=safe_max_new_tokens, num_beams=num_beams)
+    if forced_decoder_ids is not None:
+        gen_kwargs["forced_decoder_ids"] = forced_decoder_ids
 
-    # We run the actual inference within a 'no_grad' block, which is a standard
-    # PyTorch optimization that speeds up the process by not calculating gradients.
+    # We run the actual inference within a 'no_grad' block, a standard PyTorch
+    # optimization that speeds up the process by not calculating gradients.
     with torch.no_grad():
         generated_ids = model.generate(input_features=input_features, attention_mask=attention_mask, **gen_kwargs)
         
-    # Finally, we decode the generated token IDs back into human-readable text.
+    # Finally, we decode the model's numerical output (token IDs) back into human-readable text.
     transcription = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
     return transcription.strip()
 
@@ -98,7 +113,7 @@ def process_dataset_for_asr(model, processor, source_dir: str, output_dir: str, 
     asr_output_path.mkdir(parents=True, exist_ok=True)
 
     try:
-        # We need the original JSONL file to know which audio files belong to the dataset.
+        # We need the original JSONL file to know which audio files belong to the dataset and to get their unique IDs.
         jsonl_file = next(source_path.glob('*_standardized.jsonl'))
     except StopIteration:
         print(f"ERROR: No '*_standardized.jsonl' file found in '{source_dir}'. Skipping.")
@@ -119,7 +134,7 @@ def process_dataset_for_asr(model, processor, source_dir: str, output_dir: str, 
             continue
         
         # This is a simple but effective optimization: if the output file already exists,
-        # we assume it's been processed and skip it, making the script resumable.
+        # we assume it's been processed and skip it. This makes the script resumable.
         if output_txt_path.exists():
             continue
 
@@ -173,7 +188,8 @@ if __name__ == "__main__":
     output_base = Path(args.output)
     
     if source_base.name == 'sakura':
-        # If the user points to the main 'sakura' folder, we find and process all its sub-tracks.
+        # If the user points to the main 'sakura' folder, we're smart enough to find
+        # and process all its sub-tracks (animal, emotion, etc.) automatically.
         sub_dirs = [d for d in source_base.iterdir() if d.is_dir() and d.name != 'audio']
         for sub_dir in sub_dirs:
             output_sub_dir = output_base / sub_dir.name
