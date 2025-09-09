@@ -30,6 +30,13 @@ DATASET_MAPPING = {
     "sakura-emotion-transcribed_audio": "data/sakura_transcribed/emotion/emotion_transcribed_audio_standardized.jsonl",
     "sakura-gender-transcribed_audio": "data/sakura_transcribed/gender/gender_transcribed_audio_standardized.jsonl",
     "sakura-language-transcribed_audio": "data/sakura_transcribed/language/language_transcribed_audio_standardized.jsonl",
+    
+    # --- 'cascaded_text' condition datasets ---
+    "mmar-cascaded_text": "data/mmar_cascaded/mmar_cascaded_standardized.jsonl",
+    "sakura-animal-cascaded_text": "data/sakura_cascaded/animal/animal_cascaded_standardized.jsonl",
+    "sakura-emotion-cascaded_text": "data/sakura_cascaded/emotion/emotion_cascaded_standardized.jsonl",
+    "sakura-gender-cascaded_text": "data/sakura_cascaded/gender/gender_cascaded_standardized.jsonl",
+    "sakura-language-cascaded_text": "data/sakura_cascaded/language/language_cascaded_standardized.jsonl",
 }
 
 # --- Experiment Default Parameters ---
@@ -42,4 +49,4 @@ DATASET_NAME = "default"
 BASELINE_RESULTS_FILE_OVERRIDE = None
 VERBOSE = False
 OUTPUT_PATH = None
-CONDITION = "default" # The new global flag for the experimental condition
+CONDITION = "default"
