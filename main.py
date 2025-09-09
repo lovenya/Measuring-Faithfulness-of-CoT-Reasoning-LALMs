@@ -65,7 +65,7 @@ def main():
         "--condition", 
         type=str, 
         default="default", 
-        choices=["default", "transcribed_audio", "spoken_reasoning"],
+        choices=["default", "transcribed_audio", "cascaded_text", "spoken_reasoning"],
         help="The experimental condition to run. 'default' uses the original audio."
     )
     
