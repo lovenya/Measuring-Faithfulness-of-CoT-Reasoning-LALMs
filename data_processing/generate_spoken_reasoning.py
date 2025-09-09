@@ -69,7 +69,7 @@ def generate_concatenated_audio(tts_model: Xtts, text: str, speaker_wav: str, ch
     audio for each chunk, and concatenating the results.
     """
     # We use the model's own tokenizer to split the text into tokens.
-    tokens = tts_model.tokenizer.encode(text)
+    tokens = tts_model.tokenizer.encode(text, lang= 'en')
     
     # We then split these tokens into safe-sized chunks.
     token_chunks = [tokens[i:i + chunk_size] for i in range(0, len(tokens), chunk_size)]
@@ -151,7 +151,7 @@ def process_dataset(tts_model: Xtts, speaker_wav: str, experiment_name: str, dat
                  print(f"  - [Trial {i+1}/{len(all_trials)}] Generating: {filename}")
 
             # --- THE NEW LOGIC: Check token length and decide which method to use ---
-            tokens = tts_model.tokenizer.encode(text_to_speak)
+            tokens = tts_model.tokenizer.encode(text_to_speak, lang = 'en')
             if len(tokens) > 380:
                 # If the text is too long, use our new concatenation helper.
                 print(f"    - INFO: Text exceeds 380 tokens ({len(tokens)}). Using concatenation.")

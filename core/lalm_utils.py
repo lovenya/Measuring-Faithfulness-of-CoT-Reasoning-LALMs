@@ -66,52 +66,71 @@ def run_inference(model, processor, messages: list, audio_path: str, max_new_tok
             model, processor, text_only_messages, max_new_tokens, temperature, top_p, do_sample
         )
 
+
+    elif config.CONDITION == 'cascaded_text':
+        # This block handles the case where the input is the combined ASR + Caption string.
+        # The logic is identical to the 'transcribed_audio' case, as both are text-only.
+        cascaded_text = audio_path
+        text_only_messages = []
+        for msg in messages:
+            new_msg = msg.copy()
+            if "audio\n\n" in new_msg.get("content", ""):
+                original_content = new_msg["content"]
+                new_content = original_content.replace("audio\n\n", f"{cascaded_text}\n\n")
+                new_msg["content"] = new_content
+            text_only_messages.append(new_msg)
+        return run_text_only_inference(
+            model, processor, text_only_messages, max_new_tokens, temperature, top_p, do_sample
+        )
+
     # ==============================================================================
     # --- DEFAULT MULTI-MODAL LOGIC ---
     # This code is only executed if config.CONDITION is 'default'.
     # ==============================================================================
-    conversation = []
-    for message in messages:
-        if message["role"] == "user" and "audio" in message.get("content", ""):
-            conversation.append({
-                "role": "user", 
-                "content": [
-                    {"type": "audio", "audio_path": audio_path},
-                    {"type": "text", "text": message["content"]},
-                ]
-            })
+    
+    else:    
+        conversation = []
+        for message in messages:
+            if message["role"] == "user" and "audio" in message.get("content", ""):
+                conversation.append({
+                    "role": "user", 
+                    "content": [
+                        {"type": "audio", "audio_path": audio_path},
+                        {"type": "text", "text": message["content"]},
+                    ]
+                })
+            else:
+                conversation.append(message)
+        
+        text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
+        
+        audio_data, sampling_rate = librosa.load(
+            audio_path, 
+            sr=processor.feature_extractor.sampling_rate
+        )
+        
+        inputs = processor(
+            text=text,
+            audio=audio_data,
+            sampling_rate=sampling_rate,
+            return_tensors="pt",
+            padding=True
+        )
+
+        device = model.device
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+        
+        if do_sample:
+            generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": True, "temperature": temperature, "top_p": top_p}
         else:
-            conversation.append(message)
-    
-    text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
-    
-    audio_data, sampling_rate = librosa.load(
-        audio_path, 
-        sr=processor.feature_extractor.sampling_rate
-    )
-    
-    inputs = processor(
-        text=text,
-        audio=audio_data,
-        sampling_rate=sampling_rate,
-        return_tensors="pt",
-        padding=True
-    )
+            generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": False}
 
-    device = model.device
-    inputs = {k: v.to(device) for k, v in inputs.items()}
-    
-    if do_sample:
-        generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": True, "temperature": temperature, "top_p": top_p}
-    else:
-        generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": False}
-
-    with torch.no_grad():
-        generate_ids = model.generate(**inputs, **generation_kwargs)
-        generate_ids = generate_ids[:, inputs['input_ids'].size(1):]
-        response = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-    
-    return response
+        with torch.no_grad():
+            generate_ids = model.generate(**inputs, **generation_kwargs)
+            generate_ids = generate_ids[:, inputs['input_ids'].size(1):]
+            response = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+        
+        return response
 
 
 
