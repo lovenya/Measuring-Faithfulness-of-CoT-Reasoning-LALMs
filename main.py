@@ -11,16 +11,14 @@ import nltk
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # --- Environment Setup: NLTK Data Path ---
-# Before we do anything else, we need to make sure our environment is set up correctly.
-# This block tells the NLTK library where to find our local, offline 'punkt' package for sentence tokenization.
-# We do this here, once, at the very beginning, so that every other script in our project
-# can use NLTK without worrying about its configuration. This is a crucial step for
-# running our code successfully on the firewalled HPC compute nodes.
+# Before we do anything else, we ensure the environment is set up correctly. This block
+# tells the NLTK library where to find our local, offline 'punkt' package. We do this
+# here, once, at the very beginning, so that every other script can use NLTK without
+# worrying about its configuration. This is crucial for running on firewalled HPC nodes.
 local_nltk_data_path = os.path.join(os.getcwd(), 'nltk_data')
 if os.path.exists(local_nltk_data_path):
     nltk.data.path.append(local_nltk_data_path)
     try:
-        # We also do a quick check to make sure the specific 'punkt' package we need is actually there.
         nltk.data.find('tokenizers/punkt')
     except LookupError:
         print(f"FATAL: NLTK 'punkt' model not found in '{local_nltk_data_path}'.")
@@ -31,46 +29,45 @@ else:
 
 # Now that the environment is set, we can safely import our own project modules.
 import config
-from core.lalm_utils import load_model_and_tokenizer
 from data_loader.data_loader import load_dataset
 
 def main():
     """
-    This is the main entry point and orchestrator for our entire research framework.
-    Its job is to parse user commands, set up the global configuration, and then
-    delegate the actual scientific work to the appropriate experiment script.
+    This is the main entry point and orchestrator for our research framework.
+    Its job is to parse user commands, set up the configuration, dynamically load the
+    correct model and experiment, and then delegate the scientific work.
     """
     
     # --- Command-Line Interface (CLI) Setup ---
-    # This is our "command center." We use argparse to define all the flags and
-    # options a user can provide to control the experiments.
+    # This is our "command center." We define all the flags a user can provide.
     parser = argparse.ArgumentParser(
         description="Run LALM Faithfulness Experiments.",
         formatter_class=argparse.RawTextHelpFormatter
     )
     
-    dataset_choices = [
-        "mmar",
-        "sakura-animal",
-        "sakura-emotion",
-        "sakura-gender",
-        "sakura-language"
-    ]
-    
-    parser.add_argument("--dataset", type=str, required=True, choices=dataset_choices, help="The base name of the dataset to use (e.g., 'mmar', 'sakura-animal').")
-    parser.add_argument("--experiment", type=str, required=True, help="The name of the experiment module to run (e.g., 'baseline').")
-    
-    # This is the new, powerful flag that lets us switch between our major experimental conditions.
+    # The --model flag is now the primary way to switch between different models.
+    # The choices are read dynamically from our config file, which is robust.
     parser.add_argument(
-        "--condition", 
+        "--model", 
         type=str, 
-        default="default", 
-        choices=["default", "transcribed_audio", "cascaded_text", "spoken_reasoning"],
-        help="The experimental condition to run. 'default' uses the original audio."
+        required=True, 
+        choices=config.MODEL_ALIASES.keys(),
+        help="The alias of the model to use for the experiment (e.g., 'qwen', 'flamingo')."
     )
     
-    # These are optional arguments for controlling the scale of the run, perfect for quick tests.
-    parser.add_argument("--baseline-results-file", type=str, default=None, help="(For dependent experiments) Path to a specific baseline results file to use as input.")
+    # The --dataset choices are also read dynamically from the config file.
+    parser.add_argument(
+        "--dataset", 
+        type=str, 
+        required=True, 
+        choices=config.DATASET_MAPPING.keys(), 
+        help="The base name of the dataset to use (e.g., 'mmar', 'sakura-animal')."
+    )
+    
+    parser.add_argument("--experiment", type=str, required=True, help="The name of the experiment module to run (e.g., 'baseline').")
+    
+    # Optional arguments for controlling the scale of the run, perfect for quick tests.
+    parser.add_argument("--baseline-results-file", type=str, default=None, help="(For dependent experiments) Path to a specific baseline results file.")
     parser.add_argument("--num-samples", type=int, default=None)
     parser.add_argument("--num-chains", type=int, default=None)
     parser.add_argument('--verbose', action='store_true', help="Enable detailed, line-by-line progress logging.")
@@ -78,113 +75,103 @@ def main():
     args = parser.parse_args()
 
     # --- 1. Global Configuration Setup ---
-    # Here, we take the user's command-line arguments and use them to set global
-    # variables in our 'config' module. This is a powerful design because it makes
-    # these settings accessible to every other script in the project with a simple 'import config'.
+    # We take the user's commands and set global variables in our 'config' module.
+    # This makes these settings easily accessible to every other script in the project.
     if args.num_samples is not None: config.NUM_SAMPLES_TO_RUN = args.num_samples
     if args.num_chains: config.NUM_CHAINS_PER_QUESTION = args.num_chains
     
+    config.MODEL_ALIAS = args.model
     config.DATASET_NAME = args.dataset
     config.VERBOSE = args.verbose
-    config.CONDITION = args.condition # This makes the current condition globally known.
 
     # --- 2. Centralized Path Management ---
-    # This block now intelligently constructs the output directory based on the
-    # experimental condition, ensuring our results are perfectly organized.
+    # This block intelligently constructs the output path to keep our results organized
+    # by model, preventing different models from overwriting each other's data.
     experiment_name = args.experiment
-
-    if config.CONDITION == 'default':
-        # For the default condition, we use the standard results directory.
-        output_dir = os.path.join(config.RESULTS_DIR, experiment_name)
-    else:
-        # For any other condition (like 'transcribed_audio'), we create a dedicated
-        # subdirectory to keep the results separate and clean.
-        # e.g., 'results/transcribed_audio_experiments/baseline/'
-        condition_specific_results_dir = f"{config.CONDITION}_experiments"
-        output_dir = os.path.join(config.RESULTS_DIR, condition_specific_results_dir, experiment_name)
-
+    model_alias = config.MODEL_ALIAS
+    
+    # e.g., 'results/qwen/baseline/' or 'results/flamingo/filler_text/'
+    output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
 
-    # The rest of the path logic remains the same, but now uses our new, smarter output_dir.
-    if config.CONDITION == 'default':
-        output_filename = f"{experiment_name}_{args.dataset}.jsonl"
-    else:
-        output_filename = f"{experiment_name}_{args.dataset}_{config.CONDITION}.jsonl"
-
+    # The filename also includes the model alias for clarity.
+    # e.g., 'baseline_qwen_mmar.jsonl'
+    output_filename = f"{experiment_name}_{model_alias}_{args.dataset}.jsonl"
     config.OUTPUT_PATH = os.path.join(output_dir, output_filename)
     
-    # This is the logic that intelligently finds the right data file to load based on the user's command.
-    if args.condition == 'default':
-        dataset_key = args.dataset
-    else:
-        # This creates the key we need to look up in our config file's DATASET_MAPPING.
-        # e.g., 'sakura-animal' + 'transcribed_audio' -> 'sakura-animal-transcribed_audio'
-        dataset_key = f"{args.dataset}-{args.condition}"
+    # --- 3. Dynamic Model Utility Loading ---
+    # This is the core of our multi-model architecture. Based on the --model flag,
+    # we dynamically import the correct utility file (e.g., 'qwen_utils.py').
+    # We give it a standard alias, 'model_utils', so that all subsequent code
+    # can call functions like 'model_utils.load_model_and_tokenizer()' without
+    # needing to know which specific model is being used.
+    try:
+        model_key = config.MODEL_ALIASES[model_alias]
+        model_path = config.MODEL_PATHS[model_key]
+        
+        if model_alias == 'qwen':
+            from core import qwen_utils as model_utils
+        elif model_alias == 'flamingo':
+            from core import audio_flamingo_utils as model_utils
+        # To add a new model (e.g., 'coyote'), you would add:
+        # elif model_alias == 'coyote':
+        #     from core import coyote_utils as model_utils
+        else:
+            raise ImportError(f"No utility module defined for model alias '{model_alias}'")
 
-    # --- 3. Print a "Run Summary" Banner ---
-    # This is helpful for confirming that the job is starting with the correct settings.
+    except (ImportError, KeyError) as e:
+        print(f"FATAL: Could not load utilities for model '{model_alias}'. Check config and core directory. Error: {e}")
+        sys.exit(1)
+
+    # --- 4. Print a "Run Summary" Banner ---
     print("--- LALM Faithfulness Framework ---")
+    print(f"  - Model:      {model_alias.upper()}")
     print(f"  - Experiment: {args.experiment}")
     print(f"  - Dataset:    {args.dataset}")
-    print(f"  - Condition:  {config.CONDITION}")
     print(f"  - Outputting to: {config.OUTPUT_PATH}")
     print(f"  - Verbose Logging: {'Enabled' if config.VERBOSE else 'Disabled'}")
     print("-" * 35)
 
-    # --- 4. Dynamic Experiment Loading ---
-    # This is the "magic" that makes our framework so flexible. Instead of a giant
-    # if/else block for every experiment, we dynamically import the experiment script
-    # the user asked for.
+    # --- 5. Dynamic Experiment Loading ---
+    # This logic remains the same. We dynamically import the requested experiment script.
     try:
         experiment_module = importlib.import_module(f"experiments.{args.experiment}")
-        # We then check for the 'EXPERIMENT_TYPE' variable inside that script. This is like a
-        # "contract" that tells the orchestrator how to treat the experiment.
         EXPERIMENT_TYPE = getattr(experiment_module, 'EXPERIMENT_TYPE')
     except (ImportError, AttributeError):
         print(f"FATAL: Could not load experiment '{args.experiment}'.")
-        print(f"Ensure 'experiments/{args.experiment}.py' exists and contains the 'EXPERIMENT_TYPE' variable.")
         sys.exit(1)
 
     print(f"Detected experiment type: '{EXPERIMENT_TYPE}'")
     
-    # --- 5. Load the Model ---
-    # Since all experiments use the same model, we load it once here.
+    # --- 6. Load the Model using the Dynamic Utilities ---
     print("\nLoading model and processor...")
-    model, processor = load_model_and_tokenizer(config.MODEL_PATH)
+    # This call now works for any model because of our 'model_utils' alias.
+    model, processor = model_utils.load_model_and_tokenizer(model_path)
 
-    # --- 6. Execute the Experiment Based on its Type ---
-    # This is where the 'EXPERIMENT_TYPE' contract is enforced.
+    # --- 7. Execute the Experiment Based on its Type ---
     if EXPERIMENT_TYPE == "foundational":
-        # Foundational experiments (like 'baseline') run on the raw, standardized datasets.
         print("\nRunning a FOUNDATIONAL experiment...")
         try:
-            dataset_path = config.DATASET_MAPPING[dataset_key]
+            dataset_path = config.DATASET_MAPPING[args.dataset]
             data_samples = load_dataset(dataset_path)
             
-            # Apply the --num-samples limit if the user provided one.
             if config.NUM_SAMPLES_TO_RUN > 0:
                 data_samples = data_samples[:config.NUM_SAMPLES_TO_RUN]
                 
             print(f"Processing {len(data_samples)} samples from '{dataset_path}'.")
-            # We pass the loaded data directly to the experiment's 'run' function.
-            experiment_module.run(model, processor, data_samples, config)
-        except KeyError:
-            print(f"FATAL: Dataset key '{dataset_key}' not found in DATASET_MAPPING in config.py.")
-            sys.exit(1)
-        except FileNotFoundError:
-            print(f"FATAL: Dataset file not found for key '{dataset_key}'. Check the path in config.py.")
+            # We pass the dynamically loaded model_utils to the experiment's run function.
+            experiment_module.run(model, processor, model_utils, data_samples, config)
+        except (KeyError, FileNotFoundError) as e:
+            print(f"FATAL: Could not load dataset. Error: {e}")
             sys.exit(1)
 
     elif EXPERIMENT_TYPE == "dependent":
-        # Dependent experiments (like 'filler_text') need the results from a baseline run.
-        # We don't pass them data directly. Instead, they are responsible for loading their
-        # own data from the baseline results files.
         print("\nRunning a DEPENDENT experiment...")
         config.BASELINE_RESULTS_FILE_OVERRIDE = args.baseline_results_file
-        experiment_module.run(model, processor, config)
+        # We also pass the model_utils here.
+        experiment_module.run(model, processor, model_utils, config)
 
     else:
-        # This is a safety check to ensure the 'EXPERIMENT_TYPE' is a known value.
         print(f"FATAL: Unknown experiment type '{EXPERIMENT_TYPE}' in 'experiments/{args.experiment}.py'.")
         sys.exit(1)
 
