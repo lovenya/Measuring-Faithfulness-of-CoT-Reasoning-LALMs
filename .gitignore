@@ -3,6 +3,7 @@ Qwen2-Audio-7B-Instruct/
 # Other models
 asr_models/
 tts_models/XTTS-v2/
+audio-flamingo-weights/
 
 
 # Envs
@@ -10,6 +11,7 @@ audio-faithful/
 tts-env/
 whisper_env/
 audio-analysis-env/
+audio-flamingo-env
 
 # Data
 data/**/audio/
