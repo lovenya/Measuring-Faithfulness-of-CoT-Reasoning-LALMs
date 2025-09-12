@@ -6,6 +6,10 @@ import os
 import importlib
 import nltk
 
+import faulthandler
+faulthandler.enable()
+
+
 # To make sure our project's modules can be found, we add the root directory to the Python path.
 # This makes our imports cleaner and more reliable, no matter where we run the script from.
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))

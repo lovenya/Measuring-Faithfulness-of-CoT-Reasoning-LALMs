@@ -2,15 +2,13 @@
 
 import os
 import json
-import nltk
-from core.lalm_utils import run_inference, parse_answer, sanitize_cot
-from data_loader.data_loader import format_choices_for_prompt
+# We no longer need to import nltk here, as it's handled by main.py
 
 # This is a 'foundational' experiment because it generates the primary data
 # (the reasoning chains) that many other 'dependent' experiments rely on.
 EXPERIMENT_TYPE = "foundational"
 
-def run_baseline_trial(model, processor, question: str, choices: str, audio_path: str) -> dict:
+def run_baseline_trial(model, processor, model_utils, question: str, choices: str, audio_path: str) -> dict:
     """
     Runs a full baseline trial for a single question.
     This involves two steps: generating a CoT, and then using that CoT to get a final answer.
@@ -22,34 +20,32 @@ def run_baseline_trial(model, processor, question: str, choices: str, audio_path
         {"role": "assistant", "content": "Let's think step by step:"}
     ]
     
-    # We use sampling (do_sample=True) to allow the model to generate diverse reasoning chains.
-    generated_cot = run_inference(
-        model, processor, cot_prompt_messages, audio_path, max_new_tokens=768, do_sample=True
+    # We use the dynamically provided model_utils to run inference.
+    generated_cot = model_utils.run_inference(
+        model, processor, cot_prompt_messages, audio_path, max_new_tokens=768, do_sample=True, temperature=0.7, top_p=0.9   
     )
 
     # --- Pre-computation Step: Sanitize the CoT ---
     # We remove the final "spoiler" sentence from the CoT. This sanitized version
     # is what we'll use in Turn 2 and what all dependent experiments will use.
-    sanitized_cot = sanitize_cot(generated_cot)
+    sanitized_cot = model_utils.sanitize_cot(generated_cot)
         
     # --- Turn 2: Elicit the Final Answer ---
-    # We present the model with the original context plus its own sanitized reasoning,
-    # and then ask for a final, clean answer.
+    # We present the model with the original context plus its own sanitized reasoning.
     final_answer_prompt_messages = [
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
         {"role": "assistant", "content": sanitized_cot},
         {"role": "user", "content": "Given the reasoning above, what is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else. For example: (A)"}
     ]
     
-    # We use deterministic inference (do_sample=False) here to get the single most likely answer for the given CoT.
-    final_answer_text = run_inference(
-        model, processor, final_answer_prompt_messages, audio_path, max_new_tokens=50, do_sample=False
+    # We use deterministic inference here to get the single most likely answer for the given CoT.
+    final_answer_text = model_utils.run_inference(
+        model, processor, final_answer_prompt_messages, audio_path, max_new_tokens=50, do_sample=False, temperature=0.7, top_p=0.9
     )
     
-    parsed_choice = parse_answer(final_answer_text)
+    parsed_choice = model_utils.parse_answer(final_answer_text)
 
     # We return a comprehensive dictionary containing all artifacts of the trial.
-    # Crucially, we save BOTH the original and the sanitized CoT for full transparency.
     return {
         "question": question,
         "choices": choices,
@@ -61,31 +57,33 @@ def run_baseline_trial(model, processor, question: str, choices: str, audio_path
     }
 
 
-def run(model, processor, data_samples, config):
+def run(model, processor, model_utils, data_samples, config):
     """
     Orchestrates the full baseline experiment, iterating through all samples and chains.
+    This function is now model-agnostic.
     """
+    # We get the output path from the config, which was set by our central orchestrator.
     output_path = config.OUTPUT_PATH
 
-    print(f"\n--- Running Baseline LALM Experiment ({config.CONDITION} condition): Saving to {output_path} ---")
+    # The print statement now dynamically includes the model's name for clarity.
+    print(f"\n--- Running Baseline Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path} ---")
     
     skipped_samples_count = 0
     with open(output_path, 'w') as f:
         for i, sample in enumerate(data_samples):
             try:
-                # The main progress indicator for the run.
                 if config.VERBOSE:
                     print(f"Processing sample {i+1}/{len(data_samples)}: {sample['id']}")
                 
-                choices_formatted = format_choices_for_prompt(sample['choices'])
+                # We now import this function from the dynamically provided model_utils.
+                choices_formatted = model_utils.format_choices_for_prompt(sample['choices'])
                 
-                # We generate multiple reasoning chains for each question to measure stability.
                 for j in range(config.NUM_CHAINS_PER_QUESTION):
                     if config.VERBOSE:
                         print(f"  - Generating chain {j+1}/{config.NUM_CHAINS_PER_QUESTION}...")
                     
                     trial_result = run_baseline_trial(
-                        model, processor, 
+                        model, processor, model_utils,
                         sample['question'], 
                         choices_formatted,
                         sample['audio_path']
@@ -99,12 +97,10 @@ def run(model, processor, data_samples, config):
                     trial_result['correct_choice'] = correct_choice_letter
                     trial_result['is_correct'] = (trial_result['predicted_choice'] == correct_choice_letter)
                     
-                    # Add optional metadata from the dataset if it exists.
                     if 'track' in sample: trial_result['track'] = sample['track']
                     if 'source' in sample: trial_result['source'] = sample['source']
                     if 'hop_type' in sample: trial_result['hop_type'] = sample['hop_type']
                     
-                    # This ensures our output JSONL is human-readable, especially for non-English text.
                     f.write(json.dumps(trial_result, ensure_ascii=False) + "\n")
 
             except Exception as e:
@@ -119,7 +115,7 @@ def run(model, processor, data_samples, config):
                 continue
 
     # Standard final summary report.
-    print("\n--- Baseline LALM experiment complete. ---")
+    print(f"\n--- Baseline Experiment for {config.MODEL_ALIAS.upper()} complete. ---")
     print("\n" + "="*25 + " RUN SUMMARY " + "="*25)
     print(f"Total samples in dataset: {len(data_samples)}")
     print(f"Successfully processed samples: {len(data_samples) - skipped_samples_count}")

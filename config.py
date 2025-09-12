@@ -1,10 +1,33 @@
 # config.py
 
 # --- Path Configurations ---
-MODEL_PATH = "./Qwen2-Audio-7B-Instruct" 
+# This dictionary holds the paths to the root directories of our models.
+# The keys are internal identifiers that we'll use throughout the project.
+MODEL_PATHS = {
+    "qwen": "./Qwen2-Audio-7B-Instruct",
+    
+    # --- Paths for Audio Flamingo ---
+    # We now have two distinct paths: one for the weights and one for the code.
+    
+    "flamingo_code": "./audio-flamingo-code",
+    "flamingo_weights": "./audio-flamingo-weights",
+    
+}
+
+# This is the main directory where all experimental results will be saved.
+# Our main.py script will create model-specific subdirectories inside this folder.
 RESULTS_DIR = "./results"
 
-WHISPER_MODEL_PATH = "./asr_models/whisper-large-v3"
+
+# --- Model Aliases ---
+# This maps the short, user-friendly names you'll use on the command line
+# (e.g., --model qwen) to the internal keys used in MODEL_PATHS.
+# This makes our commands cleaner and allows us to change paths without
+# breaking the command-line interface.
+MODEL_ALIASES = {
+    "qwen": "qwen",
+    "flamingo": "flamingo_weights"
+}
 
 # --- Dataset Alias Mapping ---
 # This is the single source of truth for all dataset paths.
@@ -23,30 +46,21 @@ DATASET_MAPPING = {
     "sakura-emotion-noisy": "data/sakura_noisy/emotion/emotion_noisy_standardized.jsonl",
     "sakura-gender-noisy": "data/sakura_noisy/gender/gender_noisy_standardized.jsonl",
     "sakura-language-noisy": "data/sakura_noisy/language/language_noisy_standardized.jsonl",
-    
-    # --- 'transcribed_audio' condition datasets ---
-    "mmar-transcribed_audio": "data/mmar_transcribed/mmar_transcribed_audio_standardized.jsonl",
-    "sakura-animal-transcribed_audio": "data/sakura_transcribed/animal/animal_transcribed_audio_standardized.jsonl",
-    "sakura-emotion-transcribed_audio": "data/sakura_transcribed/emotion/emotion_transcribed_audio_standardized.jsonl",
-    "sakura-gender-transcribed_audio": "data/sakura_transcribed/gender/gender_transcribed_audio_standardized.jsonl",
-    "sakura-language-transcribed_audio": "data/sakura_transcribed/language/language_transcribed_audio_standardized.jsonl",
-    
-    # --- 'cascaded_text' condition datasets ---
-    "mmar-cascaded_text": "data/mmar_cascaded/mmar_cascaded_standardized.jsonl",
-    "sakura-animal-cascaded_text": "data/sakura_cascaded/animal/animal_cascaded_standardized.jsonl",
-    "sakura-emotion-cascaded_text": "data/sakura_cascaded/emotion/emotion_cascaded_standardized.jsonl",
-    "sakura-gender-cascaded_text": "data/sakura_cascaded/gender/gender_cascaded_standardized.jsonl",
-    "sakura-language-cascaded_text": "data/sakura_cascaded/language/language_cascaded_standardized.jsonl",
 }
 
 # --- Experiment Default Parameters ---
-NUM_SAMPLES_TO_RUN = 0 
+# These are the default settings for a full, scientific run. They can be
+# temporarily overridden from the command line for quick tests.
+NUM_SAMPLES_TO_RUN = 0  # Set to 0 to run on the entire dataset by default.
 NUM_CHAINS_PER_QUESTION = 10
 SNR_LEVELS_TO_TEST = [20, 10, 5, 0, -5, -10]
 
+
 # --- Global Variables (Managed by main.py) ---
+# These are placeholders that our main orchestrator will fill in at runtime.
+# This allows any script to know the context of the current run.
+MODEL_ALIAS = "default"
 DATASET_NAME = "default"
 BASELINE_RESULTS_FILE_OVERRIDE = None
 VERBOSE = False
 OUTPUT_PATH = None
-CONDITION = "default"

@@ -234,3 +234,19 @@ def parse_answer(text: str) -> str | None:
 
     # Final Fallback: If no pattern matches, the output is unparsable.
     return None
+
+
+def format_choices_for_prompt(choices: List[str]) -> str:
+    """
+    Model-agnostic function to format a list of choices into a string.
+    e.g., ["cat", "dog"] -> "(A) cat\n(B) dog"
+    """
+    if not choices:
+        return ""
+    
+    formatted_choices = []
+    for i, choice in enumerate(choices):
+        letter = chr(ord('A') + i)
+        formatted_choices.append(f"({letter}) {choice}")
+        
+    return "\n".join(formatted_choices)
