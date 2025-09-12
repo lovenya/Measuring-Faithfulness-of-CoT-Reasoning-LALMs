@@ -2,16 +2,14 @@
 
 import os
 import json
-from core.lalm_utils import run_inference, parse_answer
-from data_loader.data_loader import format_choices_for_prompt
 
 # This is a 'foundational' experiment. It provides a crucial baseline for
 # the model's performance when given the prompt structure but no reasoning content.
 EXPERIMENT_TYPE = "foundational"
 
-def run_no_reasoning_trial(model, processor, question: str, choices: str, audio_path: str) -> dict:
+def run_no_reasoning_trial(model, processor, model_utils, question: str, choices: str, audio_path: str) -> dict:
     """
-    Runs a single trial with an empty CoT. This is our most constrained baseline.
+    Runs a single, deterministic trial with an empty CoT.
     """
     # This prompt structure perfectly matches the final prompt of the baseline
     # experiment, but with an empty string for the assistant's CoT. This isolates
@@ -23,11 +21,12 @@ def run_no_reasoning_trial(model, processor, question: str, choices: str, audio_
     ]
 
     # This is a deterministic call (do_sample=False) since there's no creative generation.
-    final_answer_text = run_inference(
-        model, processor, final_answer_prompt_messages, audio_path, max_new_tokens=10, do_sample=False
+    final_answer_text = model_utils.run_inference(
+        model, processor, final_answer_prompt_messages, audio_path, 
+        max_new_tokens=10, do_sample=False, temperature=0.7, top_p=0.9
     )
     
-    parsed_choice = parse_answer(final_answer_text)
+    parsed_choice = model_utils.parse_answer(final_answer_text)
 
     # Return a self-documenting dictionary, including the prompt, per our SOP.
     return {
@@ -39,47 +38,60 @@ def run_no_reasoning_trial(model, processor, question: str, choices: str, audio_
         "final_prompt_messages": final_answer_prompt_messages
     }
 
-def run(model, processor, data_samples, config):
+def run(model, processor, model_utils, data_samples, config):
     """
-    Orchestrates the full "No-Reasoning" experiment, adhering to our SOP.
+    Orchestrates the full "No-Reasoning" experiment with a robust, restartable design.
     """
     output_path = config.OUTPUT_PATH
+    print(f"\n--- Running 'No-Reasoning' Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path} ---")
 
-    print(f"\n--- Running 'No-Reasoning' Experiment ({config.CONDITION} condition): Saving to {output_path} ---")
+    # --- RESTARTABILITY LOGIC (SIMPLIFIED FOR DETERMINISTIC EXPERIMENT) ---
+    completed_ids = set()
+    if os.path.exists(output_path):
+        print("  - Found existing results file. Checking for completed work...")
+        with open(output_path, 'r') as f:
+            for line in f:
+                try:
+                    # For this deterministic experiment, we only need to know if an ID
+                    # exists in the file. If it does, we consider it complete.
+                    completed_ids.add(json.loads(line)['id'])
+                except (json.JSONDecodeError, KeyError):
+                    continue # Ignore corrupted lines or lines missing an 'id'
+    
+    if completed_ids:
+        print(f"  - Found {len(completed_ids)} completed questions. They will be skipped.")
+    # --- END OF RESTARTABILITY LOGIC ---
     
     skipped_samples_count = 0
-    with open(output_path, 'w') as f:
+    # Open the file in 'append' mode ('a') to preserve existing work.
+    with open(output_path, 'a') as f:
         for i, sample in enumerate(data_samples):
             try:
+                # If this question has already been processed, skip it instantly.
+                if sample['id'] in completed_ids:
+                    continue
+
                 if config.VERBOSE:
                     print(f"Processing sample {i+1}/{len(data_samples)}: {sample['id']}")
                 
-                choices_formatted = format_choices_for_prompt(sample['choices'])
+                choices_formatted = model_utils.format_choices_for_prompt(sample['choices'])
                 
-                # This is a deterministic experiment, so we only need to run it once per question.
-                # We only need to run the expensive inference a single time for each question.
-                cached_result = None
+                # --- OPTIMIZATION: RUN INFERENCE ONLY ONCE ---
+                # Since this is a deterministic experiment, the result will be the same
+                # for all chains. We run the expensive inference call a single time...
+                cached_result = run_no_reasoning_trial(
+                    model, processor, model_utils,
+                    sample['question'], 
+                    choices_formatted, 
+                    sample['audio_path']
+                )
+                # ...and then we reuse this result for each chain entry.
                 
-                # We still loop to create one entry per chain_id for structural consistency
-                # with the baseline results file, which makes downstream analysis easier.
                 for j in range(config.NUM_CHAINS_PER_QUESTION):
-                    
-                    if cached_result is None:
-                        # If this is the first loop (or we haven't run the inference yet),
-                        # run it now and store the result.
-                        cached_result = run_no_reasoning_trial(
-                            model, processor, 
-                            sample['question'], 
-                            choices_formatted, 
-                            sample['audio_path']
-                        )
-
-                    # For every loop, we start with a fresh copy of the cached result.
                     trial_result = cached_result.copy()
 
-                    # Now, we add the metadata that is unique to this specific entry.
                     trial_result['id'] = sample['id']
-                    trial_result['chain_id'] = j # This is the only thing that changes in the loop
+                    trial_result['chain_id'] = j
                     
                     correct_choice_letter = chr(ord('A') + sample['answer_key'])
                     trial_result['correct_choice'] = correct_choice_letter
@@ -101,11 +113,13 @@ def run(model, processor, data_samples, config):
                 print("="*60 + "\n")
                 continue
 
-    # Standard final summary report.
-    print("\n--- 'No-Reasoning' experiment complete. ---")
+    # The final summary provides a clear report of what was accomplished in this specific run.
+    total_processed_in_this_run = len(data_samples) - len(completed_ids)
+    print(f"\n--- 'No-Reasoning' experiment for {config.MODEL_ALIAS.upper()} complete. ---")
     print("\n" + "="*25 + " RUN SUMMARY " + "="*25)
     print(f"Total samples in dataset: {len(data_samples)}")
-    print(f"Successfully processed samples: {len(data_samples) - skipped_samples_count}")
-    print(f"Skipped samples due to errors: {skipped_samples_count}")
+    print(f"Samples already complete: {len(completed_ids)}")
+    print(f"Samples processed in this run: {total_processed_in_this_run - skipped_samples_count}")
+    print(f"Skipped samples due to errors in this run: {skipped_samples_count}")
     print(f"Results saved to: {output_path}")
     print("="*65)
