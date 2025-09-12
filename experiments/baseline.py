@@ -147,7 +147,9 @@ def run(model, processor, model_utils, data_samples, config):
                     
                     # We ensure our output JSONL is human-readable, especially for non-English text.
                     f.write(json.dumps(trial_result, ensure_ascii=False) + "\n")
-
+                    
+                    f.flush()                  
+                    
             except Exception as e:
                 # Our standard error handling block to ensure one bad sample doesn't kill the whole job.
                 skipped_samples_count += 1

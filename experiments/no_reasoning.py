@@ -102,6 +102,8 @@ def run(model, processor, model_utils, data_samples, config):
                     if 'hop_type' in sample: trial_result['hop_type'] = sample['hop_type']
 
                     f.write(json.dumps(trial_result, ensure_ascii=False) + "\n")
+                    
+                    f.flush()
 
             except Exception as e:
                 skipped_samples_count += 1
