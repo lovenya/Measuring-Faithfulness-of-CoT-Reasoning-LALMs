@@ -19,6 +19,11 @@ MODEL_PATHS = {
 RESULTS_DIR = "./results"
 
 
+# This file is used for text-only inference calls with multi-modal models
+# that always expect an audio input.
+SILENT_AUDIO_PATH = "./assets/silent.wav"
+
+
 # --- Model Aliases ---
 # This maps the short, user-friendly names you'll use on the command line
 # (e.g., --model qwen) to the internal keys used in MODEL_PATHS.
