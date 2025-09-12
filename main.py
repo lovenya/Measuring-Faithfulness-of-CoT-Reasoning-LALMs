@@ -109,6 +109,7 @@ def main():
     # We give it a standard alias, 'model_utils', so that all subsequent code
     # can call functions like 'model_utils.load_model_and_tokenizer()' without
     # needing to know which specific model is being used.
+    print(f"Loading utility module for model: {model_alias}")
     try:
         model_key = config.MODEL_ALIASES[model_alias]
         model_path = config.MODEL_PATHS[model_key]
