@@ -183,4 +183,4 @@ def format_choices_for_prompt(choices: List[str]) -> str:
     for i, choice in enumerate(choices):
         letter = chr(ord('A') + i)
         formatted_choices.append(f"({letter}) {choice}")
-    return "\n".join(formatted_choices)```
+    return "\n".join(formatted_choices)

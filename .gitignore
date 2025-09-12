@@ -11,7 +11,8 @@ audio-faithful/
 tts-env/
 whisper_env/
 audio-analysis-env/
-audio-flamingo-env
+audio-flamingo-env/
+salmonn-env/
 
 # Data
 data/**/audio/

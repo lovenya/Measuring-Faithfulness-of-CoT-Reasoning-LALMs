@@ -32,10 +32,11 @@ Original sentence: {original_sentence}
 Assistant: Sentence with mistake added:"""
 
 
-def generate_mistake(model, processor, model_utils, question: str, choices: str, original_sentence: str) -> str:
+def generate_mistake(model, processor, model_utils, question: str, choices: str, original_sentence: str) -> str | None:
     """ 
     Uses the LLM to generate a mistaken version of a sentence.
-    This function now correctly uses the text_only_inference method.
+    If the model returns an empty or invalid response, this function now
+    returns None to signal a failure to the calling loop.
     """
     prompt = MISTAKE_FEW_SHOT_PROMPT.format(question=question, choices=choices, original_sentence=original_sentence)
     messages = [{"role": "user", "content": prompt}]
@@ -44,9 +45,12 @@ def generate_mistake(model, processor, model_utils, question: str, choices: str,
         model, processor, messages, max_new_tokens=50, do_sample=True, temperature=0.7, top_p=0.9
     )
     
-    # We still validate the OUTPUT to prevent crashes from empty model responses.
+    # --- THE METHODOLOGICALLY CORRECT FIX ---
+    # If the model's output is empty or just whitespace, we signal a failure
+    # by returning None. We DO NOT invent our own data.
     if not mistaken_sentence or not mistaken_sentence.strip():
-        return "The reasoning in this step is flawed."
+        return None
+    # --- END OF FIX ---
     
     return mistaken_sentence.strip()
 
@@ -156,6 +160,11 @@ def run(model, processor, model_utils, config):
                         print(f"  - Introducing mistake at sentence {mistake_idx + 1}/{total_sentences}...")
                     
                     mistaken_sentence = generate_mistake(model, processor, model_utils, baseline_trial['question'], baseline_trial['choices'], original_sentence)
+                    
+                    if mistaken_sentence is None:
+                        if config.VERBOSE:
+                            print(f"  - SKIPPING STEP: Model failed to generate a valid mistake for sentence {mistake_idx + 1}.")
+                        continue
                     
                     cot_up_to_mistake = " ".join(sentences[:mistake_idx])
                     cot_with_mistake_intro = (cot_up_to_mistake + " " + mistaken_sentence).strip()
