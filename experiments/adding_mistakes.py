@@ -33,16 +33,18 @@ Assistant: Sentence with mistake added:"""
 
 
 def generate_mistake(model, processor, model_utils, question: str, choices: str, original_sentence: str) -> str:
-    """ Uses the LLM to generate a mistaken version of a sentence. """
+    """ 
+    Uses the LLM to generate a mistaken version of a sentence.
+    This function now correctly uses the text_only_inference method.
+    """
     prompt = MISTAKE_FEW_SHOT_PROMPT.format(question=question, choices=choices, original_sentence=original_sentence)
     messages = [{"role": "user", "content": prompt}]
+    
     mistaken_sentence = model_utils.run_text_only_inference(
         model, processor, messages, max_new_tokens=50, do_sample=True, temperature=0.7, top_p=0.9
     )
     
-    # We now validate the OUTPUT of the LLM call. If the model fails to generate
-    # a mistake and returns an empty or whitespace string, we provide a safe
-    # default. This permanently prevents the downstream 'TensorList' error.
+    # We still validate the OUTPUT to prevent crashes from empty model responses.
     if not mistaken_sentence or not mistaken_sentence.strip():
         return "The reasoning in this step is flawed."
     
@@ -80,8 +82,8 @@ def run_final_trial(model, processor, model_utils, question: str, choices: str, 
 
 def run(model, processor, model_utils, config):
     """ 
-    Orchestrates the 'Adding Mistakes' experiment with a syntactically correct and
-    logically robust error handling and restartable design.
+    Orchestrates the 'Adding Mistakes' experiment with robust validation,
+    error handling, and restartable design.
     """
     # --- 1. Load Dependent Data (with robust, backward-compatible pathing) ---
     if config.MODEL_ALIAS == 'qwen':
@@ -119,16 +121,12 @@ def run(model, processor, model_utils, config):
                 except (json.JSONDecodeError, KeyError): continue
     if completed_chains: print(f"  - Found {len(completed_chains)} fully completed chains. They will be skipped.")
 
-    # --- 3. Run Experiment with Corrected Error Handling ---
+    # --- 3. Run Experiment ---
     print(f"\n--- Running Adding Mistakes Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path} ---")
     
     skipped_trials_count = 0
     with open(output_path, 'a') as f:
         for i, baseline_trial in enumerate(samples_to_process):
-            # --- THE SYNTAX FIX ---
-            # The main 'try' block now correctly wraps all the work for a single baseline trial.
-            # If any part of the inner loop fails, the exception will be caught by the
-            # 'except' block at the end of this loop.
             try:
                 q_id, chain_id = baseline_trial['id'], baseline_trial['chain_id']
                 if (q_id, chain_id) in completed_chains:
@@ -142,37 +140,32 @@ def run(model, processor, model_utils, config):
                 total_sentences = len(sentences)
                 if total_sentences == 0: continue
 
-                # This inner loop processes each sentence of a single chain.
                 for mistake_idx in range(total_sentences):
+                    original_sentence = sentences[mistake_idx]
+
+                    # --- THE METHODOLOGICALLY CORRECT FIX ---
+                    # We validate the input sentence here. If it's not meaningful,
+                    # we skip this step entirely rather than inventing fake data.
+                    if len(original_sentence.split()) < 3:
+                        if config.VERBOSE:
+                            print(f"  - Skipping sentence {mistake_idx + 1}/{total_sentences} as it is not a meaningful sentence.")
+                        continue # Skip to the next sentence.
+                    # --- END OF FIX ---
+
                     if config.VERBOSE:
                         print(f"  - Introducing mistake at sentence {mistake_idx + 1}/{total_sentences}...")
                     
-                    # We still use granular try/except blocks here for detailed logging,
-                    # but they now re-raise the exception to be caught by the main handler.
-                    try:
-                        original_sentence = sentences[mistake_idx]
-                        mistaken_sentence = generate_mistake(model, processor, model_utils, baseline_trial['question'], baseline_trial['choices'], original_sentence)
-                    except Exception as e:
-                        print(f"\nERROR during 'generate_mistake' for {q_id}/{chain_id}: {e}\n")
-                        raise # Re-raise to trigger the outer skip
+                    mistaken_sentence = generate_mistake(model, processor, model_utils, baseline_trial['question'], baseline_trial['choices'], original_sentence)
+                    
+                    cot_up_to_mistake = " ".join(sentences[:mistake_idx])
+                    cot_with_mistake_intro = (cot_up_to_mistake + " " + mistaken_sentence).strip()
+                    reasoning_continuation = continue_reasoning(model, processor, model_utils, baseline_trial['audio_path'], baseline_trial['question'], baseline_trial['choices'], cot_with_mistake_intro)
+                    
+                    fully_corrupted_cot = (cot_with_mistake_intro + " " + reasoning_continuation).strip()
+                    final_sanitized_corrupted_cot = model_utils.sanitize_cot(fully_corrupted_cot)
+                    
+                    trial_result = run_final_trial(model, processor, model_utils, baseline_trial['question'], baseline_trial['choices'], baseline_trial['audio_path'], final_sanitized_corrupted_cot)
 
-                    try:
-                        cot_up_to_mistake = " ".join(sentences[:mistake_idx])
-                        cot_with_mistake_intro = (cot_up_to_mistake + " " + mistaken_sentence).strip()
-                        reasoning_continuation = continue_reasoning(model, processor, model_utils, baseline_trial['audio_path'], baseline_trial['question'], baseline_trial['choices'], cot_with_mistake_intro)
-                    except Exception as e:
-                        print(f"\nERROR during 'continue_reasoning' for {q_id}/{chain_id}: {e}\n")
-                        raise
-
-                    try:
-                        fully_corrupted_cot = (cot_with_mistake_intro + " " + reasoning_continuation).strip()
-                        final_sanitized_corrupted_cot = model_utils.sanitize_cot(fully_corrupted_cot)
-                        trial_result = run_final_trial(model, processor, model_utils, baseline_trial['question'], baseline_trial['choices'], baseline_trial['audio_path'], final_sanitized_corrupted_cot)
-                    except Exception as e:
-                        print(f"\nERROR during 'run_final_trial' for {q_id}/{chain_id}: {e}\n")
-                        raise
-
-                    # If all steps succeed, write the result.
                     baseline_final_choice = baseline_trial['predicted_choice']
                     final_ordered_result = {
                         "id": q_id, "chain_id": chain_id, "mistake_position": mistake_idx + 1,
@@ -183,9 +176,8 @@ def run(model, processor, model_utils, config):
                         "final_prompt_messages": trial_result['final_prompt_messages'], "final_answer_raw": trial_result['final_answer_raw']
                     }
                     f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
+                    f.flush()
 
-            # This is the single, correctly placed 'except' block that handles any failure
-            # within the trial, logs it, and moves on to the next trial.
             except Exception as e:
                 skipped_trials_count += 1
                 print("\n" + "="*60)
@@ -194,7 +186,7 @@ def run(model, processor, model_utils, config):
                 print(f"  - Final Error Type: {type(e).__name__}")
                 print(f"  - Final Error Details: {e}")
                 print("="*60 + "\n")
-                continue # Move to the next baseline_trial
+                continue
 
     # Final summary
     total_processed_in_this_run = len(samples_to_process) - len(completed_chains)
