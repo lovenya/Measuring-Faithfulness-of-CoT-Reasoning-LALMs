@@ -176,8 +176,9 @@ def parse_answer(text: str) -> str | None:
     if not text: return None
     cleaned_text = text.strip().strip('.').strip()
 
-    # Pattern 1: (A) - Most specific, often at the end of a line.
-    match = re.search(r'\(([A-Z])\)$', cleaned_text)
+    # Pattern 1: (A) - It looks for '(X)' anywhere in the string.
+    # This is much more robust to the model's conversational tendencies.
+    match = re.search(r'\(([A-Z])\)', cleaned_text)
     if match: return match.group(1)
 
     # Pattern 2: A) - Handles cases where the opening parenthesis is missing.
