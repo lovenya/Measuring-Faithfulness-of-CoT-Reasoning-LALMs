@@ -52,7 +52,7 @@ DATASET_MAPPING = {
 # These are the default settings for a full, scientific run. They can be
 # temporarily overridden from the command line for quick tests.
 NUM_SAMPLES_TO_RUN = 0  # Set to 0 to run on the entire dataset by default.
-NUM_CHAINS_PER_QUESTION = 10
+NUM_CHAINS_PER_QUESTION = 5
 SNR_LEVELS_TO_TEST = [20, 10, 5, 0, -5, -10]
 
 
