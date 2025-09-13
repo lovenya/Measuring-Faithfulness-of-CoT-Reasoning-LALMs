@@ -117,7 +117,7 @@ def run_inference(
         response = model.generate(
             samples,
             prompts=text_prompt,
-            max_new_tokens=max_new_tokens, # Their generate method uses max_new_tokens
+            max_length=max_new_tokens,
             do_sample=do_sample,
             temperature=temperature,
             top_p=top_p,
