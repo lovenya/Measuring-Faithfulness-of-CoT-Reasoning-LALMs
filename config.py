@@ -39,7 +39,7 @@ SILENT_AUDIO_PATH = "./assets/silent.wav"
 # breaking the command-line interface.
 MODEL_ALIASES = {
     "qwen": "qwen",
-    "flamingo": "flamingo_weights"
+    "flamingo": "flamingo_weights",
     
     # The alias for SALMONN can just point to its main checkpoint.
     # The utils script will know how to find the other components.
