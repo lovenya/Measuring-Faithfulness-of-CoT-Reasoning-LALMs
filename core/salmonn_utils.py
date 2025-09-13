@@ -13,7 +13,6 @@ from typing import Tuple, List, Dict
 import config as project_config
 
 # --- Environment Setup for Custom SALMONN Code ---
-# This block adds the SALMONN source code to Python's path, allowing us to import its custom modules.
 _SALMONN_CODE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'salmonn-source-code'))
 if not os.path.exists(_SALMONN_CODE_PATH):
     raise FileNotFoundError(f"SALMONN source code not found at: {_SALMONN_CODE_PATH}")
@@ -31,45 +30,35 @@ except ImportError as e:
 
 def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
     """
-    Assembles the SALMONN model from its constituent components using its
-    purpose-built `from_config` factory method.
+    Assembles the SALMONN model from its constituent components using the
+    'decode_config.yaml' as a template.
     """
-    # 1. Create the configuration dictionary that the model expects.
-    #    This structure is based on the 'config.yaml' from the SALMONN repository.
-    model_config = {
-        'llama_path': project_config.MODEL_PATHS['salmonn_vicuna'],
-        'whisper_path': project_config.MODEL_PATHS['salmonn_whisper'],
-        'beats_path': project_config.MODEL_PATHS['salmonn_beats'],
-        'ckpt': os.path.join(model_path, 'salmonn_7b_v0.pth'), # model_path is the checkpoint dir
-        'freeze_whisper': True,
-        'freeze_beats': True,
-        'use_speech_Qformer': True,
-        'freeze_speech_QFormer': True, # Set to True for inference
-        'window_level_Qformer': True,
-        'num_speech_query_token': 1,
-        'second_per_window': 0.32,
-        'second_stride': 0.32,
-        'prompt_template': 'USER: {}\nASSISTANT:',
-        'max_txt_len': 300,
-        'end_sym': '</s>',
-        'lora': False # LoRA is for training, disable for inference
-    }
+    # 1. Load the base YAML config designed for inference.
+    yaml_path = os.path.join(_SALMONN_CODE_PATH, 'configs', 'decode_config.yaml')
+    if not os.path.exists(yaml_path):
+        raise FileNotFoundError(f"SALMONN decode_config.yaml not found at: {yaml_path}")
+    
+    with open(yaml_path, 'r') as f:
+        cfg = yaml.safe_load(f)
+
+    # 2. Programmatically override the paths in the config with our local paths.
+    cfg['model']['llama_path'] = project_config.MODEL_PATHS['salmonn_vicuna']
+    cfg['model']['whisper_path'] = project_config.MODEL_PATHS['salmonn_whisper']
+    cfg['model']['beats_path'] = project_config.MODEL_PATHS['salmonn_beats']
+    # We assume we are using the 13B model for this codebase.
+    cfg['model']['ckpt'] = os.path.join(project_config.MODEL_PATHS['salmonn_checkpoint'], 'SALMONN_13B.pth')
 
     print("Loading SALMONN model from config...")
-    # 2. Use the correct 'from_config' factory method to initialize the model.
-    #    This is the critical fix that resolves our previous error.
-    model = SALMONN.from_config(model_config)
-    
-    # The SALMONN class does not automatically store the prompt template.
-    # We will store it on the model object ourselves right after creation.
-    # This makes it accessible to our helper functions later.
-    model.prompt_template = model_config['prompt_template']
-    
+    # 3. Use the correct 'from_config' factory method to initialize the model.
+    model = SALMONN.from_config(cfg['model'])
     model.eval()
     model.to("cuda" if torch.cuda.is_available() else "cpu")
 
+    # 4. Store the generation config and prompt template on the model object for later use.
+    model.generate_cfg_template = cfg['generate']
+    model.prompt_template = cfg['model']['prompt_template']
+
     print("Loading Whisper feature extractor...")
-    # 3. Load the correct processor, as identified in their cli_inference.py.
     processor = WhisperFeatureExtractor.from_pretrained(project_config.MODEL_PATHS['salmonn_whisper'])
     
     print("SALMONN model and processor loaded successfully.")
@@ -77,10 +66,7 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
 
 
 def _convert_messages_to_salmonn_prompt(messages: List[Dict], model: object) -> str:
-    """
-    Correctly formats our standard 'messages' list into the specific prompt
-    string that SALMONN expects, including its unique placeholder.
-    """
+    """ Correctly formats our standard 'messages' list into the specific prompt string that SALMONN expects. """
     text_content = ""
     for msg in messages:
         if "audio\n\n" in msg.get("content", ""):
@@ -89,9 +75,7 @@ def _convert_messages_to_salmonn_prompt(messages: List[Dict], model: object) -> 
         else:
             text_content += msg.get("content", "").strip() + "\n"
     
-    # Use the model's own prompt template for robustness.
     prompt_template = model.prompt_template
-    # Use the correct placeholder, as seen in their source code.
     return prompt_template.format("<Speech><SpeechHere></Speech> " + text_content.strip())
 
 
@@ -112,15 +96,22 @@ def run_inference(
     # 2. Format the text prompt.
     text_prompt = [_convert_messages_to_salmonn_prompt(messages, model)]
 
-    # 3. Generate the response.
+    # --- THE FINAL, DEFINITIVE FIX ---
+    # We create the 'generate_cfg' dictionary that the model's generate() method expects.
+    # We start with the template from the YAML and override it with our specific parameters.
+    generate_cfg = model.generate_cfg_template.copy()
+    generate_cfg['max_new_tokens'] = max_new_tokens
+    generate_cfg['do_sample'] = do_sample
+    generate_cfg['temperature'] = temperature
+    generate_cfg['top_p'] = top_p
+    # --- END OF FIX ---
+
+    # 3. Generate the response, passing the correctly formatted arguments.
     with torch.cuda.amp.autocast(dtype=torch.float16):
         response = model.generate(
             samples,
+            generate_cfg=generate_cfg, # Pass the dictionary here
             prompts=text_prompt,
-            max_length=max_new_tokens,
-            do_sample=do_sample,
-            temperature=temperature,
-            top_p=top_p,
         )
     return response[0]
 
