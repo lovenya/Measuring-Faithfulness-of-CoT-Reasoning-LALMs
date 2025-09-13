@@ -5,6 +5,8 @@ asr_models/
 tts_models/XTTS-v2/
 audio-flamingo-weights/
 
+model_components/
+
 
 # Envs
 audio-faithful/
