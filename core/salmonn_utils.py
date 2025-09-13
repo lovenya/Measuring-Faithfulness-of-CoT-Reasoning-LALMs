@@ -46,7 +46,7 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
         'use_speech_Qformer': True,
         'freeze_speech_QFormer': True, # Set to True for inference
         'window_level_Qformer': True,
-        'num_speech_query_token': 8,
+        'num_speech_query_token': 1,
         'second_per_window': 0.32,
         'second_stride': 0.32,
         'prompt_template': 'USER: {}\nASSISTANT:',
