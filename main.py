@@ -118,9 +118,12 @@ def main():
             from core import qwen_utils as model_utils
         elif model_alias == 'flamingo':
             from core import audio_flamingo_utils as model_utils
+        elif model_alias == 'salmonn':
+        from core import salmonn_utils as model_utils
         # To add a new model (e.g., 'coyote'), you would add:
         # elif model_alias == 'coyote':
         #     from core import coyote_utils as model_utils
+        
         else:
             raise ImportError(f"No utility module defined for model alias '{model_alias}'")
 
