@@ -28,10 +28,12 @@ except ImportError as e:
     sys.exit(1)
 
 
+# In core/salmonn_utils.py
+
 def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
     """
-    Assembles the SALMONN model from its constituent components using the
-    'decode_config.yaml' as a template.
+    Assembles the SALMONN model from its constituent components, now with
+    robust, absolute pathing for its internal config files.
     """
     # 1. Load the base YAML config designed for inference.
     yaml_path = os.path.join(_SALMONN_CODE_PATH, 'configs', 'decode_config.yaml')
@@ -45,16 +47,25 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
     cfg['model']['llama_path'] = project_config.MODEL_PATHS['salmonn_vicuna']
     cfg['model']['whisper_path'] = project_config.MODEL_PATHS['salmonn_whisper']
     cfg['model']['beats_path'] = project_config.MODEL_PATHS['salmonn_beats']
-    # We assume we are using the 13B model for this codebase.
     cfg['model']['ckpt'] = os.path.join(project_config.MODEL_PATHS['salmonn_checkpoint'], 'SALMONN_13B.pth')
 
+    # --- THE CRITICAL FIX ---
+    # The paths in the YAML are relative to the source code directory.
+    # We must convert them to absolute paths so the model can find them
+    # from our project's root execution directory.
+    prompt_path = cfg['model']['prompt_path']
+    test_prompt_path = cfg['model']['test_prompt_path']
+    
+    cfg['model']['prompt_path'] = os.path.join(_SALMONN_CODE_PATH, prompt_path)
+    cfg['model']['test_prompt_path'] = os.path.join(_SALMONN_CODE_PATH, test_prompt_path)
+    # --- END OF FIX ---
+
     print("Loading SALMONN model from config...")
-    # 3. Use the correct 'from_config' factory method to initialize the model.
     model = SALMONN.from_config(cfg['model'])
     model.eval()
     model.to("cuda" if torch.cuda.is_available() else "cpu")
 
-    # 4. Store the generation config and prompt template on the model object for later use.
+    # Store the generation config and prompt template on the model object for later use.
     model.generate_cfg_template = cfg['generate']
     model.prompt_template = cfg['model']['prompt_template']
 
