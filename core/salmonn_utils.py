@@ -12,23 +12,33 @@ from typing import Tuple, List, Dict
 # We import our project's config to get the master paths.
 import config
 
-# --- Environment Setup for Custom SALMONN Code ---
-# This block adds the SALMONN source code to Python's path, making it importable.
-# It reads the path from our central config file, making it robust.
+
+
+## --- THE FINAL, CORRECT ENVIRONMENT SETUP ---
+# This block ensures that Python can find the custom SALMONN source code.
 _SALMONN_CODE_PATH = os.path.abspath(config.MODEL_PATHS['salmonn_code'])
 if not os.path.exists(_SALMONN_CODE_PATH):
     raise FileNotFoundError(f"SALMONN source code not found at: {_SALMONN_CODE_PATH}")
+
+# We use sys.path.insert(0, ...) to add the SALMONN source directory to the
+# VERY BEGINNING of Python's search path. This is the most robust method.
+# It guarantees that when the script looks for 'models' or 'utils', it finds
+# the ones inside the SALMONN code first, preventing any conflicts.
 if _SALMONN_CODE_PATH not in sys.path:
-    sys.path.append(_SALMONN_CODE_PATH)
-    print(f"INFO: Temporarily added '{_SALMONN_CODE_PATH}' to Python path.")
+    sys.path.insert(0, _SALMONN_CODE_PATH)
+    print(f"INFO: Temporarily added '{_SALMONN_CODE_PATH}' to the start of Python's import path.")
 
 try:
+    # Now that the path is correctly set, these imports will succeed.
     from models.salmonn import SALMONN
     from utils.conversation import Conversation, SeparatorStyle
     from transformers import WhisperProcessor
 except ImportError as e:
-    print(f"FATAL: Failed to import from SALMONN source code. Error: {e}")
+    print(f"FATAL: Failed to import from SALMONN source code. Check the directory and dependencies. Error: {e}")
     sys.exit(1)
+# --- END OF THE FIX ---
+    
+
 
 
 def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
