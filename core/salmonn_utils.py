@@ -22,31 +22,32 @@ if _SALMONN_CODE_PATH not in sys.path:
 try:
     from models.salmonn import SALMONN
     from transformers import WhisperFeatureExtractor
+    # --- THE CRITICAL IMPORT ---
+    # We now import the authors' own data preparation utility.
+    from utils import prepare_one_sample
 except ImportError as e:
     print(f"FATAL: Failed to import from 'salmonn-source-code'. Error: {e}")
     sys.exit(1)
 
 
 def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
-    """
-    Assembles the SALMONN 13B model from its constituent components.
-    """
+    """ Assembles the SALMONN 13B model from its constituent components. """
     yaml_path = os.path.join(_SALMONN_CODE_PATH, 'configs', 'decode_config.yaml')
     if not os.path.exists(yaml_path):
         raise FileNotFoundError(f"SALMONN decode_config.yaml not found at: {yaml_path}")
     with open(yaml_path, 'r') as f:
         cfg = yaml.safe_load(f)
-
-    # --- THE FINAL FIXES ---
-    # 1. Point to the correct 13B checkpoint filename you provided.
-    cfg['model']['ckpt'] = os.path.join(project_config.MODEL_PATHS['salmonn_checkpoint'], 'salmonn_v1.pth')
-    # 2. Restore the number of query tokens to 8, which is correct for the 13B architecture.
-    cfg['model']['num_speech_query_token'] = 1
-    # --- END OF FIXES ---
-
+        
+    # We override the paths AND the model architecture to perfectly match the
+    # pre-trained checkpoint we are loading.
     cfg['model']['llama_path'] = project_config.MODEL_PATHS['salmonn_vicuna']
     cfg['model']['whisper_path'] = project_config.MODEL_PATHS['salmonn_whisper']
     cfg['model']['beats_path'] = project_config.MODEL_PATHS['salmonn_beats']
+    cfg['model']['ckpt'] = os.path.join(project_config.MODEL_PATHS['salmonn_checkpoint'], 'salmonn_v1.pth')
+    
+    # This is the critical line that fixes the size mismatch. The checkpoint
+    # was trained with 1 query token, so we must build the model with 1.
+    cfg['model']['num_speech_query_token'] = 1
     
     prompt_path = cfg['model']['prompt_path']
     test_prompt_path = cfg['model']['test_prompt_path']
@@ -68,7 +69,6 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
     return model, processor
 
 
-
 def _convert_messages_to_salmonn_prompt(messages: List[Dict], model: object) -> str:
     """ Correctly formats our standard 'messages' list into the specific prompt string that SALMONN expects. """
     text_content = ""
@@ -88,37 +88,42 @@ def run_inference(
     audio_path: str, max_new_tokens: int, do_sample: bool,
     temperature: float, top_p: float
 ) -> str:
-    """ Runs multi-modal inference using the SALMONN model. """
+    """
+    Runs multi-modal inference by exactly replicating the logic from the authors'
+    own cli_inference.py script.
+    """
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
 
-    # 1. Pre-process the audio.
-    wav_file, sr = librosa.load(audio_path, sr=16000)
-    audio_input = processor(wav_file, sampling_rate=sr, return_tensors="pt").input_features
-    samples = {'spectrogram': audio_input.to(model.device)}
+    # --- THE FINAL, DEFINITIVE FIX ---
+    # 1. Use the authors' 'prepare_one_sample' utility to create the 'samples' dictionary.
+    #    This guarantees the input is in the exact format the model expects.
+    samples = prepare_one_sample(audio_path, processor)
+    # Move all tensors in the dictionary to the correct device.
+    samples = {k: v.to(model.device) if isinstance(v, torch.Tensor) else v for k, v in samples.items()}
 
-    # 2. Format the text prompt.
+    # 2. Format the text prompt as before.
     text_prompt = [_convert_messages_to_salmonn_prompt(messages, model)]
 
-    # --- THE FINAL, DEFINITIVE FIX ---
-    # We create the 'generate_cfg' dictionary that the model's generate() method expects.
-    # We start with the template from the YAML and override it with our specific parameters.
+    # 3. Construct the 'generate_cfg' dictionary as required.
     generate_cfg = model.generate_cfg_template.copy()
     generate_cfg['max_new_tokens'] = max_new_tokens
     generate_cfg['do_sample'] = do_sample
     generate_cfg['temperature'] = temperature
     generate_cfg['top_p'] = top_p
-    # --- END OF FIX ---
-
-    # 3. Generate the response, passing the correctly formatted arguments.
+    
+    # 4. Call generate() with the three correct arguments: samples, generate_cfg, and prompts.
     with torch.cuda.amp.autocast(dtype=torch.float16):
         response = model.generate(
             samples,
-            generate_cfg=generate_cfg, # Pass the dictionary here
+            generate_cfg=generate_cfg,
             prompts=text_prompt,
         )
+    # --- END OF FIX ---
     return response[0]
 
+
+# ... (The rest of the file is correct and remains unchanged) ...
 
 def run_text_only_inference(
     model: object, processor: object, messages: List[Dict],
