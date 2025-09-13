@@ -12,6 +12,14 @@ MODEL_PATHS = {
     "flamingo_code": "./audio-flamingo-code",
     "flamingo_weights": "./audio-flamingo-weights",
     
+    # --- SALMONN Component Paths ---
+    # These keys correspond to the variables in SALMONN's own config files.
+    "salmonn_code": "./salmonn-source-code",
+    "whisper_path": "./model_components/whisper-large-v2",
+    "beats_path": "./model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
+    "llama_path": "./model_components/vicuna-7b-v1.5",
+    "ckpt": "./model_components/salmonn-7b-v0-checkpoint/SALMONN-7B_v0.pth",
+    
 }
 
 # This is the main directory where all experimental results will be saved.
@@ -32,6 +40,10 @@ SILENT_AUDIO_PATH = "./assets/silent.wav"
 MODEL_ALIASES = {
     "qwen": "qwen",
     "flamingo": "flamingo_weights"
+    
+    # The alias for SALMONN can just point to its main checkpoint.
+    # The utils script will know how to find the other components.
+    "salmonn": "ckpt"
 }
 
 # --- Dataset Alias Mapping ---
