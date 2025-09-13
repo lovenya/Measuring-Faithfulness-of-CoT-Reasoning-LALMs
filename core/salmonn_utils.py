@@ -59,6 +59,12 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
     # 2. Use the correct 'from_config' factory method to initialize the model.
     #    This is the critical fix that resolves our previous error.
     model = SALMONN.from_config(model_config)
+    
+    # The SALMONN class does not automatically store the prompt template.
+    # We will store it on the model object ourselves right after creation.
+    # This makes it accessible to our helper functions later.
+    model.prompt_template = model_config['prompt_template']
+    
     model.eval()
     model.to("cuda" if torch.cuda.is_available() else "cpu")
 
