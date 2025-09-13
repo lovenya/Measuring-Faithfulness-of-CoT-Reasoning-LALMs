@@ -47,7 +47,7 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
     cfg['model']['llama_path'] = project_config.MODEL_PATHS['salmonn_vicuna']
     cfg['model']['whisper_path'] = project_config.MODEL_PATHS['salmonn_whisper']
     cfg['model']['beats_path'] = project_config.MODEL_PATHS['salmonn_beats']
-    cfg['model']['ckpt'] = os.path.join(project_config.MODEL_PATHS['salmonn_checkpoint'], 'SALMONN_13B.pth')
+    cfg['model']['ckpt'] = os.path.join(project_config.MODEL_PATHS['salmonn_checkpoint'], 'salmonn_7b_v0.pth')
 
     # --- THE CRITICAL FIX ---
     # The paths in the YAML are relative to the source code directory.
@@ -102,7 +102,7 @@ def run_inference(
     # 1. Pre-process the audio.
     wav_file, sr = librosa.load(audio_path, sr=16000)
     audio_input = processor(wav_file, sampling_rate=sr, return_tensors="pt").input_features
-    samples = {'audio_input': audio_input.to(model.device)}
+    samples = {'spectrogram': audio_input.to(model.device)}
 
     # 2. Format the text prompt.
     text_prompt = [_convert_messages_to_salmonn_prompt(messages, model)]
