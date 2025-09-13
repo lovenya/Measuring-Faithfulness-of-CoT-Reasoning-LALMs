@@ -40,7 +40,7 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
         'llama_path': project_config.MODEL_PATHS['salmonn_vicuna'],
         'whisper_path': project_config.MODEL_PATHS['salmonn_whisper'],
         'beats_path': project_config.MODEL_PATHS['salmonn_beats'],
-        'ckpt': os.path.join(model_path, 'SALMONN-7B_v0.pth'), # model_path is the checkpoint dir
+        'ckpt': os.path.join(model_path, 'salmonn_7b_v0.pth'), # model_path is the checkpoint dir
         'freeze_whisper': True,
         'freeze_beats': True,
         'use_speech_Qformer': True,
@@ -70,7 +70,7 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
     return model, processor
 
 
-def _convert_messages_to_salmonn_prompt(messages: List[Dict, str]], model: object) -> str:
+def _convert_messages_to_salmonn_prompt(messages: List[Dict], model: object) -> str:
     """
     Correctly formats our standard 'messages' list into the specific prompt
     string that SALMONN expects, including its unique placeholder.
@@ -90,7 +90,7 @@ def _convert_messages_to_salmonn_prompt(messages: List[Dict, str]], model: objec
 
 
 def run_inference(
-    model: object, processor: object, messages: List[Dict, str]],
+    model: object, processor: object, messages: List[Dict],
     audio_path: str, max_new_tokens: int, do_sample: bool,
     temperature: float, top_p: float
 ) -> str:
@@ -120,7 +120,7 @@ def run_inference(
 
 
 def run_text_only_inference(
-    model: object, processor: object, messages: List[Dict, str]],
+    model: object, processor: object, messages: List[Dict],
     max_new_tokens: int, do_sample: bool, temperature: float, top_p: float
 ) -> str:
     """ Runs text-only inference using our robust 'silent audio' methodology. """

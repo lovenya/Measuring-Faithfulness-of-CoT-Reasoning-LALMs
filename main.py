@@ -6,9 +6,9 @@ import os
 import importlib
 import nltk
 
+# faulthandler is a great tool for debugging low-level crashes.
 import faulthandler
 faulthandler.enable()
-
 
 # To make sure our project's modules can be found, we add the root directory to the Python path.
 # This makes our imports cleaner and more reliable, no matter where we run the script from.
@@ -49,14 +49,14 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter
     )
     
-    # The --model flag is now the primary way to switch between different models.
+    # The --model flag is the primary way to switch between different models.
     # The choices are read dynamically from our config file, which is robust.
     parser.add_argument(
         "--model", 
         type=str, 
         required=True, 
         choices=config.MODEL_ALIASES.keys(),
-        help="The alias of the model to use for the experiment (e.g., 'qwen', 'flamingo')."
+        help="The alias of the model to use for the experiment (e.g., 'qwen', 'flamingo', 'salmonn')."
     )
     
     # The --dataset choices are also read dynamically from the config file.
@@ -94,21 +94,21 @@ def main():
     experiment_name = args.experiment
     model_alias = config.MODEL_ALIAS
     
-    # e.g., 'results/qwen/baseline/' or 'results/flamingo/filler_text/'
+    # e.g., 'results/qwen/baseline/' or 'results/salmonn/filler_text/'
     output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
 
     # The filename also includes the model alias for clarity.
-    # e.g., 'baseline_qwen_mmar.jsonl'
+    # e.g., 'baseline_salmonn_mmar.jsonl'
     output_filename = f"{experiment_name}_{model_alias}_{args.dataset}.jsonl"
     config.OUTPUT_PATH = os.path.join(output_dir, output_filename)
     
     # --- 3. Dynamic Model Utility Loading ---
     # This is the core of our multi-model architecture. Based on the --model flag,
     # we dynamically import the correct utility file (e.g., 'qwen_utils.py').
-    # We give it a standard alias, 'model_utils', so that all subsequent code
-    # can call functions like 'model_utils.load_model_and_tokenizer()' without
-    # needing to know which specific model is being used.
+    # We give it a standard alias, 'model_utils', so all subsequent code can call
+    # functions like 'model_utils.load_model_and_tokenizer()' without needing to
+    # know which specific model is being used.
     print(f"Loading utility module for model: {model_alias}")
     try:
         model_key = config.MODEL_ALIASES[model_alias]
@@ -120,10 +120,7 @@ def main():
             from core import audio_flamingo_utils as model_utils
         elif model_alias == 'salmonn':
             from core import salmonn_utils as model_utils
-        # To add a new model (e.g., 'coyote'), you would add:
-        # elif model_alias == 'coyote':
-        #     from core import coyote_utils as model_utils
-        
+        # To add a new model, you would add a new 'elif' block here.
         else:
             raise ImportError(f"No utility module defined for model alias '{model_alias}'")
 
@@ -141,7 +138,7 @@ def main():
     print("-" * 35)
 
     # --- 5. Dynamic Experiment Loading ---
-    # This logic remains the same. We dynamically import the requested experiment script.
+    # This logic dynamically imports the requested experiment script.
     try:
         experiment_module = importlib.import_module(f"experiments.{args.experiment}")
         EXPERIMENT_TYPE = getattr(experiment_module, 'EXPERIMENT_TYPE')
