@@ -16,8 +16,11 @@ MODEL_PATHS = {
     # Paths to the individual, pre-trained components SALMONN requires.
     "salmonn_whisper": "./model_components/whisper-large-v2",
     "salmonn_beats": "./model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
-    "salmonn_vicuna": "./model_components/vicuna-7b-v1.5",
-    "salmonn_checkpoint": "./model_components/salmonn-7b-v0-checkpoint",
+    # This now correctly points to the 13B Vicuna model.
+    "salmonn_vicuna": "./model_components/vicuna-13b-v1.1",
+    # This now correctly points to the 13B checkpoint directory.
+    "salmonn_checkpoint": "./model_components/salmonn-13b-checkpoint",
+    
 }
 
 # This is the main directory where all experimental results will be saved.

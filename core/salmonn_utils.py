@@ -9,7 +9,6 @@ import librosa
 import yaml
 from typing import Tuple, List, Dict
 
-# We import our main project config to get the master paths to the model components.
 import config as project_config
 
 # --- Environment Setup for Custom SALMONN Code ---
@@ -24,48 +23,41 @@ try:
     from models.salmonn import SALMONN
     from transformers import WhisperFeatureExtractor
 except ImportError as e:
-    print(f"FATAL: Failed to import from 'salmonn-source-code'. Ensure you have run 'pip install -r requirements.txt'. Error: {e}")
+    print(f"FATAL: Failed to import from 'salmonn-source-code'. Error: {e}")
     sys.exit(1)
 
 
-# In core/salmonn_utils.py
-
 def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
     """
-    Assembles the SALMONN model from its constituent components, now with
-    robust, absolute pathing for its internal config files.
+    Assembles the SALMONN 13B model from its constituent components.
     """
-    # 1. Load the base YAML config designed for inference.
     yaml_path = os.path.join(_SALMONN_CODE_PATH, 'configs', 'decode_config.yaml')
     if not os.path.exists(yaml_path):
         raise FileNotFoundError(f"SALMONN decode_config.yaml not found at: {yaml_path}")
-    
     with open(yaml_path, 'r') as f:
         cfg = yaml.safe_load(f)
 
-    # 2. Programmatically override the paths in the config with our local paths.
+    # --- THE FINAL FIXES ---
+    # 1. Point to the correct 13B checkpoint filename you provided.
+    cfg['model']['ckpt'] = os.path.join(project_config.MODEL_PATHS['salmonn_checkpoint'], 'salmonn_v1.pth')
+    # 2. Restore the number of query tokens to 8, which is correct for the 13B architecture.
+    cfg['model']['num_speech_query_token'] = 1
+    # --- END OF FIXES ---
+
     cfg['model']['llama_path'] = project_config.MODEL_PATHS['salmonn_vicuna']
     cfg['model']['whisper_path'] = project_config.MODEL_PATHS['salmonn_whisper']
     cfg['model']['beats_path'] = project_config.MODEL_PATHS['salmonn_beats']
-    cfg['model']['ckpt'] = os.path.join(project_config.MODEL_PATHS['salmonn_checkpoint'], 'salmonn_7b_v0.pth')
-
-    # --- THE CRITICAL FIX ---
-    # The paths in the YAML are relative to the source code directory.
-    # We must convert them to absolute paths so the model can find them
-    # from our project's root execution directory.
+    
     prompt_path = cfg['model']['prompt_path']
     test_prompt_path = cfg['model']['test_prompt_path']
-    
     cfg['model']['prompt_path'] = os.path.join(_SALMONN_CODE_PATH, prompt_path)
     cfg['model']['test_prompt_path'] = os.path.join(_SALMONN_CODE_PATH, test_prompt_path)
-    # --- END OF FIX ---
 
     print("Loading SALMONN model from config...")
     model = SALMONN.from_config(cfg['model'])
     model.eval()
     model.to("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Store the generation config and prompt template on the model object for later use.
     model.generate_cfg_template = cfg['generate']
     model.prompt_template = cfg['model']['prompt_template']
 
@@ -74,6 +66,7 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
     
     print("SALMONN model and processor loaded successfully.")
     return model, processor
+
 
 
 def _convert_messages_to_salmonn_prompt(messages: List[Dict], model: object) -> str:
