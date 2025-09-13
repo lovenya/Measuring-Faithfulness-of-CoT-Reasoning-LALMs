@@ -154,6 +154,12 @@ def main():
     # --- 6. Load the Model using the Dynamic Utilities ---
     print("\nLoading model and processor...")
     # This call now works for any model because of our 'model_utils' alias.
+    model_path = config.MODEL_PATHS.get(config.MODEL_ALIASES[model_alias], None)
+    if model_path is None and model_alias != 'salmonn':
+         print(f"FATAL: Model path not found for '{model_alias}' in config.py")
+         sys.exit(1)
+
+    print(f"\nLoading model and processor...")
     model, processor = model_utils.load_model_and_tokenizer(model_path)
 
     # --- 7. Execute the Experiment Based on its Type ---
