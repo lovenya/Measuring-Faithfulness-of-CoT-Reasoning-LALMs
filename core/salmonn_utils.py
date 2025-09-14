@@ -115,8 +115,8 @@ def run_inference(
     
     # 3. Construct the 'samples' dictionary exactly as the model expects.
     samples = {
-        "spectrogram": spectrogram.to(model.device, dtype=torch.float16),
-        "raw_wav": torch.from_numpy(resampled_wav).unsqueeze(0).to(model.device, dtype=torch.float16)
+        "spectrogram": spectrogram.to(model.device, dtype=torch.float32),
+        "raw_wav": torch.from_numpy(resampled_wav).unsqueeze(0).to(model.device, dtype=torch.float32)
     }
 
     prompt = _convert_messages_to_salmonn_prompt(messages, model.custom_config)
@@ -128,8 +128,9 @@ def run_inference(
     generate_cfg['top_p'] = top_p
     generate_cfg['num_beams'] = 1
 
-    with torch.cuda.amp.autocast(dtype=torch.bfloat16):
+    with torch.cuda.amp.autocast(dtype=torch.float32):
         result = model.generate(samples, generate_cfg, prompts=[prompt])
+        
     
     return result[0]
 
