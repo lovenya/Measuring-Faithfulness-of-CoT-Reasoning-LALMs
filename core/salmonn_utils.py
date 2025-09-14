@@ -22,9 +22,7 @@ if _SALMONN_CODE_PATH not in sys.path:
 try:
     from models.salmonn import SALMONN
     from transformers import WhisperFeatureExtractor
-    # --- THE CRITICAL IMPORT ---
-    # We now import the authors' own data preparation utility.
-    from utils import prepare_one_sample
+    # We no longer need 'prepare_one_sample' as we will perform this logic ourselves.
 except ImportError as e:
     print(f"FATAL: Failed to import from 'salmonn-source-code'. Error: {e}")
     sys.exit(1)
@@ -37,18 +35,13 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
         raise FileNotFoundError(f"SALMONN decode_config.yaml not found at: {yaml_path}")
     with open(yaml_path, 'r') as f:
         cfg = yaml.safe_load(f)
-        
-    # We override the paths AND the model architecture to perfectly match the
-    # pre-trained checkpoint we are loading.
+
     cfg['model']['llama_path'] = project_config.MODEL_PATHS['salmonn_vicuna']
     cfg['model']['whisper_path'] = project_config.MODEL_PATHS['salmonn_whisper']
     cfg['model']['beats_path'] = project_config.MODEL_PATHS['salmonn_beats']
     cfg['model']['ckpt'] = os.path.join(project_config.MODEL_PATHS['salmonn_checkpoint'], 'salmonn_v1.pth')
-    
-    # This is the critical line that fixes the size mismatch. The checkpoint
-    # was trained with 1 query token, so we must build the model with 1.
-    cfg['model']['num_speech_query_token'] = 1
-    
+    cfg['model']['num_speech_query_token'] = 1 # Correct for 13B
+
     prompt_path = cfg['model']['prompt_path']
     test_prompt_path = cfg['model']['test_prompt_path']
     cfg['model']['prompt_path'] = os.path.join(_SALMONN_CODE_PATH, prompt_path)
@@ -89,41 +82,46 @@ def run_inference(
     temperature: float, top_p: float
 ) -> str:
     """
-    Runs multi-modal inference by exactly replicating the logic from the authors'
-    own cli_inference.py script.
+    Runs multi-modal inference with robust, self-contained audio processing.
     """
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
 
     # --- THE FINAL, DEFINITIVE FIX ---
-    # 1. Use the authors' 'prepare_one_sample' utility to create the 'samples' dictionary.
-    #    This guarantees the input is in the exact format the model expects.
-    samples = prepare_one_sample(audio_path, processor)
-    # Move all tensors in the dictionary to the correct device.
-    samples = {k: v.to(model.device) if isinstance(v, torch.Tensor) else v for k, v in samples.items()}
+    # 1. Load and Resample Audio: We manually load the audio and explicitly
+    #    tell librosa to resample it to 16000 Hz, the rate Whisper requires.
+    #    This permanently solves the ValueError.
+    wav_file, sr = librosa.load(audio_path, sr=16000)
 
-    # 2. Format the text prompt as before.
+    # 2. Process Audio: We use the WhisperFeatureExtractor to convert the
+    #    now-correctly-sampled audio into a spectrogram tensor.
+    audio_features = processor(wav_file, sampling_rate=16000, return_tensors="pt").input_features
+
+    # 3. Create Samples Dictionary: We construct the dictionary with the correct
+    #    'spectrogram' key that the model's internal code expects.
+    samples = {'spectrogram': audio_features.to(model.device)}
+    # --- END OF FIX ---
+
+    # 4. Format the text prompt as before.
     text_prompt = [_convert_messages_to_salmonn_prompt(messages, model)]
 
-    # 3. Construct the 'generate_cfg' dictionary as required.
+    # 5. Construct the 'generate_cfg' dictionary as required.
     generate_cfg = model.generate_cfg_template.copy()
     generate_cfg['max_new_tokens'] = max_new_tokens
     generate_cfg['do_sample'] = do_sample
     generate_cfg['temperature'] = temperature
     generate_cfg['top_p'] = top_p
     
-    # 4. Call generate() with the three correct arguments: samples, generate_cfg, and prompts.
+    # 6. Call generate() with the three correct arguments.
     with torch.cuda.amp.autocast(dtype=torch.float16):
         response = model.generate(
             samples,
             generate_cfg=generate_cfg,
             prompts=text_prompt,
         )
-    # --- END OF FIX ---
     return response[0]
 
 
-# ... (The rest of the file is correct and remains unchanged) ...
 
 def run_text_only_inference(
     model: object, processor: object, messages: List[Dict],
