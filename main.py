@@ -27,10 +27,10 @@ if os.path.exists(local_nltk_data_path):
     try:
         nltk.data.find('tokenizers/punkt')
     except LookupError:
-        print(f"FATAL: NLTK 'punkt' model not found in '{local_nltk_data_path}'.")
+        logging.info(f"FATAL: NLTK 'punkt' model not found in '{local_nltk_data_path}'.")
         exit(1)
 else:
-    print(f"FATAL: NLTK data directory not found at '{local_nltk_data_path}'.")
+    logging.info(f"FATAL: NLTK data directory not found at '{local_nltk_data_path}'.")
     exit(1)
 
 # Now that the environment is set, we can safely import our own project modules.
@@ -114,7 +114,7 @@ def main():
     # We give it a standard alias, 'model_utils', so all subsequent code can call
     # functions like 'model_utils.load_model_and_tokenizer()' without needing to
     # know which specific model is being used.
-    print(f"Loading utility module for model: {model_alias}")
+    logging.info(f"Loading utility module for model: {model_alias}")
     try:
         model_key = config.MODEL_ALIASES[model_alias]
         model_path = config.MODEL_PATHS[model_key]
@@ -130,10 +130,10 @@ def main():
             raise ImportError(f"No utility module defined for model alias '{model_alias}'")
 
     except (ImportError, KeyError) as e:
-        print(f"FATAL: Could not load utilities for model '{model_alias}'. Check config and core directory. Error: {e}")
+        logging.info(f"FATAL: Could not load utilities for model '{model_alias}'. Check config and core directory. Error: {e}")
         sys.exit(1)
 
-    # --- 4. Print a "Run Summary" Banner ---
+    # --- 4. logging.info a "Run Summary" Banner ---
     logging.info("--- LALM Faithfulness Framework ---")
     logging.info(f"  - Model:      {model_alias.upper()}")
     logging.info(f"  - Experiment: {args.experiment}")
@@ -148,19 +148,19 @@ def main():
         experiment_module = importlib.import_module(f"experiments.{args.experiment}")
         EXPERIMENT_TYPE = getattr(experiment_module, 'EXPERIMENT_TYPE')
     except (ImportError, AttributeError):
-        print(f"FATAL: Could not load experiment '{args.experiment}'.")
+        logging.info(f"FATAL: Could not load experiment '{args.experiment}'.")
         sys.exit(1)
 
-    print(f"Detected experiment type: '{EXPERIMENT_TYPE}'")
+    logging.info(f"Detected experiment type: '{EXPERIMENT_TYPE}'")
     
     # --- 6. Load the Model using the Dynamic Utilities ---
-    print("\nLoading model and processor...")
+    logging.info("\nLoading model and processor...")
     # This call now works for any model because of our 'model_utils' alias.
     model, processor = model_utils.load_model_and_tokenizer(model_path)
 
     # --- 7. Execute the Experiment Based on its Type ---
     if EXPERIMENT_TYPE == "foundational":
-        print("\nRunning a FOUNDATIONAL experiment...")
+        logging.info("\nRunning a FOUNDATIONAL experiment...")
         try:
             dataset_path = config.DATASET_MAPPING[args.dataset]
             data_samples = load_dataset(dataset_path)
@@ -168,24 +168,24 @@ def main():
             if config.NUM_SAMPLES_TO_RUN > 0:
                 data_samples = data_samples[:config.NUM_SAMPLES_TO_RUN]
                 
-            print(f"Processing {len(data_samples)} samples from '{dataset_path}'.")
+            logging.info(f"Processing {len(data_samples)} samples from '{dataset_path}'.")
             # We pass the dynamically loaded model_utils to the experiment's run function.
             experiment_module.run(model, processor, model_utils, data_samples, config)
         except (KeyError, FileNotFoundError) as e:
-            print(f"FATAL: Could not load dataset. Error: {e}")
+            logging.info(f"FATAL: Could not load dataset. Error: {e}")
             sys.exit(1)
 
     elif EXPERIMENT_TYPE == "dependent":
-        print("\nRunning a DEPENDENT experiment...")
+        logging.info("\nRunning a DEPENDENT experiment...")
         config.BASELINE_RESULTS_FILE_OVERRIDE = args.baseline_results_file
         # We also pass the model_utils here.
         experiment_module.run(model, processor, model_utils, config)
 
     else:
-        print(f"FATAL: Unknown experiment type '{EXPERIMENT_TYPE}' in 'experiments/{args.experiment}.py'.")
+        logging.info(f"FATAL: Unknown experiment type '{EXPERIMENT_TYPE}' in 'experiments/{args.experiment}.py'.")
         sys.exit(1)
 
-    print("\n--- Experiment completed successfully! ---")
+    logging.info("\n--- Experiment completed successfully! ---")
     logging.info(f"  - Full log will be saved to: {log_filepath}")
 
 if __name__ == "__main__":

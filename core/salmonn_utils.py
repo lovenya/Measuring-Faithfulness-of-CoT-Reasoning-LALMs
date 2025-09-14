@@ -9,6 +9,7 @@ import yaml
 import importlib.util  # We need this for the manual import
 from typing import Tuple, List, Dict
 import librosa
+import logging
 
 # We import our main config with an alias to avoid any confusion.
 import config as framework_config
@@ -51,29 +52,42 @@ except ImportError as e:
 
 def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
     """
-    Loads the complex, multi-component SALMONN model.
+    Loads the SALMONN model, now with detailed logging for debugging.
     """
-    print("--- Loading SALMONN Model System (using native config loader) ---")
+    logging.info("--- Loading SALMONN Model System ---")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    logging.info(f"Target device for model loading: {device.upper()}")
     
+    logging.info("Loading SALMONN's native YAML config...")
     config_path = os.path.join(framework_config.SALMONN_COMPONENT_PATHS['source_code'], 'configs/decode_config.yaml')
     mock_args = type('Args', (), {'cfg_path': config_path, 'options': None})()
-    
-    # We now use the 'SalmonnConfig' class we loaded manually.
     cfg = SalmonnConfig(mock_args)
+    logging.info("YAML config loaded.")
 
+    logging.info("Overriding component paths in config...")
     cfg.config.model.llama_path = framework_config.SALMONN_COMPONENT_PATHS['vicuna']
     cfg.config.model.whisper_path = framework_config.SALMONN_COMPONENT_PATHS['whisper']
     cfg.config.model.beats_path = framework_config.SALMONN_COMPONENT_PATHS['beats']
     cfg.config.model.ckpt = framework_config.SALMONN_COMPONENT_PATHS['salmonn_checkpoint']
+    logging.info("Component paths overridden.")
 
+    logging.info("Instantiating SALMONN model from config...")
     model = SALMONN.from_config(cfg.config.model)
-    model.to("cuda")
+    logging.info("SALMONN model instantiated.")
+    
+    logging.info(f"Moving model to {device.upper()}...")
+    model.to(device)
+    logging.info("Model moved to device.")
+    
     model.eval()
 
+    logging.info("Loading WhisperFeatureExtractor...")
     processor = WhisperFeatureExtractor.from_pretrained(framework_config.SALMONN_COMPONENT_PATHS['whisper'])
+    logging.info("Processor loaded.")
+    
     model.custom_config = cfg.config
 
-    print("SALMONN model and processor loaded successfully.")
+    logging.info("SALMONN model and processor loaded successfully.")
     return model, processor
 
 
@@ -102,38 +116,54 @@ def run_inference(
     temperature: float, top_p: float
 ) -> str:
     """
-    Runs multi-modal inference using the SALMONN model.
+    Runs inference, now with detailed logging for debugging.
     """
-    if not os.path.exists(audio_path):
-        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    logging.info(f"Starting inference on device: {device.upper()}")
 
-    resampled_wav, sr = librosa.load(audio_path, sr=16000)
+    try:
+        logging.info(f"Loading and resampling audio from: {audio_path}")
+        resampled_wav, sr = librosa.load(audio_path, sr=16000)
+        logging.info("Audio resampling complete.")
 
-    # 2. Use the WhisperFeatureExtractor (our 'processor') to create the spectrogram.
-    #    This is the step that was missing.
-    spectrogram = processor(resampled_wav, sampling_rate=sr, return_tensors="pt").input_features
-    
-    # 3. Construct the 'samples' dictionary exactly as the model expects.
-    samples = {
-        "spectrogram": spectrogram.to(model.device, dtype=torch.float32),
-        "raw_wav": torch.from_numpy(resampled_wav).unsqueeze(0).to(model.device, dtype=torch.float32)
-    }
+        logging.info("Creating spectrogram with WhisperFeatureExtractor...")
+        spectrogram = processor(resampled_wav, sampling_rate=sr, return_tensors="pt").input_features
+        logging.info("Spectrogram created.")
 
-    prompt = _convert_messages_to_salmonn_prompt(messages, model.custom_config)
-    
-    generate_cfg = model.custom_config.generate
-    generate_cfg['max_new_tokens'] = max_new_tokens
-    generate_cfg['do_sample'] = do_sample
-    generate_cfg['temperature'] = temperature
-    generate_cfg['top_p'] = top_p
-    generate_cfg['num_beams'] = 1
+        logging.info("Constructing samples dictionary and moving tensors to device...")
+        samples = {
+            "spectrogram": spectrogram.to(model.device, dtype=torch.float32),
+            "raw_wav": torch.from_numpy(resampled_wav).unsqueeze(0).to(model.device, dtype=torch.float32)
+        }
+        logging.info("Samples dictionary created.")
 
-    with torch.cuda.amp.autocast(dtype=torch.float32):
-        result = model.generate(samples, generate_cfg, prompts=[prompt])
+        logging.info("Converting messages to SALMONN prompt format...")
+        prompt = _convert_messages_to_salmonn_prompt(messages, model.custom_config)
+        logging.info("Prompt conversion complete.")
+
+        generate_cfg = model.custom_config.generate
+        generate_cfg['max_new_tokens'] = max_new_tokens
+        generate_cfg['do_sample'] = do_sample
+        generate_cfg['temperature'] = temperature
+        generate_cfg['top_p'] = top_p
+        generate_cfg['num_beams'] = 1
+
+        logging.info(f"Calling model.generate() with do_sample={do_sample}...")
+        if device == "cuda":
+            with torch.amp.autocast(device_type='cuda', dtype=torch.bfloat16):
+                result = model.generate(samples, generate_cfg, prompts=[prompt])
+        else:
+            result = model.generate(samples, generate_cfg, prompts=[prompt])
+        logging.info("model.generate() call finished.")
         
-    
-    return result[0]
+        return result[0]
 
+    except Exception as e:
+        # This will give us a detailed traceback if any step inside fails.
+        logging.exception("An error occurred during the run_inference process.")
+        # Re-raise the exception to be caught by the experiment's main error handler.
+        raise
+    
 
 def run_text_only_inference(
     model: object, processor: object, messages: List[Dict[str, str]],
