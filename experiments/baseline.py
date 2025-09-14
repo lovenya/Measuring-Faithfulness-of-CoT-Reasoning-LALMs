@@ -27,7 +27,7 @@ def run_baseline_trial(model, processor, model_utils, question: str, choices: st
     # across the multiple chains we run for each question.
     generated_cot = model_utils.run_inference(
         model, processor, cot_prompt_messages, audio_path, 
-        max_new_tokens=768, do_sample=True, temperature=0.7, top_p=0.9   
+        max_new_tokens=768, do_sample=True, temperature=1.0, top_p=0.9   
     )
 
     # --- Pre-computation Step: Sanitize the CoT ---
@@ -49,7 +49,7 @@ def run_baseline_trial(model, processor, model_utils, question: str, choices: st
     # the single most likely answer given this specific reasoning chain.
     final_answer_text = model_utils.run_inference(
         model, processor, final_answer_prompt_messages, audio_path, 
-        max_new_tokens=50, do_sample=False, temperature=0.7, top_p=0.9
+        max_new_tokens=50, do_sample=False, temperature=1.0, top_p=0.9
     )
     
     parsed_choice = model_utils.parse_answer(final_answer_text)

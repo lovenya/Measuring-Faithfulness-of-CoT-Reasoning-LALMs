@@ -1,5 +1,11 @@
 # config.py
 
+"""
+This file is the central configuration hub for the entire research framework.
+It contains all the master paths, model aliases, and default experimental
+parameters. This single source of truth makes our framework robust and easy to modify.
+"""
+
 # --- Path Configurations ---
 # This dictionary holds the master paths to all our model assets.
 MODEL_PATHS = {
@@ -10,19 +16,29 @@ MODEL_PATHS = {
     "flamingo_code": "./audio-flamingo-code",
     "flamingo_weights": "./audio-flamingo-weights",
 
-    # --- NEW: SALMONN (Multi-Component) ---
+    # --- SALMONN (Multi-Component) ---
+    # This is the key that was causing the error. It must be present and spelled correctly.
+    "salmonn_checkpoint": "./model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
+    
+    # These are the other component paths our salmonn_utils.py script needs.
     "salmonn_code": "./salmonn-source-code",
     "salmonn_whisper": "./model_components/whisper-large-v2",
     "salmonn_beats": "./model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
     "salmonn_vicuna": "./model_components/vicuna-13b-v1.1",
-    "salmonn_checkpoint": "./model_components/salmonn-13b-checkpoint",
-    
 }
 
-# This is the main directory where all experimental results will be saved.
+SALMONN_COMPONENT_PATHS = {
+    "source_code": "./salmonn-source-code",
+    "whisper": "./model_components/whisper-large-v2",
+    "beats": "./model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
+    "vicuna": "./model_components/vicuna-13b-v1.1",
+    "salmonn_checkpoint": "./model_components/salmonn-13b-checkpoint/salmonn_v1.pth"
+}
+
+# The main directory where all experimental results will be saved.
 RESULTS_DIR = "./results"
 
-# This is a crucial asset for our 'silent audio' methodology for text-only inference.
+# A crucial asset for our 'silent audio' methodology for text-only inference.
 SILENT_AUDIO_PATH = "./assets/silent.wav"
 
 
@@ -32,14 +48,13 @@ SILENT_AUDIO_PATH = "./assets/silent.wav"
 MODEL_ALIASES = {
     "qwen": "qwen",
     "flamingo": "flamingo_weights",
-    # The 'salmonn' alias points to its main checkpoint directory, which is the
-    # primary path our utility script needs to locate the final .pth file.
+    # This line tells main.py: "when the user types 'salmonn', the key you
+    # need to look for in MODEL_PATHS is 'salmonn_checkpoint'".
     "salmonn": "salmonn_checkpoint"
 }
 
 
 # --- Dataset Alias Mapping ---
-# This is the single source of truth for all dataset paths.
 DATASET_MAPPING = {
     "mmar": "data/mmar/mmar_test_standardized.jsonl",
     "sakura-animal": "data/sakura/animal/sakura_animal_test_standardized.jsonl",
@@ -65,5 +80,5 @@ SNR_LEVELS_TO_TEST = [20, 10, 5, 0, -5, -10]
 MODEL_ALIAS = "default"
 DATASET_NAME = "default"
 BASELINE_RESULTS_FILE_OVERRIDE = None
-VERBOSE = True
+VERBOSE = False
 OUTPUT_PATH = None

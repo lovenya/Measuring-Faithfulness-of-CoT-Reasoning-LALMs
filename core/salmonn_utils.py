@@ -5,16 +5,36 @@ import os
 import torch
 import nltk
 import re
-import librosa
 import yaml
+import importlib.util  # We need this for the manual import
 from typing import Tuple, List, Dict
+import librosa
 
-import config as project_config
+# We import our main config with an alias to avoid any confusion.
+import config as framework_config
 
-# --- Environment Setup for Custom SALMONN Code ---
-_SALMONN_CODE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'salmonn-source-code'))
-if not os.path.exists(_SALMONN_CODE_PATH):
-    raise FileNotFoundError(f"SALMONN source code not found at: {_SALMONN_CODE_PATH}")
+# --- THE CRITICAL FIX: MANUAL, UNAMBIGUOUS IMPORT ---
+# This block is the definitive solution to the 'config' name collision.
+
+# 1. Define the absolute path to the SALMONN source code and its config file.
+_SALMONN_CODE_PATH = framework_config.SALMONN_COMPONENT_PATHS['source_code']
+_SALMONN_CONFIG_PATH = os.path.join(_SALMONN_CODE_PATH, 'config.py')
+
+if not os.path.exists(_SALMONN_CONFIG_PATH):
+    raise FileNotFoundError(f"SALMONN's config.py not found at: {_SALMONN_CONFIG_PATH}")
+
+# 2. Use importlib to load the SALMONN config file as a module directly from its path.
+#    This completely bypasses the standard import system and its caching,
+#    guaranteeing we load the correct file.
+spec = importlib.util.spec_from_file_location("salmonn_config_module", _SALMONN_CONFIG_PATH)
+salmonn_config_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(salmonn_config_module)
+
+# 3. Now we can safely get the 'Config' class from the module we just loaded.
+SalmonnConfig = salmonn_config_module.Config
+
+# 4. With the collision resolved, we can now safely add the main source code
+#    directory to the path to allow for the other, non-conflicting imports.
 if _SALMONN_CODE_PATH not in sys.path:
     sys.path.append(_SALMONN_CODE_PATH)
     print(f"INFO: Temporarily added '{_SALMONN_CODE_PATH}' to Python path.")
@@ -22,113 +42,109 @@ if _SALMONN_CODE_PATH not in sys.path:
 try:
     from models.salmonn import SALMONN
     from transformers import WhisperFeatureExtractor
-    # We no longer need 'prepare_one_sample' as we will perform this logic ourselves.
+    from utils import prepare_one_sample
 except ImportError as e:
-    print(f"FATAL: Failed to import from 'salmonn-source-code'. Error: {e}")
+    print(f"FATAL: Failed to import SALMONN library components. Error: {e}")
     sys.exit(1)
+# --- END OF FIX ---
 
 
 def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
-    """ Assembles the SALMONN 13B model from its constituent components. """
-    yaml_path = os.path.join(_SALMONN_CODE_PATH, 'configs', 'decode_config.yaml')
-    if not os.path.exists(yaml_path):
-        raise FileNotFoundError(f"SALMONN decode_config.yaml not found at: {yaml_path}")
-    with open(yaml_path, 'r') as f:
-        cfg = yaml.safe_load(f)
-
-    cfg['model']['llama_path'] = project_config.MODEL_PATHS['salmonn_vicuna']
-    cfg['model']['whisper_path'] = project_config.MODEL_PATHS['salmonn_whisper']
-    cfg['model']['beats_path'] = project_config.MODEL_PATHS['salmonn_beats']
-    cfg['model']['ckpt'] = os.path.join(project_config.MODEL_PATHS['salmonn_checkpoint'], 'salmonn_v1.pth')
-    cfg['model']['num_speech_query_token'] = 1 # Correct for 13B
-
-    prompt_path = cfg['model']['prompt_path']
-    test_prompt_path = cfg['model']['test_prompt_path']
-    cfg['model']['prompt_path'] = os.path.join(_SALMONN_CODE_PATH, prompt_path)
-    cfg['model']['test_prompt_path'] = os.path.join(_SALMONN_CODE_PATH, test_prompt_path)
-
-    print("Loading SALMONN model from config...")
-    model = SALMONN.from_config(cfg['model'])
-    model.eval()
-    model.to("cuda" if torch.cuda.is_available() else "cpu")
-
-    model.generate_cfg_template = cfg['generate']
-    model.prompt_template = cfg['model']['prompt_template']
-
-    print("Loading Whisper feature extractor...")
-    processor = WhisperFeatureExtractor.from_pretrained(project_config.MODEL_PATHS['salmonn_whisper'])
+    """
+    Loads the complex, multi-component SALMONN model.
+    """
+    print("--- Loading SALMONN Model System (using native config loader) ---")
     
+    config_path = os.path.join(framework_config.SALMONN_COMPONENT_PATHS['source_code'], 'configs/decode_config.yaml')
+    mock_args = type('Args', (), {'cfg_path': config_path, 'options': None})()
+    
+    # We now use the 'SalmonnConfig' class we loaded manually.
+    cfg = SalmonnConfig(mock_args)
+
+    cfg.config.model.llama_path = framework_config.SALMONN_COMPONENT_PATHS['vicuna']
+    cfg.config.model.whisper_path = framework_config.SALMONN_COMPONENT_PATHS['whisper']
+    cfg.config.model.beats_path = framework_config.SALMONN_COMPONENT_PATHS['beats']
+    cfg.config.model.ckpt = framework_config.SALMONN_COMPONENT_PATHS['salmonn_checkpoint']
+
+    model = SALMONN.from_config(cfg.config.model)
+    model.to("cuda")
+    model.eval()
+
+    processor = WhisperFeatureExtractor.from_pretrained(framework_config.SALMONN_COMPONENT_PATHS['whisper'])
+    model.custom_config = cfg.config
+
     print("SALMONN model and processor loaded successfully.")
     return model, processor
 
 
-def _convert_messages_to_salmonn_prompt(messages: List[Dict], model: object) -> str:
-    """ Correctly formats our standard 'messages' list into the specific prompt string that SALMONN expects. """
-    text_content = ""
+def _convert_messages_to_salmonn_prompt(messages: List[Dict[str, str]], model_config: dict) -> str:
+    """
+    A helper to translate our standard 'messages' format into the specific,
+    templated string that SALMONN's generate method expects.
+    """
+    full_text = ""
     for msg in messages:
-        if "audio\n\n" in msg.get("content", ""):
-            content = msg["content"].replace("audio\n\n", "").strip()
-            text_content += content + "\n"
-        else:
-            text_content += msg.get("content", "").strip() + "\n"
+        content = msg.get("content", "")
+        if "audio\n\n" in content:
+            content = content.replace("audio\n\n", "").strip()
+        full_text += content + "\n"
+    full_text = full_text.strip()
+
+    prompt_template = model_config.model.prompt_template
+    wrapped_text = "<Speech><SpeechHere></Speech> " + full_text
     
-    prompt_template = model.prompt_template
-    return prompt_template.format("<Speech><SpeechHere></Speech> " + text_content.strip())
+    return prompt_template.format(wrapped_text)
 
 
 def run_inference(
-    model: object, processor: object, messages: List[Dict],
+    model: object, processor: object, messages: List[Dict[str, str]],
     audio_path: str, max_new_tokens: int, do_sample: bool,
     temperature: float, top_p: float
 ) -> str:
     """
-    Runs multi-modal inference with robust, self-contained audio processing.
+    Runs multi-modal inference using the SALMONN model.
     """
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
 
-    # --- THE FINAL, DEFINITIVE FIX ---
-    # 1. Load and Resample Audio: We manually load the audio and explicitly
-    #    tell librosa to resample it to 16000 Hz, the rate Whisper requires.
-    #    This permanently solves the ValueError.
-    wav_file, sr = librosa.load(audio_path, sr=16000)
+    resampled_wav, sr = librosa.load(audio_path, sr=16000)
 
-    # 2. Process Audio: We use the WhisperFeatureExtractor to convert the
-    #    now-correctly-sampled audio into a spectrogram tensor.
-    audio_features = processor(wav_file, sampling_rate=16000, return_tensors="pt").input_features
+    # 2. Use the WhisperFeatureExtractor (our 'processor') to create the spectrogram.
+    #    This is the step that was missing.
+    spectrogram = processor(resampled_wav, sampling_rate=sr, return_tensors="pt").input_features
+    
+    # 3. Construct the 'samples' dictionary exactly as the model expects.
+    samples = {
+        "spectrogram": spectrogram.to(model.device, dtype=torch.float16),
+        "raw_wav": torch.from_numpy(resampled_wav).unsqueeze(0).to(model.device, dtype=torch.float16)
+    }
 
-    # 3. Create Samples Dictionary: We construct the dictionary with the correct
-    #    'spectrogram' key that the model's internal code expects.
-    samples = {'spectrogram': audio_features.to(model.device)}
-    # --- END OF FIX ---
-
-    # 4. Format the text prompt as before.
-    text_prompt = [_convert_messages_to_salmonn_prompt(messages, model)]
-
-    # 5. Construct the 'generate_cfg' dictionary as required.
-    generate_cfg = model.generate_cfg_template.copy()
+    prompt = _convert_messages_to_salmonn_prompt(messages, model.custom_config)
+    
+    generate_cfg = model.custom_config.generate
     generate_cfg['max_new_tokens'] = max_new_tokens
     generate_cfg['do_sample'] = do_sample
     generate_cfg['temperature'] = temperature
     generate_cfg['top_p'] = top_p
-    
-    # 6. Call generate() with the three correct arguments.
-    with torch.cuda.amp.autocast(dtype=torch.float16):
-        response = model.generate(
-            samples,
-            generate_cfg=generate_cfg,
-            prompts=text_prompt,
-        )
-    return response[0]
+    generate_cfg['num_beams'] = 1
 
+    with torch.cuda.amp.autocast(dtype=torch.bfloat16):
+        result = model.generate(samples, generate_cfg, prompts=[prompt])
+    
+    return result[0]
 
 
 def run_text_only_inference(
-    model: object, processor: object, messages: List[Dict],
+    model: object, processor: object, messages: List[Dict[str, str]],
     max_new_tokens: int, do_sample: bool, temperature: float, top_p: float
 ) -> str:
-    """ Runs text-only inference using our robust 'silent audio' methodology. """
-    silent_audio_path = project_config.SILENT_AUDIO_PATH
+    """
+    Handles text-only tasks by providing a dummy silent audio input.
+    """
+    silent_audio_path = framework_config.SILENT_AUDIO_PATH
+    if not os.path.exists(silent_audio_path):
+        raise FileNotFoundError(f"Silent audio file not found at '{silent_audio_path}'")
+    
     return run_inference(
         model, processor, messages, silent_audio_path,
         max_new_tokens, do_sample, temperature, top_p
@@ -136,11 +152,13 @@ def run_text_only_inference(
 
 
 def sanitize_cot(cot_text: str) -> str:
-    """ Model-agnostic utility to remove the final 'spoiler' sentence from a CoT. """
+    """ Model-agnostic utility to remove the final sentence from a CoT. """
     if not cot_text: return ""
     sentences = nltk.sent_tokenize(cot_text)
-    if len(sentences) > 1: return " ".join(sentences[:-1])
-    else: return ""
+    if len(sentences) > 1:
+        return " ".join(sentences[:-1])
+    else:
+        return ""
 
 
 def parse_answer(text: str) -> str | None:
@@ -157,14 +175,11 @@ def parse_answer(text: str) -> str | None:
     if match: return match.group(1)
     if len(cleaned_text) == 1 and 'A' <= cleaned_text <= 'Z':
         return cleaned_text
-    refusal_keywords = ["cannot be determined", "none of the choices", "ambiguous", "not enough information", "no definitive answer"]
-    if any(keyword in cleaned_text.lower() for keyword in refusal_keywords):
-        return "REFUSAL"
     return None
 
 
 def format_choices_for_prompt(choices: List[str]) -> str:
-    """ Model-agnostic utility to format choices into a lettered string. """
+    """ Model-agnostic utility to format choices for the prompt. """
     if not choices: return ""
     formatted_choices = []
     for i, choice in enumerate(choices):

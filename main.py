@@ -5,6 +5,8 @@ import sys
 import os
 import importlib
 import nltk
+from core.logging_utils import setup_logger
+import logging
 
 # faulthandler is a great tool for debugging low-level crashes.
 import faulthandler
@@ -103,6 +105,9 @@ def main():
     output_filename = f"{experiment_name}_{model_alias}_{args.dataset}.jsonl"
     config.OUTPUT_PATH = os.path.join(output_dir, output_filename)
     
+    log_dir = os.path.join(config.RESULTS_DIR, 'logs')
+    log_filepath = setup_logger(log_dir, model_alias, experiment_name, args.dataset)
+    
     # --- 3. Dynamic Model Utility Loading ---
     # This is the core of our multi-model architecture. Based on the --model flag,
     # we dynamically import the correct utility file (e.g., 'qwen_utils.py').
@@ -129,13 +134,13 @@ def main():
         sys.exit(1)
 
     # --- 4. Print a "Run Summary" Banner ---
-    print("--- LALM Faithfulness Framework ---")
-    print(f"  - Model:      {model_alias.upper()}")
-    print(f"  - Experiment: {args.experiment}")
-    print(f"  - Dataset:    {args.dataset}")
-    print(f"  - Outputting to: {config.OUTPUT_PATH}")
-    print(f"  - Verbose Logging: {'Enabled' if config.VERBOSE else 'Disabled'}")
-    print("-" * 35)
+    logging.info("--- LALM Faithfulness Framework ---")
+    logging.info(f"  - Model:      {model_alias.upper()}")
+    logging.info(f"  - Experiment: {args.experiment}")
+    logging.info(f"  - Dataset:    {args.dataset}")
+    logging.info(f"  - Outputting to: {config.OUTPUT_PATH}")
+    logging.info(f"  - Verbose Logging: {'Enabled' if config.VERBOSE else 'Disabled'}")
+    logging.info("-" * 35)
 
     # --- 5. Dynamic Experiment Loading ---
     # This logic dynamically imports the requested experiment script.
@@ -181,6 +186,7 @@ def main():
         sys.exit(1)
 
     print("\n--- Experiment completed successfully! ---")
+    logging.info(f"  - Full log will be saved to: {log_filepath}")
 
 if __name__ == "__main__":
     main()
