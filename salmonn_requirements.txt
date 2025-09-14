@@ -1,5 +1,13 @@
+module load StdEnv/2023
+module load Python/3.10
+module load StdEnv/2023 cuda/12.2 rust gcc arrow
 
-torchaudio==2.0.2
+activate
+
+pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu121
+
+pip install nltk
+
 peft==0.3.0
 soundfile 
 librosa

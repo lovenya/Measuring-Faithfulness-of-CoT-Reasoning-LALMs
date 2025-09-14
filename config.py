@@ -11,14 +11,10 @@ MODEL_PATHS = {
     "flamingo_weights": "./audio-flamingo-weights",
 
     # --- NEW: SALMONN (Multi-Component) ---
-    # The path to the SALMONN source code submodule.
     "salmonn_code": "./salmonn-source-code",
-    # Paths to the individual, pre-trained components SALMONN requires.
     "salmonn_whisper": "./model_components/whisper-large-v2",
     "salmonn_beats": "./model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
-    # This now correctly points to the 13B Vicuna model.
     "salmonn_vicuna": "./model_components/vicuna-13b-v1.1",
-    # This now correctly points to the 13B checkpoint directory.
     "salmonn_checkpoint": "./model_components/salmonn-13b-checkpoint",
     
 }
