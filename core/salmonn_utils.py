@@ -150,7 +150,7 @@ def run_inference(
 
         logging.info(f"Calling model.generate() with do_sample={do_sample}...")
         if device == "cuda":
-            with torch.amp.autocast(device_type='cuda', dtype=torch.bfloat16):
+            with torch.amp.autocast(device_type='cuda', dtype=torch.float16):
                 result = model.generate(samples, generate_cfg, prompts=[prompt])
         else:
             result = model.generate(samples, generate_cfg, prompts=[prompt])
