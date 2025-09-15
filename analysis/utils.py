@@ -1,51 +1,50 @@
 # analysis/utils.py
 
-import pandas as pd
 import os
-from typing import Optional
+import json
+import pandas as pd
 
-def get_results_path(results_dir: str, experiment_name: str, dataset_name: str, condition: str = "default") -> str:
+def load_results(model_name: str, results_dir: str, experiment_name: str, dataset_name: str) -> pd.DataFrame:
     """
-    Constructs the correct, condition-aware path to a results file.
-    This is the single source of truth for all file path logic in the analysis scripts.
-    """
-    
-    if condition == 'default':
-        # Default condition files are in the top-level experiment folder.
-        top_level_dir = os.path.join(results_dir, experiment_name)
-        filename = f"{experiment_name}_{dataset_name}.jsonl"
-    else:
-        # All other conditions are in a dedicated subdirectory.
-        condition_dir = f"{condition}_experiments"
-        top_level_dir = os.path.join(results_dir, condition_dir, experiment_name)
-        filename = f"{experiment_name}_{dataset_name}_{condition}.jsonl"
-    
-    # Construct the full path.
-    full_path = os.path.join(top_level_dir, filename)
-    return full_path
+    Loads experiment results from a model-specific JSONL file into a Pandas DataFrame.
 
-def load_results(results_dir: str, experiment_name: str, dataset_name: str, condition: str = "default") -> pd.DataFrame:
+    This function is the single source of truth for constructing file paths in our
+    new model-agnostic analysis framework.
+
+    Args:
+        model_name (str): The name of the model (e.g., 'qwen', 'salmonn').
+        results_dir (str): The root directory for all results (e.g., './results').
+        experiment_name (str): The name of the experiment (e.g., 'baseline').
+        dataset_name (str): The short name of the dataset (e.g., 'mmar').
+
+    Raises:
+        FileNotFoundError: If the specified results file does not exist.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the loaded results.
     """
-    Loads results from a specified experiment's JSONL file into a pandas DataFrame
-    using the definitive path construction logic.
-    """
-    # Get the one, true path from our helper function.
-    file_path = get_results_path(results_dir, experiment_name, dataset_name, condition)
+    # Construct the model-specific path, e.g., 'results/qwen/baseline/'
+    experiment_path = os.path.join(results_dir, model_name, experiment_name)
     
-    if not os.path.exists(file_path):
-        print(f"FATAL: Results file not found.")
-        print(f"  - Experiment: {experiment_name}")
-        print(f"  - Dataset:    {dataset_name}")
-        print(f"  - Condition:  {condition}")
-        print(f"  - Looked for: {file_path}")
-        raise FileNotFoundError(f"Required data file not found at {file_path}")
+    # Construct the model-specific filename, e.g., 'baseline_qwen_mmar.jsonl'
+    filename = f"{experiment_name}_{model_name}_{dataset_name}.jsonl"
     
-    print(f"Loading data from: {file_path}")
+    full_path = os.path.join(experiment_path, filename)
+
     try:
-        return pd.read_json(file_path, lines=True)
-    except ValueError as e:
-        print(f"ERROR: Could not parse JSONL file: {file_path}")
-        print(f"This often happens if the file is empty or corrupted.")
-        print(f"Error details: {e}")
-        # Return an empty DataFrame to allow the analysis to skip this dataset gracefully.
-        return pd.DataFrame()
+        # Use a list comprehension for efficient line-by-line reading of the JSONL file.
+        data = [json.loads(line) for line in open(full_path, 'r')]
+        
+        if not data:
+            # Handle the case of an empty results file.
+            print(f"  - WARNING: Results file is empty: {full_path}")
+            return pd.DataFrame()
+
+        return pd.DataFrame(data)
+
+    except FileNotFoundError:
+        # Provide a clear, actionable error message if a required file is missing.
+        print(f"\nFATAL ERROR: Could not find required results file.")
+        print(f"  - Searched for: {full_path}")
+        # Re-raise the exception to halt the calling script, preventing partial analysis.
+        raise
