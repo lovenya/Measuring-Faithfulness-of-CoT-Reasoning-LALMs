@@ -156,7 +156,12 @@ def run_inference(
             result = model.generate(samples, generate_cfg, prompts=[prompt])
         logging.info("model.generate() call finished.")
         
-        return result[0]
+        raw_output = result[0]
+        
+        # Removing <s> flags - which are <SOS>, <EOS> basically
+        cleaned_output = raw_output.replace("<s>", "").replace("</s>", "").strip()
+        
+        return cleaned_output
 
     except Exception as e:
         # This will give us a detailed traceback if any step inside fails.
