@@ -17,7 +17,7 @@ def run_no_reasoning_trial(model, processor, model_utils, question: str, choices
     final_answer_prompt_messages = [
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
         {"role": "assistant", "content": ""}, # The reasoning is an empty string
-        {"role": "user", "content": "What is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else. For example: (A)"}
+        {"role": "user", "content": "What is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else."}
     ]
 
     # This is a deterministic call (do_sample=False) since there's no creative generation.

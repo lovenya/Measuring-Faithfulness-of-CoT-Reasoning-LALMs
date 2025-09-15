@@ -72,7 +72,7 @@ DATASET_MAPPING = {
 
 # --- Experiment Default Parameters ---
 NUM_SAMPLES_TO_RUN = 0
-NUM_CHAINS_PER_QUESTION = 10
+NUM_CHAINS_PER_QUESTION = 3
 SNR_LEVELS_TO_TEST = [20, 10, 5, 0, -5, -10]
 
 
