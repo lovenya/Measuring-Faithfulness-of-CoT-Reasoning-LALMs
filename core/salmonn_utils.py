@@ -201,7 +201,7 @@ def parse_answer(text: str) -> str | None:
     """ Model-agnostic utility to find the final letter choice in the model's output. """
     if not text: return None
     cleaned_text = text.strip().strip('.').strip()
-    match = re.search(r'\(([A-Z])\)$', cleaned_text)
+    match = re.search(r'\(([A-Z])\)', cleaned_text)
     if match: return match.group(1)
     match = re.search(r'^([A-Z])\)$', cleaned_text)
     if match: return match.group(1)
