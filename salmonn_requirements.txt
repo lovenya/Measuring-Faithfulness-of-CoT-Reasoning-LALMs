@@ -11,7 +11,7 @@ export OPENBLAS_NUM_THREADS=1
 export CUDA_LAUNCH_BLOCKING=1
 export TORCH_USE_CUDA_DSA=1
 
-python main.py --model salmonn --experiment baseline --dataset mmar --num-samples 2 --num-chains 2 --verbose
+python main.py --model salmonn --experiment baseline --dataset mmar --num-samples 3 --num-chains 4 --verbose
 
 activate
 

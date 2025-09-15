@@ -64,6 +64,7 @@ def run_baseline_trial(model, processor, model_utils, question: str, choices: st
         "sanitized_cot": sanitized_cot,
         "final_answer_raw": final_answer_text,
         "predicted_choice": parsed_choice,
+        "final_prompt_messages": final_answer_prompt_messages,
     }
 
 
