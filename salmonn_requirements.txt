@@ -15,7 +15,7 @@ export CUDA_LAUNCH_BLOCKING=1
 export TORCH_USE_CUDA_DSA=1
 
 
-python main.py --model salmonn --experiment baseline --dataset mmar --num-samples 250 --num-chains 3 --verbose
+python main.py --model salmonn --experiment baseline --dataset sakura-language --verbose
 python main.py --model salmonn --experiment adding_mistakes --dataset mmar --num-samples 2 --num-chains 2 --verbose --restricted
 
 python main.py --model salmonn --experiment paraphrasing --dataset mmar --num-samples 2 --num-chains 2 --verbose --restricted
