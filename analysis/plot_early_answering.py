@@ -216,9 +216,8 @@ def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_
             else:
                 print(f"  - Skipping plot for CoTs of length {total_steps} due to insufficient data (<=10 chains).")
 
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate Early Answering plots for LALM results.")
+    parser = argparse.ArgumentParser(description="Generate or extract data from Early Answering results.")
     parser.add_argument('--model', type=str, required=True)
     parser.add_argument('--dataset', type=str, required=True)
     parser.add_argument('--results_dir', type=str, default='./results')
@@ -232,8 +231,72 @@ if __name__ == "__main__":
     parser.add_argument('--show-consistency-curve', action='store_true')
     parser.add_argument('--show-baseline-benchmark', action='store_true')
     parser.add_argument('--show-nr-benchmark', action='store_true')
+    parser.add_argument('--print-line-data', action='store_true', help="Calculate and print the AGGREGATED line plot data to the console and exit.")
+    
     args = parser.parse_args()
     
+    # --- NEW, CORRECTED LOGIC BLOCK FOR DATA EXTRACTION ---
+    if args.print_line_data:
+        if not args.cross_dataset_plot:
+            parser.error("--print-line-data is currently only supported for --cross-dataset-plot mode.")
+
+        print(f"--- Extracting AGGREGATED Line Plot Data for: {args.model.upper()} on ALL datasets {' (Restricted)' if args.restricted else ''} ---")
+        
+        all_dfs = []
+        try:
+            baseline_dir = os.path.join(args.results_dir, args.model, 'baseline')
+            if args.restricted:
+                dataset_names = sorted(list(set([f.replace(f'baseline_{args.model}_', '').replace('-restricted.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('-restricted.jsonl')])))
+            else:
+                dataset_names = sorted(list(set([f.replace(f'baseline_{args.model}_', '').replace('.jsonl', '') for f in os.listdir(baseline_dir) if not f.endswith('-restricted.jsonl')])))
+            
+            for dataset in dataset_names:
+                try:
+                    df = load_results(args.model, args.results_dir, 'early_answering', dataset, args.restricted)
+                    df = df[df['total_sentences_in_chain'] > 0].copy()
+                    if not df.empty:
+                        df['percent_reasoning_provided'] = (df['num_sentences_provided'] / df['total_sentences_in_chain']) * 100
+                        df['dataset'] = dataset
+                        all_dfs.append(df)
+                except FileNotFoundError:
+                    continue
+            
+            if not all_dfs:
+                print("No data found for any dataset. Halting.")
+                exit()
+                
+            super_df = pd.concat(all_dfs, ignore_index=True)
+            super_df['percent_binned'] = (super_df['percent_reasoning_provided'] / 5).round() * 5
+
+            print("\n") # Spacer for readability
+
+            # Loop through each dataset and print its aggregated line data
+            for dataset_name, group_df in super_df.groupby('dataset'):
+                print("="*60)
+                print(f"Dataset: {dataset_name}")
+                print("="*60)
+                
+                if args.show_accuracy_curve:
+                    accuracy_curve = group_df.groupby('percent_binned')['is_correct'].mean() * 100
+                    print("\nAccuracy Curve Coordinates:")
+                    print(f"  X Coords: {accuracy_curve.index.tolist()}")
+                    print(f"  Y Coords: {accuracy_curve.values.tolist()}")
+
+                if args.show_consistency_curve:
+                    consistency_curve = group_df.groupby('percent_binned')['is_consistent_with_baseline'].mean() * 100
+                    print("\nConsistency Curve Coordinates:")
+                    print(f"  X Coords: {consistency_curve.index.tolist()}")
+                    print(f"  Y Coords: {consistency_curve.values.tolist()}")
+                
+                print("\n")
+
+            exit()
+
+        except Exception as e:
+            print(f"An error occurred during data extraction: {e}")
+            exit(1)
+
+    # If --print-scatter-data is not used, the script proceeds with the normal plotting logic.
     show_flags = { "show_accuracy": args.show_accuracy_curve, "show_consistency": args.show_consistency_curve, "show_baseline": args.show_baseline_benchmark, "show_nr": args.show_nr_benchmark }
     cross_dataset_show_flags = { "show_accuracy": args.show_accuracy_curve, "show_consistency": args.show_consistency_curve }
 
