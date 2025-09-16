@@ -17,6 +17,7 @@ whisper_env/
 audio-analysis-env/
 audio-flamingo-env/
 salmonn_env/
+analysis_env/
 
 # Data
 data/**/audio/
