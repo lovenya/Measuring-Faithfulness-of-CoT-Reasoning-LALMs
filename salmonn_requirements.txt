@@ -1,5 +1,8 @@
 module load StdEnv/2023
 module load Python/3.10
+
+salloc --time=01:00:00 --gpus=nvidia_h100_80gb_hbm3_3g.40gb:1 --cpus-per-task=8 --mem=64G --account=rrg-ravanelm
+
 module load StdEnv/2023 cuda/12.2 rust gcc arrow
 
 source salmonn_env/bin/activate
@@ -11,8 +14,11 @@ export OPENBLAS_NUM_THREADS=1
 export CUDA_LAUNCH_BLOCKING=1
 export TORCH_USE_CUDA_DSA=1
 
+
 python main.py --model salmonn --experiment baseline --dataset mmar --num-samples 250 --num-chains 3 --verbose
 python main.py --model salmonn --experiment adding_mistakes --dataset mmar --num-samples 2 --num-chains 2 --verbose --restricted
+
+python main.py --model salmonn --experiment paraphrasing --dataset mmar --num-samples 2 --num-chains 2 --verbose
 
 activate
 
