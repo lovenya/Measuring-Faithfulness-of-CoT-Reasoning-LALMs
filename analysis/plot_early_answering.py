@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import argparse
 from utils import load_results
 
-def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, model_name: str, dataset_name: str, plots_dir: str):
+def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, model_name: str, dataset_name: str, plots_dir: str, save_as_pdf):
     """
     Generates a single plot for a given group of data.
     This version uses a more precise "chain-level" benchmark for grouped plots.
@@ -79,12 +79,25 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
     else:
         output_plot_dir = os.path.join(plots_dir, model_name, 'early_answering', dataset_name, 'grouped')
     os.makedirs(output_plot_dir, exist_ok=True)
-    plot_path = os.path.join(output_plot_dir, f"early_answering_{model_name}_{dataset_name}_{plot_group_name}.png")
-    plt.savefig(plot_path, dpi=300); plt.close()
-    print(f"  - Plot saved successfully to: {plot_path}")
+    
+    base_filename = f"early_answering_{model_name}_{dataset_name}_{plot_group_name}"
+    
+    # --- UPDATED SAVE LOGIC ---
+    # 1. Save the standard PNG version
+    png_path = os.path.join(output_plot_dir, f"{base_filename}.png")
+    plt.savefig(png_path, dpi=300)
+    print(f"  - Plot saved successfully to: {png_path}")
+
+    # 2. Conditionally save the PDF version
+    if save_as_pdf:
+        pdf_path = os.path.join(output_plot_dir, f"{base_filename}.pdf")
+        plt.savefig(pdf_path, format='pdf')
+        print(f"  - PDF copy saved to: {pdf_path}")
+    
+    plt.close()
 
 
-def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_dir: str, generate_grouped: bool, include_no_cot: bool, num_samples: int, num_chains: int):
+def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_dir: str, generate_grouped: bool, include_no_cot: bool, num_samples: int, num_chains: int, save_as_pdf):
     """ Main function to orchestrate the early answering analysis. """
     print(f"\n--- Generating Early Answering Analysis for: {model_name.upper()} on {dataset_name.upper()} ---")
     
@@ -121,14 +134,14 @@ def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_
     early_df['percent_reasoning_provided'] = (early_df['num_sentences_provided'] / early_df['total_sentences_in_chain']) * 100
 
     print("Generating main aggregated plot...")
-    plot_single_graph(early_df, baseline_df, no_reasoning_df, no_cot_df, 'aggregated', model_name, dataset_name, plots_dir)
+    plot_single_graph(early_df, baseline_df, no_reasoning_df, no_cot_df, 'aggregated', model_name, dataset_name, plots_dir, save_as_pdf)
 
     if generate_grouped:
         print("\nGenerating per-length grouped plots...")
         grouped_by_total_steps = early_df.groupby('total_sentences_in_chain')
         for total_steps, group_df in grouped_by_total_steps:
             if len(group_df[['id', 'chain_id']].drop_duplicates()) > 10:
-                plot_single_graph(group_df, baseline_df, no_reasoning_df, no_cot_df, f'{total_steps}_sentences', model_name, dataset_name, plots_dir)
+                plot_single_graph(group_df, baseline_df, no_reasoning_df, no_cot_df, f'{total_steps}_sentences', model_name, dataset_name, plots_dir, save_as_pdf)
             else:
                 print(f"  - Skipping plot for CoTs of length {total_steps} due to insufficient data (<=10 chains).")
 
