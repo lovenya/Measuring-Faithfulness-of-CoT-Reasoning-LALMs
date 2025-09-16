@@ -8,29 +8,45 @@ from utils import load_results
 
 def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, model_name: str, dataset_name: str, plots_dir: str):
     """
-    Generates and saves a single plot for a given group of 'Early Answering' data.
-    This function correctly applies binning ONLY to the 'aggregated' plot.
+    Generates a single plot for a given group of data.
+    This version uses a more precise "chain-level" benchmark for grouped plots.
     """
     num_chains = len(df[['id', 'chain_id']].drop_duplicates())
     
-    # --- Context-Aware Benchmark Calculation ---
-    relevant_question_ids = df[['id']].drop_duplicates()
-    relevant_baseline_df = pd.merge(baseline_df, relevant_question_ids, on='id')
-    relevant_no_reasoning_df = pd.merge(no_reasoning_df, relevant_question_ids, on='id')
+    # --- Benchmark Calculation: Two Methodologies ---
+    if plot_group_name == 'aggregated':
+        # For the main aggregated plot, we use the "Question-Level" benchmark.
+        # This compares performance against the average for all chains of the relevant questions.
+        relevant_ids = df[['id']].drop_duplicates()
+        relevant_baseline_df = pd.merge(baseline_df, relevant_ids, on='id')
+        relevant_no_reasoning_df = pd.merge(no_reasoning_df, relevant_ids, on='id')
+    else:
+        # For grouped plots, we use the more direct "Chain-Level" benchmark.
+        # This compares performance against only the *specific chains* in this group.
+        relevant_ids = df[['id', 'chain_id']].drop_duplicates()
+        relevant_baseline_df = pd.merge(baseline_df, relevant_ids, on=['id', 'chain_id'])
+        # The no_reasoning benchmark still needs to be question-level as there's no chain-to-chain link.
+        relevant_no_reasoning_df = pd.merge(no_reasoning_df, df[['id']].drop_duplicates(), on='id')
+
+    # The calculation itself remains the same robust macro-average.
     baseline_accuracy = relevant_baseline_df.groupby('id')['is_correct'].mean().mean() * 100
     no_reasoning_accuracy = relevant_no_reasoning_df.groupby('id')['is_correct'].mean().mean() * 100
+    
     no_cot_accuracy = None
     if no_cot_df is not None:
-        relevant_no_cot_df = pd.merge(no_cot_df, relevant_question_ids, on='id')
+        # No-CoT is also question-level.
+        relevant_no_cot_df = pd.merge(no_cot_df, df[['id']].drop_duplicates(), on='id')
         if not relevant_no_cot_df.empty:
             no_cot_accuracy = relevant_no_cot_df.groupby('id')['is_correct'].mean().mean() * 100
 
     # --- Curve Generation with Conditional Binning ---
     if plot_group_name == 'aggregated':
+        # Binning is needed for the aggregated plot to create a common x-axis.
         df['percent_binned'] = (df['percent_reasoning_provided'] / 5).round() * 5
         accuracy_curve = df.groupby('percent_binned')['is_correct'].mean() * 100
         consistency_curve = df.groupby('percent_binned')['is_consistent_with_baseline'].mean() * 100
     else:
+        # Grouped plots use the raw, precise percentages for maximum fidelity.
         accuracy_curve = df.groupby('percent_reasoning_provided')['is_correct'].mean() * 100
         consistency_curve = df.groupby('percent_reasoning_provided')['is_consistent_with_baseline'].mean() * 100
 
@@ -102,7 +118,6 @@ def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_
         print("  - No valid data with non-empty CoTs found. Skipping analysis.")
         return
 
-    # Calculate the percentage of the CoT provided at each step.
     early_df['percent_reasoning_provided'] = (early_df['num_sentences_provided'] / early_df['total_sentences_in_chain']) * 100
 
     print("Generating main aggregated plot...")
