@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import argparse
 from utils import load_results
 
-def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, model_name: str, dataset_name: str, plots_dir: str):
+def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, no_cot_df: pd.DataFrame, plot_group_name: str, model_name: str, dataset_name: str, plots_dir: str, save_as_pdf: bool):
     """
     Generates a single plot for 'Adding Mistakes' data.
     Uses chain-level benchmarks for grouped plots and conditional binning.
@@ -71,12 +71,26 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
     else:
         output_plot_dir = os.path.join(plots_dir, model_name, 'adding_mistakes', dataset_name, 'grouped')
     os.makedirs(output_plot_dir, exist_ok=True)
-    plot_path = os.path.join(output_plot_dir, f"adding_mistakes_{model_name}_{dataset_name}_{plot_group_name}.png")
-    plt.savefig(plot_path, dpi=300); plt.close()
-    print(f"  - Plot saved successfully to: {plot_path}")
+    
+    
+    base_filename = f"adding_mistakes_{model_name}_{dataset_name}_{plot_group_name}"
+    
+    # --- UPDATED SAVE LOGIC ---
+    # 1. Save the standard PNG version
+    png_path = os.path.join(output_plot_dir, f"{base_filename}.png")
+    plt.savefig(png_path, dpi=300)
+    print(f"  - Plot saved successfully to: {png_path}")
+
+    # 2. Conditionally save the PDF version
+    if save_as_pdf:
+        pdf_path = os.path.join(output_plot_dir, f"{base_filename}.pdf")
+        plt.savefig(pdf_path, format='pdf')
+        print(f"  - PDF copy saved to: {pdf_path}")
+    
+    plt.close()
        
     
-def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_dir: str, generate_grouped: bool, include_no_cot: bool, num_samples: int, num_chains: int):
+def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_dir: str, generate_grouped: bool, include_no_cot: bool, num_samples: int, num_chains: int,save_as_pdf: bool):
     """ Main function to orchestrate the 'Adding Mistakes' analysis. """
     print(f"\n--- Generating Adding Mistakes Analysis for: {model_name.upper()} on {dataset_name.upper()} ---")
     
@@ -113,14 +127,14 @@ def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_
     mistakes_df['percent_before_mistake'] = ((mistakes_df['mistake_position'] - 1) / mistakes_df['total_sentences_in_chain']) * 100
 
     print("Generating main aggregated plot...")
-    plot_single_graph(mistakes_df, baseline_df, no_reasoning_df, no_cot_df, 'aggregated', model_name, dataset_name, plots_dir)
+    plot_single_graph(mistakes_df, baseline_df, no_reasoning_df, no_cot_df, 'aggregated', model_name, dataset_name, plots_dir, save_as_pdf)
 
     if generate_grouped:
         print("\nGenerating per-length grouped plots...")
         grouped_by_total_steps = mistakes_df.groupby('total_sentences_in_chain')
         for total_steps, group_df in grouped_by_total_steps:
             if len(group_df[['id', 'chain_id']].drop_duplicates()) > 10:
-                plot_single_graph(group_df, baseline_df, no_reasoning_df, no_cot_df, f'{total_steps}_sentences', model_name, dataset_name, plots_dir)
+                plot_single_graph(group_df, baseline_df, no_reasoning_df, no_cot_df, f'{total_steps}_sentences', model_name, dataset_name, plots_dir, save_as_pdf)
             else:
                 print(f"  - Skipping plot for CoTs of length {total_steps} due to insufficient data (<=10 chains).")
 
@@ -135,6 +149,8 @@ if __name__ == "__main__":
     parser.add_argument('--include-no-cot', action='store_true')
     parser.add_argument('--num-samples', type=int, default=None, help="Limit analysis to the first N unique samples.")
     parser.add_argument('--num-chains', type=int, default=None, help="Limit analysis to the first N chains per sample.")
+    parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of each plot in addition to the PNG.")
+    
     args = parser.parse_args()
     
     if args.dataset == 'all':
@@ -143,8 +159,8 @@ if __name__ == "__main__":
             dataset_names = sorted([f.replace(f'baseline_{args.model}_', '').replace('.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('.jsonl')])
             print(f"Found datasets for model '{args.model}': {dataset_names}")
             for dataset in dataset_names:
-                create_analysis(args.model, dataset, args.results_dir, args.plots_dir, args.grouped, args.include_no_cot, args.num_samples, args.num_chains)
+                create_analysis(args.model, dataset, args.results_dir, args.plots_dir, args.grouped, args.include_no_cot, args.num_samples, args.num_chains, args.save_pdf)
         except FileNotFoundError:
             print(f"Could not find baseline directory for model '{args.model}' at {baseline_dir}. Cannot run for 'all' datasets.")
     else:
-        create_analysis(args.model, args.dataset, args.results_dir, args.plots_dir, args.grouped, args.include_no_cot, args.num_samples, args.num_chains)
+        create_analysis(args.model, args.dataset, args.results_dir, args.plots_dir, args.grouped, args.include_no_cot, args.num_samples, args.num_chains, args.save_pdf)
