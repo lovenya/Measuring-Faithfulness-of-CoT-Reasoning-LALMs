@@ -72,8 +72,16 @@ def main():
     
     parser.add_argument("--experiment", type=str, required=True, help="The name of the experiment module to run (e.g., 'baseline').")
     
+    # --- NEW: The --restricted Flag ---
+    # This is our new, powerful flag for controlling which subset of the data to run on.
+    # It's a boolean flag, meaning you just add '--restricted' to the command to activate it.
+    parser.add_argument(
+        '--restricted', 
+        action='store_true', 
+        help="If specified, run the experiment on the '-restricted' subset of data (3, 4, 5, 6-step CoTs)."
+    )
+    
     # Optional arguments for controlling the scale of the run, perfect for quick tests.
-    parser.add_argument("--baseline-results-file", type=str, default=None, help="(For dependent experiments) Path to a specific baseline results file.")
     parser.add_argument("--num-samples", type=int, default=None)
     parser.add_argument("--num-chains", type=int, default=None)
     parser.add_argument('--verbose', action='store_true', help="Enable detailed, line-by-line progress logging.")
@@ -89,6 +97,8 @@ def main():
     config.MODEL_ALIAS = args.model
     config.DATASET_NAME = args.dataset
     config.VERBOSE = args.verbose
+    # We make the state of the --restricted flag globally available to all scripts.
+    config.RESTRICTED = args.restricted
 
     # --- 2. Centralized Path Management ---
     # This block intelligently constructs the output path to keep our results organized
@@ -100,9 +110,12 @@ def main():
     output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
 
-    # The filename also includes the model alias for clarity.
-    # e.g., 'baseline_salmonn_mmar.jsonl'
-    output_filename = f"{experiment_name}_{model_alias}_{args.dataset}.jsonl"
+    # The output filename now also reflects if it was a restricted run.
+    # e.g., 'adding_mistakes_salmonn_mmar-restricted.jsonl'
+    if config.RESTRICTED:
+        output_filename = f"{experiment_name}_{model_alias}_{args.dataset}-restricted.jsonl"
+    else:
+        output_filename = f"{experiment_name}_{model_alias}_{args.dataset}.jsonl"
     config.OUTPUT_PATH = os.path.join(output_dir, output_filename)
     
     log_dir = os.path.join(config.RESULTS_DIR, 'logs')
@@ -130,7 +143,7 @@ def main():
             raise ImportError(f"No utility module defined for model alias '{model_alias}'")
 
     except (ImportError, KeyError) as e:
-        logging.info(f"FATAL: Could not load utilities for model '{model_alias}'. Check config and core directory. Error: {e}")
+        logging.exception(f"Could not load utilities for model '{model_alias}'. Check config and core directory.")
         sys.exit(1)
 
     # --- 4. logging.info a "Run Summary" Banner ---
@@ -138,8 +151,11 @@ def main():
     logging.info(f"  - Model:      {model_alias.upper()}")
     logging.info(f"  - Experiment: {args.experiment}")
     logging.info(f"  - Dataset:    {args.dataset}")
+    # We now clearly log whether this is a restricted run.
+    logging.info(f"  - Run Mode:   {'RESTRICTED' if config.RESTRICTED else 'FULL DATASET'}")
     logging.info(f"  - Outputting to: {config.OUTPUT_PATH}")
     logging.info(f"  - Verbose Logging: {'Enabled' if config.VERBOSE else 'Disabled'}")
+    logging.info(f"  - Full log will be saved to: {log_filepath}")
     logging.info("-" * 35)
 
     # --- 5. Dynamic Experiment Loading ---
@@ -148,19 +164,19 @@ def main():
         experiment_module = importlib.import_module(f"experiments.{args.experiment}")
         EXPERIMENT_TYPE = getattr(experiment_module, 'EXPERIMENT_TYPE')
     except (ImportError, AttributeError):
-        logging.info(f"FATAL: Could not load experiment '{args.experiment}'.")
+        logging.exception(f"Could not load experiment '{args.experiment}'.")
         sys.exit(1)
 
     logging.info(f"Detected experiment type: '{EXPERIMENT_TYPE}'")
     
     # --- 6. Load the Model using the Dynamic Utilities ---
-    logging.info("\nLoading model and processor...")
+    logging.info("Loading model and processor...")
     # This call now works for any model because of our 'model_utils' alias.
     model, processor = model_utils.load_model_and_tokenizer(model_path)
 
     # --- 7. Execute the Experiment Based on its Type ---
     if EXPERIMENT_TYPE == "foundational":
-        logging.info("\nRunning a FOUNDATIONAL experiment...")
+        logging.info("Running a FOUNDATIONAL experiment...")
         try:
             dataset_path = config.DATASET_MAPPING[args.dataset]
             data_samples = load_dataset(dataset_path)
@@ -171,22 +187,42 @@ def main():
             logging.info(f"Processing {len(data_samples)} samples from '{dataset_path}'.")
             # We pass the dynamically loaded model_utils to the experiment's run function.
             experiment_module.run(model, processor, model_utils, data_samples, config)
-        except (KeyError, FileNotFoundError) as e:
-            logging.info(f"FATAL: Could not load dataset. Error: {e}")
+        except (KeyError, FileNotFoundError):
+            logging.exception("Could not load dataset.")
             sys.exit(1)
 
     elif EXPERIMENT_TYPE == "dependent":
-        logging.info("\nRunning a DEPENDENT experiment...")
-        config.BASELINE_RESULTS_FILE_OVERRIDE = args.baseline_results_file
-        # We also pass the model_utils here.
+        logging.info("Running a DEPENDENT experiment...")
+        
+        # --- NEW: Centralized Logic for Finding Dependency Files ---
+        # This is the new, intelligent block that finds the correct baseline file
+        # based on whether the run is restricted or not.
+        baseline_dir = os.path.join(config.RESULTS_DIR, model_alias, 'baseline')
+        if config.RESTRICTED:
+            baseline_filename = f"baseline_{model_alias}_{args.dataset}-restricted.jsonl"
+        else:
+            baseline_filename = f"baseline_{model_alias}_{args.dataset}.jsonl"
+        
+        # We save the final, correct path to the global config.
+        # This is the "Single Source of Truth" for all dependent scripts.
+        config.BASELINE_RESULTS_PATH = os.path.join(baseline_dir, baseline_filename)
+        
+        # We do the same for the no_reasoning file.
+        no_reasoning_dir = os.path.join(config.RESULTS_DIR, model_alias, 'no_reasoning')
+        if config.RESTRICTED:
+            no_reasoning_filename = f"no_reasoning_{model_alias}_{args.dataset}-restricted.jsonl"
+        else:
+            no_reasoning_filename = f"no_reasoning_{model_alias}_{args.dataset}.jsonl"
+        config.NO_REASONING_RESULTS_PATH = os.path.join(no_reasoning_dir, no_reasoning_filename)
+        
+        # Now we can call the experiment's run function.
         experiment_module.run(model, processor, model_utils, config)
 
     else:
         logging.info(f"FATAL: Unknown experiment type '{EXPERIMENT_TYPE}' in 'experiments/{args.experiment}.py'.")
         sys.exit(1)
 
-    logging.info("\n--- Experiment completed successfully! ---")
-    logging.info(f"  - Full log will be saved to: {log_filepath}")
+    logging.info("--- Experiment completed successfully! ---")
 
 if __name__ == "__main__":
     main()
