@@ -57,7 +57,7 @@ def create_restricted_files(model: str, dataset: str, results_dir: str):
 
     # --- 2. Filter the Baseline File ---
     print(f"Reading full baseline data from: {baseline_input_path}")
-    valid_lengths = {3, 4, 5, 6}
+    valid_lengths = {1, 2, 3, 4, 5, 6}
     restricted_baseline_chains = []
     valid_question_ids = set() # We'll track the IDs of questions that have at least one valid chain.
 
