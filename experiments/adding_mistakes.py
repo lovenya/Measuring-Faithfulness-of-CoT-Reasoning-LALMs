@@ -139,7 +139,7 @@ def run(model, processor, model_utils, config):
                 if config.VERBOSE:
                     logging.info(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
 
-                choices_formatted = model_utils.format_choices_for_prompt(baseline_trial['choices'])
+                choices_formatted = baseline_trial['choices']
                 sanitized_cot = baseline_trial['sanitized_cot']
                 sentences = nltk.sent_tokenize(sanitized_cot)
                 total_sentences = len(sentences)
