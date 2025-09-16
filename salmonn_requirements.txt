@@ -18,9 +18,9 @@ export TORCH_USE_CUDA_DSA=1
 python main.py --model salmonn --experiment baseline --dataset sakura-language --verbose
 python main.py --model salmonn --experiment adding_mistakes --dataset mmar --num-samples 2 --num-chains 2 --verbose --restricted
 
-python main.py --model salmonn --experiment paraphrasing --dataset mmar --num-samples 2 --num-chains 2 --verbose --restricted
+python main.py --model salmonn --experiment random_partial_filler_text --dataset sakura-language --num-samples 2 --num-chains 2 --verbose --restricted
 
-python data_processing/create_restricted_dataset.py --model salmonn --dataset all --num-chains 3
+python data_processing/create_restricted_dataset.py --model salmonn --dataset sakura-animal
 
 activate
 
