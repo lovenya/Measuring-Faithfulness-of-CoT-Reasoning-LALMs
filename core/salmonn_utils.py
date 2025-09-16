@@ -95,14 +95,35 @@ def _convert_messages_to_salmonn_prompt(messages: List[Dict[str, str]], model_co
     """
     A helper to translate our standard 'messages' format into the specific,
     templated string that SALMONN's generate method expects.
+    
+    This version is corrected to use a more explicit prompt to elicit
+    a detailed Chain-of-Thought.
     """
     full_text = ""
+    is_cot_generation = False
+    
     for msg in messages:
         content = msg.get("content", "")
         if "audio\n\n" in content:
             content = content.replace("audio\n\n", "").strip()
+        
+        # We check if this is a prompt for CoT generation.
+        if "Let's think step by step:" in content:
+            is_cot_generation = True
+            # We remove our generic phrase because we will replace it.
+            content = content.replace("Let's think step by step:", "").strip()
+
         full_text += content + "\n"
+    
     full_text = full_text.strip()
+
+    # --- THE CRITICAL FIX ---
+    # If this is a CoT generation step, we append a much more explicit and
+    # directive instruction, combining our goal with the patterns seen in the
+    # model's own prompt templates.
+    if is_cot_generation:
+        full_text += "\nPlease provide a detailed, step-by-step reasoning before giving your final answer. Let's think step by step:"
+    # --- END OF FIX ---
 
     prompt_template = model_config.model.prompt_template
     wrapped_text = "<Speech><SpeechHere></Speech> " + full_text
