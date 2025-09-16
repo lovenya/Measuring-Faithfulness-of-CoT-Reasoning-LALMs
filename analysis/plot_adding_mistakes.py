@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 from utils import load_results
+import seaborn as sns 
 
 def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, plot_group_name: str, model_name: str, dataset_name: str, plots_dir: str, save_as_pdf: bool, show_accuracy: bool, show_consistency: bool, show_baseline: bool, show_nr: bool):
     """
@@ -82,43 +83,58 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
 def plot_cross_dataset_graph(df: pd.DataFrame, model_name: str, plots_dir: str, is_restricted: bool, save_as_pdf: bool, show_accuracy: bool, show_consistency: bool):
     """
     Generates a single plot comparing aggregated results across multiple datasets.
+    This version has a corrected legend and title.
     """
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(14, 9))
     
-    # Use a seaborn color palette for distinct colors for each dataset line
     palette = sns.color_palette("viridis", n_colors=df['dataset'].nunique())
 
+    df['percent_binned'] = (df['percent_before_mistake'] / 10).round() * 10
+
     if show_accuracy:
-        # Group by dataset, then calculate the binned accuracy curve for each
-        accuracy_curves = df.groupby('dataset').apply(
-            lambda x: x.groupby((x['percent_before_mistake'] / 10).round() * 10)['is_correct'].mean() * 100
-        ).reset_index()
-        sns.lineplot(data=accuracy_curves, x='level_1', y='is_correct', hue='dataset', ax=ax, marker='^', linestyle='--', palette=palette)
+        accuracy_curves = df.groupby(['dataset', 'percent_binned'])['is_correct'].mean().reset_index()
+        accuracy_curves['is_correct'] *= 100
+        sns.lineplot(data=accuracy_curves, x='percent_binned', y='is_correct', hue='dataset', ax=ax, marker='^', linestyle='--', palette=palette, legend=False)
 
     if show_consistency:
-        # Group by dataset, then calculate the binned consistency curve for each
-        consistency_curves = df.groupby('dataset').apply(
-            lambda x: x.groupby((x['percent_before_mistake'] / 10).round() * 10)['is_consistent_with_baseline'].mean() * 100
-        ).reset_index()
-        sns.lineplot(data=consistency_curves, x='level_1', y='is_consistent_with_baseline', hue='dataset', ax=ax, marker='o', linestyle='-', palette=palette)
+        consistency_curves = df.groupby(['dataset', 'percent_binned'])['is_consistent_with_baseline'].mean().reset_index()
+        consistency_curves['is_consistent_with_baseline'] *= 100
+        sns.lineplot(data=consistency_curves, x='percent_binned', y='is_consistent_with_baseline', hue='dataset', ax=ax, marker='o', linestyle='-', palette=palette)
 
-    restriction_str = " (Restricted 1-6 Sentences)" if is_restricted else " (Full Dataset)"
-    ax.set_title(f'Cross-Dataset Comparison: Adding Mistakes ({model_name.upper()}){restriction_str}', fontsize=16, pad=20)
+    # --- THE CRITICAL FIX: Create a Clear, Unambiguous Legend and Title ---
+    plotted_metrics = []
+    if show_accuracy: plotted_metrics.append("Accuracy")
+    if show_consistency: plotted_metrics.append("Consistency")
+    
+    restriction_str = " (Restricted)" if is_restricted else " (Full Dataset)"
+    ax.set_title(f'Cross-Dataset Comparison of { " & ".join(plotted_metrics) }: Adding Mistakes ({model_name.upper()}){restriction_str}', fontsize=16, pad=20)
+    
+    # Manually create legend handles to be explicit about what is being shown.
+    from matplotlib.lines import Line2D
+    handles, labels = ax.get_legend_handles_labels()
+    
+    # Add handles for line style and markers
+    legend_elements = []
+    if show_accuracy:
+        legend_elements.append(Line2D([0], [0], color='gray', linestyle='--', marker='^', label='Accuracy'))
+    if show_consistency:
+        legend_elements.append(Line2D([0], [0], color='gray', linestyle='-', marker='o', label='Consistency'))
+    
+    # Combine with the dataset color handles
+    dataset_handles = [h for h in handles if isinstance(h, Line2D)]
+    dataset_labels = labels[:df['dataset'].nunique()]
+    
+    # Create two separate legends for clarity
+    l1 = ax.legend(handles=dataset_handles, labels=dataset_labels, title="Dataset", loc="upper right")
+    ax.add_artist(l1)
+    if legend_elements:
+        ax.legend(handles=legend_elements, title="Metric", loc="upper left")
+    # --- END OF FIX ---
+
     ax.set_xlabel('% of Reasoning Chain Before Mistake', fontsize=12)
     ax.set_ylabel('Rate (%)', fontsize=12)
     ax.set_xlim(-5, 105); ax.set_ylim(0, 105)
-    
-    # Improve legend handling for potentially many datasets
-    if show_accuracy and show_consistency:
-        # Manually create a clear legend if both are shown
-        from matplotlib.lines import Line2D
-        handles, labels = ax.get_legend_handles_labels()
-        # This is complex, so for now we simplify
-        ax.legend(title='Dataset')
-    else:
-         ax.legend(title='Dataset')
-
     fig.tight_layout()
 
     # --- Output Path ---
@@ -139,30 +155,42 @@ def plot_cross_dataset_graph(df: pd.DataFrame, model_name: str, plots_dir: str, 
     
     plt.close()
 
-# --- NEW MAIN FUNCTION FOR CROSS-DATASET ANALYSIS ---
+
 def create_cross_dataset_analysis(model_name: str, results_dir: str, plots_dir: str, is_restricted: bool, save_as_pdf: bool, show_flags: dict):
     """
     Loads data from ALL datasets and generates a single comparative plot.
+    This version is more robust to missing experiment files.
     """
     print(f"\n--- Generating CROSS-DATASET Adding Mistakes Analysis for: {model_name.upper()}{' (Restricted)' if is_restricted else ''} ---")
     
     all_dfs = []
     try:
-        exp_dir = os.path.join(results_dir, model_name, 'adding_mistakes')
+        # --- THE CRITICAL FIX: Discover datasets from the BASELINE directory ---
+        # This is the ground truth of which datasets exist for this model.
+        baseline_dir = os.path.join(results_dir, model_name, 'baseline')
         if is_restricted:
-            dataset_names = sorted(list(set([f.replace(f'adding_mistakes_{model_name}_', '').replace('-restricted.jsonl', '') for f in os.listdir(exp_dir) if f.endswith('-restricted.jsonl')])))
+            dataset_names = sorted(list(set([f.replace(f'baseline_{model_name}_', '').replace('-restricted.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('-restricted.jsonl')])))
         else:
-            dataset_names = sorted(list(set([f.replace(f'adding_mistakes_{model_name}_', '').replace('.jsonl', '') for f in os.listdir(exp_dir) if not f.endswith('-restricted.jsonl')])))
+            dataset_names = sorted(list(set([f.replace(f'baseline_{model_name}_', '').replace('.jsonl', '') for f in os.listdir(baseline_dir) if not f.endswith('-restricted.jsonl')])))
         
-        print(f"Found datasets: {dataset_names}")
+        print(f"Found datasets to process: {dataset_names}")
 
         for dataset in dataset_names:
-            df = load_results(model_name, results_dir, 'adding_mistakes', dataset, is_restricted)
-            df = df[df['total_sentences_in_chain'] > 0].copy()
-            if not df.empty:
-                df['percent_before_mistake'] = ((df['mistake_position'] - 1) / df['total_sentences_in_chain']) * 100
-                df['dataset'] = dataset # Tag each row with its source dataset
-                all_dfs.append(df)
+            try:
+                # Attempt to load the adding_mistakes data for this dataset
+                df = load_results(model_name, results_dir, 'adding_mistakes', dataset, is_restricted)
+                df = df[df['total_sentences_in_chain'] > 0].copy()
+                if not df.empty:
+                    df['percent_before_mistake'] = ((df['mistake_position'] - 1) / df['total_sentences_in_chain']) * 100
+                    df['dataset'] = dataset
+                    all_dfs.append(df)
+                else:
+                    print(f"  - WARNING: No valid data for '{dataset}' in adding_mistakes results. Skipping.")
+            except FileNotFoundError:
+                # If the file doesn't exist, print a warning and continue.
+                print(f"  - WARNING: 'adding_mistakes' results for dataset '{dataset}' not found. Skipping.")
+                continue
+        # --- END OF FIX ---
         
         if not all_dfs:
             print("No data found for any dataset. Halting analysis.")
@@ -172,7 +200,7 @@ def create_cross_dataset_analysis(model_name: str, results_dir: str, plots_dir: 
         plot_cross_dataset_graph(super_df, model_name, plots_dir, is_restricted, save_as_pdf, **show_flags)
 
     except FileNotFoundError:
-        print(f"Could not find directory for model '{model_name}' at {exp_dir}.")
+        print(f"Could not find baseline directory for model '{model_name}' at {baseline_dir}. Cannot run for 'all' datasets.")
         return
 
 def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_dir: str, is_restricted: bool, generate_grouped: bool, save_as_pdf: bool, show_flags: dict):
@@ -238,8 +266,14 @@ if __name__ == "__main__":
             parser.error("--cross-dataset-plot can only be used with --dataset all")
         if args.grouped:
             parser.error("--cross-dataset-plot cannot be used with --grouped")
-        create_cross_dataset_analysis(args.model, args.results_dir, args.plots_dir, args.restricted, args.save_pdf, show_flags)
-    
+        
+        # Create a dictionary with ONLY the flags relevant to the cross-dataset plot.
+        cross_dataset_show_flags = {
+            "show_accuracy": args.show_accuracy_curve,
+            "show_consistency": args.show_consistency_curve
+        }
+        create_cross_dataset_analysis(args.model, args.results_dir, args.plots_dir, args.restricted, args.save_pdf, cross_dataset_show_flags)
+        
     elif args.dataset == 'all':
         try:
             exp_dir = os.path.join(args.results_dir, args.model, 'adding_mistakes')
