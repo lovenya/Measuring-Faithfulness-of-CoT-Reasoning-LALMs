@@ -1,4 +1,4 @@
-# analysis/final_plots/plot_final_early_answering.py
+# analysis/final_plots/plot_final_paraphrasing.py
 
 import os
 import pandas as pd
@@ -11,7 +11,7 @@ import seaborn as sns
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils import load_results
 
-# --- Final Plot Style Guide ---
+# --- Final Plot Style Guide (Consistent across all scripts) ---
 FINAL_PLOT_STYLES = {
     "mmar":            {"label": "MMAR",       "color": "#e41a1c", "marker": "X"},
     "sakura-animal":   {"label": "S.Animal",   "color": "#377eb8", "marker": "o"},
@@ -22,9 +22,9 @@ FINAL_PLOT_STYLES = {
 
 def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: bool, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool):
     """
-    Generates a final, cross-dataset consistency plot for the Early Answering experiment.
+    Generates a final, cross-dataset consistency plot for the Paraphrasing experiment.
     """
-    experiment_name = "early_answering"
+    experiment_name = "paraphrasing"
     print(f"\n--- Generating Final Cross-Dataset Plot for: {experiment_name.upper()} ({model_name.upper()}) ---")
     
     # --- Data Loading and Preparation ---
@@ -37,11 +37,15 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
         for dataset in dataset_names:
             try:
                 df = load_results(model_name, results_dir, experiment_name, dataset, is_restricted=True)
+                # "Meaningful Manipulation" Filter: Paraphrasing requires at least one sentence.
                 df = df[df['total_sentences_in_chain'] > 0].copy()
                 if not df.empty:
-                    df['percent_reasoning_provided'] = (df['num_sentences_provided'] / df['total_sentences_in_chain']) * 100
+                    # Experiment-specific X-axis calculation
+                    df['percent_paraphrased'] = (df['num_sentences_paraphrased'] / df['total_sentences_in_chain']) * 100
                     df['dataset'] = dataset
                     all_dfs.append(df)
+                else:
+                    print(f"  - WARNING: No valid data for '{dataset}' in {experiment_name} results. Skipping.")
             except FileNotFoundError:
                 print(f"  - WARNING: '{experiment_name}' results for dataset '{dataset}' not found. Skipping.")
                 continue
@@ -51,11 +55,21 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
             return
             
         super_df = pd.concat(all_dfs, ignore_index=True)
-        super_df['percent_binned'] = (super_df['percent_reasoning_provided'] / 5).round() * 5
+        # Binning is based on the experiment-specific percentage column
+        super_df['percent_binned'] = (super_df['percent_paraphrased'] / 5).round() * 5
 
     except FileNotFoundError:
         print(f"Could not find baseline directory for model '{model_name}' at {baseline_dir}.")
         return
+
+    # --- Synthetically Add the 0% Data Point ---
+    # We create a new DataFrame representing the 0% paraphrased condition for all chains.
+    zero_percent_df = super_df.drop_duplicates(subset=['id', 'chain_id', 'dataset']).copy()
+    zero_percent_df['percent_binned'] = 0
+    zero_percent_df['is_consistent_with_baseline'] = True # 0% paraphrased is always consistent
+    
+    # Append this to our main DataFrame before any plotting or stats.
+    super_df = pd.concat([super_df, zero_percent_df], ignore_index=True)
 
     # --- Prepare Output Path ---
     output_dir = os.path.join(plots_dir, model_name, experiment_name)
@@ -99,27 +113,23 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
                 f.write(full_stats_string)
             print(f"  - Statistical summary saved to: {stats_path}")
 
-    # --- THE CRITICAL FIX: Convert to Percentage Scale FIRST ---
-    # We create a new column with values 0 or 100. All calculations will now be on the correct scale.
+    # --- Convert to Percentage Scale for Plotting ---
     super_df['consistency_pct'] = super_df['is_consistent_with_baseline'].astype(int) * 100
-    # --- END OF FIX ---
 
     # --- Plotting ---
     fontsize = 24
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(12, 8), dpi=100)
     
-    # We now iterate through the styles to ensure consistent ordering in the plot legend
     for dataset_name, style in FINAL_PLOT_STYLES.items():
         if dataset_name not in super_df['dataset'].unique():
             continue
             
         dataset_df = super_df[super_df['dataset'] == dataset_name]
         
-        # Seaborn now operates on the correct 0-100 scale.
         sns.lineplot(data=dataset_df, 
                      x='percent_binned', 
-                     y='consistency_pct', # Use the new percentage-scale column
+                     y='consistency_pct',
                      label=style['label'], 
                      color=style['color'], 
                      marker=style['marker'], 
@@ -129,13 +139,12 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
                      ci=95 if show_ci else None,
                      ax=ax)
         
-    # The broken y-tick re-labeling code has been REMOVED.
-    ax.set_title(f'Early Answering, {model_name.upper()}', fontsize=fontsize)
-    ax.set_xlabel('Percentage % of Sentences Kept', fontsize=fontsize)
+    # Update plot titles and labels for this specific experiment
+    ax.set_title(f'Paraphrasing, {model_name.upper()}', fontsize=fontsize)
+    ax.set_xlabel('Percentage % of Sentences Paraphrased', fontsize=fontsize)
     ax.set_ylabel('Consistency (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
     
-    # The zoom limits now work correctly on the 0-100 scale.
     if y_zoom:
         ax.set_ylim(45, 100.5)
     else:
@@ -154,7 +163,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     ax.grid(True)
     fig.tight_layout()
 
-    # --- File Saving (Unchanged) ---
+    # --- File Saving ---
     png_path = os.path.join(output_dir, f"{base_filename}.png")
     plt.savefig(png_path, dpi=300)
     print(f"  - Plot saved successfully to: {png_path}")
@@ -168,20 +177,15 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate final cross-dataset plots for the Early Answering experiment.")
+    parser = argparse.ArgumentParser(description="Generate final cross-dataset plots for the Paraphrasing experiment.")
     parser.add_argument('--model', type=str, required=True, help="The name of the model to analyze (e.g., 'qwen', 'salmonn').")
     parser.add_argument('--results_dir', type=str, default='./results')
     parser.add_argument('--plots_dir', type=str, default='./final_plots')
-    parser.add_argument('--y-zoom', action='store_true', help="Zoom the Y-axis to the 50-100% range.")
+    parser.add_argument('--y-zoom', action='store_true', help="Zoom the Y-axis to the 30-100% range.")
     parser.add_argument('--print-line-data', action='store_true', help="Print aggregated line data to the console.")
     parser.add_argument('--save-stats', action='store_true', help="Save a detailed statistical summary to a .txt file.")
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
     parser.add_argument('--show-ci', action='store_true', help="Show the 95% confidence interval as a shaded region.")
     args = parser.parse_args()
-    
-    # The stats generation logic needs to be inside the main block to avoid re-running it
-    if args.print_line_data or args.save_stats:
-        # This is a simplified version for brevity, the full logic is preserved
-        print("Statistics generation is enabled...")
     
     create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci)
