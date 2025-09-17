@@ -11,7 +11,18 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils import load_results
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: bool, print_line_data: bool, save_stats: bool, save_as_pdf: bool):
+# --- Centralized Style Guide for Datasets ---
+# This dictionary ensures that every dataset has a consistent and distinct
+# visual representation across all plots we generate.
+DATASET_STYLES = {
+    "mmar": {"color": "#d62728", "marker": "x"},          # Brick Red, Thin X
+    "sakura-animal": {"color": "#1f77b4", "marker": "o"}, # Muted Blue, Circle
+    "sakura-emotion": {"color": "#2ca02c", "marker": "s"},# Cooked Asparagus Green, Square
+    "sakura-gender": {"color": "#ff7f0e", "marker": "^"}, # Safety Orange, Triangle
+    "sakura-language": {"color": "#9467bd", "marker": "D"}# Muted Purple, Diamond
+}
+
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: bool, print_line_data: bool, save_stats: bool, save_pdf: bool):
     """
     Generates a final, cross-dataset consistency plot for the Early Answering experiment.
     """
@@ -59,7 +70,10 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     # --- Statistical Analysis & Optional Output ---
     if print_line_data or save_stats:
         stats_output = []
-        for dataset_name, group_df in super_df.groupby('dataset'):
+        # Ensure consistent ordering of datasets in the stats file
+        for dataset_name in sorted(super_df['dataset'].unique()):
+            group_df = super_df[super_df['dataset'] == dataset_name]
+            
             stats_output.append("="*60)
             stats_output.append(f"Dataset: {dataset_name}")
             stats_output.append("="*60)
@@ -95,29 +109,39 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(14, 9))
     
-    palette = sns.color_palette("viridis", n_colors=super_df['dataset'].nunique())
-    
-    consistency_curves = super_df.groupby(['dataset', 'percent_binned'])['is_consistent_with_baseline'].mean().reset_index()
-    consistency_curves['is_consistent_with_baseline'] *= 100
-    sns.lineplot(data=consistency_curves, x='percent_binned', y='is_consistent_with_baseline', hue='dataset', ax=ax, marker='o', linestyle='-', palette=palette)
+    for dataset_name in sorted(super_df['dataset'].unique()):
+        dataset_df = super_df[super_df['dataset'] == dataset_name]
+        consistency_curve = dataset_df.groupby('percent_binned')['is_consistent_with_baseline'].mean() * 100
+        
+        style = DATASET_STYLES.get(dataset_name, {"color": "black", "marker": "."})
+        ax.plot(consistency_curve.index, consistency_curve.values, 
+                label=dataset_name, 
+                color=style['color'], 
+                marker=style['marker'], 
+                linestyle='-',
+                linewidth=2.25,           # Increased line width
+                markersize=9,           # Increased marker size
+                markeredgewidth=0.5,     # Added marker edge
+               )
 
-    ax.set_title(f'Cross-Dataset Consistency: Early Answering ({model_name.upper()}) (Restricted)', fontsize=16, pad=20)
-    ax.set_xlabel('% of Reasoning Chain Provided', fontsize=12)
-    ax.set_ylabel('Consistency Rate (%)', fontsize=12)
+    ax.set_title(f'Early Answering -> {model_name.upper()} (1-6 Step CoTs)', fontsize=20, pad=20)
+    ax.set_xlabel('% of Reasoning Chain Provided', fontsize=20)
+    ax.set_ylabel('Consistency Rate (%)', fontsize=20)
+    ax.tick_params(axis='both', which='major', labelsize=12)
     
     if y_zoom:
         ax.set_ylim(50, 100.5)
     else:
         ax.set_ylim(0, 105)
     ax.set_xlim(-5, 105)
-    ax.legend(title='Dataset')
+    ax.legend(title='Dataset', fontsize=12, title_fontsize=16)
     fig.tight_layout()
 
     png_path = os.path.join(output_dir, f"{base_filename}.png")
     plt.savefig(png_path, dpi=300)
     print(f"  - Plot saved successfully to: {png_path}")
 
-    if save_as_pdf:
+    if save_pdf:
         pdf_path = os.path.join(output_dir, f"{base_filename}.pdf")
         plt.savefig(pdf_path, format='pdf')
         print(f"  - PDF copy saved to: {pdf_path}")
