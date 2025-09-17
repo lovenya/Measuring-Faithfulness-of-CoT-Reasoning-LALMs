@@ -4,57 +4,57 @@ Dataset: mmar
 
 Aggregated Line Data (Consistency %):
   X Coords: [0.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 100.0]
-  Y Coords: [56.93, 58.49, 63.2, 64.11, 67.44, 67.34, 67.39, 67.89, 100.0]
+  Y Coords: [64.96, 81.61, 77.46, 78.57, 78.2, 82.14, 74.29, 77.01, 100.0]
 
 Per-Bin Distributional Stats (Per-Question Consistency %):
   - Bin 0%:
-    - Mean:   56.06%
-    - Median: 50.00%
-    - Std Dev: 37.37
-    - Min/Max: 0.00% / 100.00%
-    - IQR:    33.33% - 100.00%
-  - Bin 20%:
-    - Mean:   58.09%
+    - Mean:   63.52%
     - Median: 66.67%
-    - Std Dev: 44.87
+    - Std Dev: 35.43
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    50.00% - 100.00%
+  - Bin 20%:
+    - Mean:   81.59%
+    - Median: 100.00%
+    - Std Dev: 36.60
+    - Min/Max: 0.00% / 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 30%:
-    - Mean:   61.67%
+    - Mean:   76.32%
     - Median: 100.00%
-    - Std Dev: 45.54
+    - Std Dev: 40.21
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    50.00% - 100.00%
   - Bin 40%:
-    - Mean:   62.59%
+    - Mean:   76.00%
     - Median: 100.00%
-    - Std Dev: 47.68
+    - Std Dev: 43.59
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 50%:
-    - Mean:   67.56%
+    - Mean:   77.78%
     - Median: 100.00%
-    - Std Dev: 41.66
+    - Std Dev: 37.31
     - Min/Max: 0.00% / 100.00%
-    - IQR:    33.33% - 100.00%
+    - IQR:    50.00% - 100.00%
   - Bin 60%:
-    - Mean:   66.44%
+    - Mean:   82.00%
     - Median: 100.00%
-    - Std Dev: 46.51
+    - Std Dev: 37.86
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 70%:
-    - Mean:   67.47%
+    - Mean:   74.56%
     - Median: 100.00%
-    - Std Dev: 44.13
+    - Std Dev: 41.32
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    50.00% - 100.00%
   - Bin 80%:
-    - Mean:   68.18%
+    - Mean:   76.62%
     - Median: 100.00%
-    - Std Dev: 41.57
+    - Std Dev: 39.04
     - Min/Max: 0.00% / 100.00%
-    - IQR:    33.33% - 100.00%
+    - IQR:    50.00% - 100.00%
   - Bin 100%:
     - Mean:   100.00%
     - Median: 100.00%
@@ -69,55 +69,55 @@ Dataset: sakura-animal
 
 Aggregated Line Data (Consistency %):
   X Coords: [0.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 100.0]
-  Y Coords: [60.71, 62.3, 71.04, 71.28, 69.77, 78.2, 77.6, 78.92, 100.0]
+  Y Coords: [49.64, 78.21, 70.59, 92.0, 72.86, 80.0, 80.39, 78.95, 100.0]
 
 Per-Bin Distributional Stats (Per-Question Consistency %):
   - Bin 0%:
-    - Mean:   59.91%
-    - Median: 66.67%
-    - Std Dev: 37.98
+    - Mean:   47.79%
+    - Median: 50.00%
+    - Std Dev: 40.71
     - Min/Max: 0.00% / 100.00%
-    - IQR:    33.33% - 100.00%
+    - IQR:    0.00% - 100.00%
   - Bin 20%:
-    - Mean:   63.19%
+    - Mean:   81.58%
     - Median: 100.00%
-    - Std Dev: 44.60
+    - Std Dev: 34.89
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 30%:
-    - Mean:   70.45%
+    - Mean:   70.94%
     - Median: 100.00%
-    - Std Dev: 43.15
+    - Std Dev: 40.77
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    50.00% - 100.00%
   - Bin 40%:
-    - Mean:   71.33%
+    - Mean:   91.67%
     - Median: 100.00%
-    - Std Dev: 44.68
+    - Std Dev: 28.23
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 50%:
-    - Mean:   70.23%
+    - Mean:   72.64%
     - Median: 100.00%
-    - Std Dev: 41.14
+    - Std Dev: 41.10
     - Min/Max: 0.00% / 100.00%
     - IQR:    50.00% - 100.00%
   - Bin 60%:
-    - Mean:   78.80%
+    - Mean:   79.17%
     - Median: 100.00%
-    - Std Dev: 40.13
+    - Std Dev: 41.49
     - Min/Max: 0.00% / 100.00%
     - IQR:    100.00% - 100.00%
   - Bin 70%:
-    - Mean:   77.06%
+    - Mean:   81.20%
     - Median: 100.00%
-    - Std Dev: 39.09
+    - Std Dev: 35.29
     - Min/Max: 0.00% / 100.00%
-    - IQR:    50.00% - 100.00%
+    - IQR:    83.33% - 100.00%
   - Bin 80%:
-    - Mean:   78.65%
+    - Mean:   77.98%
     - Median: 100.00%
-    - Std Dev: 37.59
+    - Std Dev: 37.89
     - Min/Max: 0.00% / 100.00%
     - IQR:    50.00% - 100.00%
   - Bin 100%:
@@ -134,57 +134,57 @@ Dataset: sakura-emotion
 
 Aggregated Line Data (Consistency %):
   X Coords: [0.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 100.0]
-  Y Coords: [52.71, 59.48, 58.31, 66.67, 65.77, 70.1, 71.41, 77.93, 100.0]
+  Y Coords: [46.26, 76.67, 81.54, 65.22, 68.38, 73.91, 75.38, 84.27, 100.0]
 
 Per-Bin Distributional Stats (Per-Question Consistency %):
   - Bin 0%:
-    - Mean:   53.21%
+    - Mean:   50.68%
     - Median: 50.00%
-    - Std Dev: 38.88
+    - Std Dev: 35.49
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    33.33% - 91.67%
   - Bin 20%:
-    - Mean:   58.29%
-    - Median: 66.67%
-    - Std Dev: 43.47
+    - Mean:   75.12%
+    - Median: 100.00%
+    - Std Dev: 40.03
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    50.00% - 100.00%
   - Bin 30%:
-    - Mean:   59.18%
+    - Mean:   83.96%
     - Median: 100.00%
-    - Std Dev: 46.30
+    - Std Dev: 35.05
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 40%:
-    - Mean:   66.94%
+    - Mean:   60.00%
     - Median: 100.00%
-    - Std Dev: 43.92
+    - Std Dev: 50.26
     - Min/Max: 0.00% / 100.00%
     - IQR:    0.00% - 100.00%
   - Bin 50%:
-    - Mean:   66.80%
+    - Mean:   66.24%
     - Median: 100.00%
-    - Std Dev: 43.33
+    - Std Dev: 43.72
     - Min/Max: 0.00% / 100.00%
     - IQR:    0.00% - 100.00%
   - Bin 60%:
-    - Mean:   69.60%
+    - Mean:   70.00%
     - Median: 100.00%
-    - Std Dev: 43.21
+    - Std Dev: 47.02
     - Min/Max: 0.00% / 100.00%
     - IQR:    0.00% - 100.00%
   - Bin 70%:
-    - Mean:   71.51%
+    - Mean:   74.53%
     - Median: 100.00%
-    - Std Dev: 42.49
+    - Std Dev: 42.32
     - Min/Max: 0.00% / 100.00%
     - IQR:    50.00% - 100.00%
   - Bin 80%:
-    - Mean:   78.56%
+    - Mean:   83.33%
     - Median: 100.00%
-    - Std Dev: 35.53
+    - Std Dev: 34.34
     - Min/Max: 0.00% / 100.00%
-    - IQR:    50.00% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 100%:
     - Mean:   100.00%
     - Median: 100.00%
@@ -199,55 +199,55 @@ Dataset: sakura-gender
 
 Aggregated Line Data (Consistency %):
   X Coords: [0.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 100.0]
-  Y Coords: [48.64, 58.19, 57.99, 63.98, 61.67, 69.89, 70.41, 69.86, 100.0]
+  Y Coords: [69.82, 70.15, 76.12, 72.41, 81.25, 70.97, 83.58, 78.79, 100.0]
 
 Per-Bin Distributional Stats (Per-Question Consistency %):
   - Bin 0%:
-    - Mean:   49.38%
-    - Median: 50.00%
-    - Std Dev: 39.02
+    - Mean:   70.34%
+    - Median: 66.67%
+    - Std Dev: 32.75
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    50.00% - 100.00%
   - Bin 20%:
-    - Mean:   60.76%
-    - Median: 66.67%
-    - Std Dev: 42.86
-    - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
-  - Bin 30%:
-    - Mean:   56.51%
-    - Median: 66.67%
-    - Std Dev: 45.92
-    - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
-  - Bin 40%:
-    - Mean:   64.57%
+    - Mean:   70.68%
     - Median: 100.00%
-    - Std Dev: 45.81
+    - Std Dev: 41.71
+    - Min/Max: 0.00% / 100.00%
+    - IQR:    50.00% - 100.00%
+  - Bin 30%:
+    - Mean:   77.00%
+    - Median: 100.00%
+    - Std Dev: 39.40
+    - Min/Max: 0.00% / 100.00%
+    - IQR:    50.00% - 100.00%
+  - Bin 40%:
+    - Mean:   70.37%
+    - Median: 100.00%
+    - Std Dev: 46.53
     - Min/Max: 0.00% / 100.00%
     - IQR:    0.00% - 100.00%
   - Bin 50%:
-    - Mean:   60.97%
+    - Mean:   80.13%
     - Median: 100.00%
-    - Std Dev: 44.61
+    - Std Dev: 36.36
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    66.67% - 100.00%
   - Bin 60%:
-    - Mean:   67.92%
+    - Mean:   68.97%
     - Median: 100.00%
-    - Std Dev: 45.80
+    - Std Dev: 47.08
     - Min/Max: 0.00% / 100.00%
     - IQR:    0.00% - 100.00%
   - Bin 70%:
-    - Mean:   69.26%
+    - Mean:   84.00%
     - Median: 100.00%
-    - Std Dev: 42.51
+    - Std Dev: 32.64
     - Min/Max: 0.00% / 100.00%
-    - IQR:    33.33% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 80%:
-    - Mean:   70.13%
+    - Mean:   78.30%
     - Median: 100.00%
-    - Std Dev: 39.68
+    - Std Dev: 38.62
     - Min/Max: 0.00% / 100.00%
     - IQR:    50.00% - 100.00%
   - Bin 100%:
@@ -264,57 +264,57 @@ Dataset: sakura-language
 
 Aggregated Line Data (Consistency %):
   X Coords: [0.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 100.0]
-  Y Coords: [54.65, 56.09, 61.04, 56.58, 66.88, 67.79, 68.61, 74.16, 100.0]
+  Y Coords: [58.66, 70.33, 85.0, 86.96, 77.85, 79.17, 83.05, 77.78, 100.0]
 
 Per-Bin Distributional Stats (Per-Question Consistency %):
   - Bin 0%:
-    - Mean:   54.75%
+    - Mean:   58.33%
     - Median: 50.00%
-    - Std Dev: 38.00
+    - Std Dev: 38.39
     - Min/Max: 0.00% / 100.00%
     - IQR:    33.33% - 100.00%
   - Bin 20%:
-    - Mean:   55.77%
-    - Median: 66.67%
-    - Std Dev: 45.28
+    - Mean:   68.47%
+    - Median: 100.00%
+    - Std Dev: 44.96
     - Min/Max: 0.00% / 100.00%
     - IQR:    0.00% - 100.00%
   - Bin 30%:
-    - Mean:   61.04%
+    - Mean:   82.29%
     - Median: 100.00%
-    - Std Dev: 46.89
+    - Std Dev: 37.88
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 40%:
-    - Mean:   57.51%
+    - Mean:   86.36%
     - Median: 100.00%
-    - Std Dev: 46.24
+    - Std Dev: 35.13
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 50%:
-    - Mean:   67.41%
+    - Mean:   76.33%
     - Median: 100.00%
-    - Std Dev: 42.81
+    - Std Dev: 39.51
     - Min/Max: 0.00% / 100.00%
-    - IQR:    16.67% - 100.00%
+    - IQR:    62.50% - 100.00%
   - Bin 60%:
-    - Mean:   66.97%
+    - Mean:   78.26%
     - Median: 100.00%
-    - Std Dev: 44.66
+    - Std Dev: 42.17
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 70%:
-    - Mean:   68.17%
+    - Mean:   80.85%
     - Median: 100.00%
-    - Std Dev: 44.75
+    - Std Dev: 38.38
     - Min/Max: 0.00% / 100.00%
-    - IQR:    0.00% - 100.00%
+    - IQR:    100.00% - 100.00%
   - Bin 80%:
-    - Mean:   73.53%
+    - Mean:   77.63%
     - Median: 100.00%
-    - Std Dev: 39.56
+    - Std Dev: 39.89
     - Min/Max: 0.00% / 100.00%
-    - IQR:    50.00% - 100.00%
+    - IQR:    66.67% - 100.00%
   - Bin 100%:
     - Mean:   100.00%
     - Median: 100.00%

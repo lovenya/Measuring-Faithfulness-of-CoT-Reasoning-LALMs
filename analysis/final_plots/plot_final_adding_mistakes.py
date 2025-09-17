@@ -60,6 +60,20 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     except FileNotFoundError:
         print(f"Could not find baseline directory for model '{model_name}' at {baseline_dir}.")
         return
+    
+    baseline_df = pd.concat([load_results(model_name, results_dir, 'baseline', ds, is_restricted=True) for ds in dataset_names])
+    baseline_df = baseline_df[baseline_df['id'].isin(super_df['id'].unique())] # Ensure we only use relevant baseline data
+    
+    hundred_percent_df = baseline_df.copy()
+    hundred_percent_df['percent_binned'] = 100
+    # The baseline is, by definition, 100% consistent with itself.
+    hundred_percent_df['is_consistent_with_baseline'] = True
+    # Add the 'dataset' column by merging with a unique id-dataset map from super_df
+    id_to_dataset = super_df[['id', 'dataset']].drop_duplicates()
+    hundred_percent_df = pd.merge(hundred_percent_df, id_to_dataset, on='id')
+
+    # Append this to our main DataFrame before any plotting or stats.
+    super_df = pd.concat([super_df, hundred_percent_df], ignore_index=True)
 
     # --- Prepare Output Path ---
     output_dir = os.path.join(plots_dir, model_name, experiment_name)
