@@ -146,7 +146,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
         
     # Update plot titles and labels for this specific experiment
     ax.set_title(f'Adding Mistakes, {model_name.upper()}', fontsize=fontsize)
-    ax.set_xlabel('Percentage % of Reasoning Before Mistake', fontsize=fontsize)
+    ax.set_xlabel('Percentage % of Chain Without Mistake', fontsize=fontsize)
     ax.set_ylabel('Consistency (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
     

@@ -147,7 +147,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
     
     if y_zoom:
-        ax.set_ylim(45, 100.5)
+        ax.set_ylim(68, 100.5)
     else:
         ax.set_ylim(0, 105)
     ax.set_xlim(-5, 105)
