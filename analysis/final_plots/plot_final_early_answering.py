@@ -14,11 +14,11 @@ from utils import load_results
 # This dictionary maps full dataset names to their final, publication-ready
 # labels, colors, and marker styles.
 FINAL_PLOT_STYLES = {
-    "mmar":            {"label": "MMAR",       "color": "C0", "marker": "x"},
-    "sakura-animal":   {"label": "S.Animal",   "color": "C1", "marker": "o"},
-    "sakura-emotion":  {"label": "S.Emotion",  "color": "C2", "marker": "v"},
-    "sakura-gender":   {"label": "S.Gender",   "color": "C3", "marker": "s"},
-    "sakura-language": {"label": "S.Language", "color": "C4", "marker": ">"}
+    "mmar":            {"label": "MMAR",       "color": "#e41a1c", "marker": "x"}, # Strong Red
+    "sakura-animal":   {"label": "S.Animal",   "color": "#377eb8", "marker": "o"}, # Strong Blue
+    "sakura-emotion":  {"label": "S.Emotion",  "color": "#4daf4a", "marker": "v"}, # Strong Green
+    "sakura-gender":   {"label": "S.Gender",   "color": "#ff7f00", "marker": "s"}, # Strong Orange
+    "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}  # Strong Purple
 }
 
 def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: bool, print_line_data: bool, save_stats: bool, save_pdf: bool):
