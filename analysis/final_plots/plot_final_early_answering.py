@@ -3,7 +3,6 @@
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import argparse
 import sys
 
@@ -11,34 +10,34 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils import load_results
 
-# --- Centralized Style Guide for Datasets ---
-# This dictionary ensures that every dataset has a consistent and distinct
-# visual representation across all plots we generate.
-DATASET_STYLES = {
-    "mmar": {"color": "#d62728", "marker": "x"},          # Brick Red, Thin X
-    "sakura-animal": {"color": "#1f77b4", "marker": "o"}, # Muted Blue, Circle
-    "sakura-emotion": {"color": "#2ca02c", "marker": "s"},# Cooked Asparagus Green, Square
-    "sakura-gender": {"color": "#ff7f0e", "marker": "^"}, # Safety Orange, Triangle
-    "sakura-language": {"color": "#9467bd", "marker": "D"}# Muted Purple, Diamond
+# --- Final Plot Style Guide ---
+# This dictionary maps full dataset names to their final, publication-ready
+# labels, colors, and marker styles.
+FINAL_PLOT_STYLES = {
+    "mmar":            {"label": "MMAR",       "color": "C0", "marker": "x"},
+    "sakura-animal":   {"label": "S.Animal",   "color": "C1", "marker": "o"},
+    "sakura-emotion":  {"label": "S.Emotion",  "color": "C2", "marker": "v"},
+    "sakura-gender":   {"label": "S.Gender",   "color": "C3", "marker": "s"},
+    "sakura-language": {"label": "S.Language", "color": "C4", "marker": ">"}
 }
 
 def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: bool, print_line_data: bool, save_stats: bool, save_pdf: bool):
     """
-    Generates a final, cross-dataset consistency plot for the Early Answering experiment.
+    Generates a final, cross-dataset consistency plot for the Early Answering experiment
+    with the new, publication-quality aesthetic.
     """
     experiment_name = "early_answering"
     print(f"\n--- Generating Final Cross-Dataset Plot for: {experiment_name.upper()} ({model_name.upper()}) ---")
     
+    # --- Data Loading and Preparation ---
     all_dfs = []
     try:
-        # Discover datasets from the restricted baseline directory
         baseline_dir = os.path.join(results_dir, model_name, 'baseline')
         dataset_names = sorted(list(set([f.replace(f'baseline_{model_name}_', '').replace('-restricted.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('-restricted.jsonl')])))
         print(f"Found restricted datasets to process: {dataset_names}")
 
         for dataset in dataset_names:
             try:
-                # Load the restricted data for this experiment
                 df = load_results(model_name, results_dir, experiment_name, dataset, is_restricted=True)
                 df = df[df['total_sentences_in_chain'] > 0].copy()
                 if not df.empty:
@@ -70,7 +69,6 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     # --- Statistical Analysis & Optional Output ---
     if print_line_data or save_stats:
         stats_output = []
-        # Ensure consistent ordering of datasets in the stats file
         for dataset_name in sorted(super_df['dataset'].unique()):
             group_df = super_df[super_df['dataset'] == dataset_name]
             
@@ -106,37 +104,49 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
             print(f"  - Statistical summary saved to: {stats_path}")
 
     # --- Plotting ---
+    fontsize = 24
     plt.style.use('seaborn-v0_8-whitegrid')
-    fig, ax = plt.subplots(figsize=(14, 9))
+    fig, ax = plt.subplots(figsize=(12, 8), dpi=100)
     
     for dataset_name in sorted(super_df['dataset'].unique()):
         dataset_df = super_df[super_df['dataset'] == dataset_name]
         consistency_curve = dataset_df.groupby('percent_binned')['is_consistent_with_baseline'].mean() * 100
         
-        style = DATASET_STYLES.get(dataset_name, {"color": "black", "marker": "."})
+        style = FINAL_PLOT_STYLES.get(dataset_name, {"label": dataset_name, "color": "black", "marker": "."})
+        
         ax.plot(consistency_curve.index, consistency_curve.values, 
-                label=dataset_name, 
+                label=style['label'], 
                 color=style['color'], 
                 marker=style['marker'], 
                 linestyle='-',
-                linewidth=2.25,           # Increased line width
-                markersize=9,           # Increased marker size
-                markeredgewidth=0.5,     # Added marker edge
-               )
+                linewidth=2,
+                markersize=9)
 
-    ax.set_title(f'Early Answering -> {model_name.upper()} (1-6 Step CoTs)', fontsize=20, pad=20)
-    ax.set_xlabel('% of Reasoning Chain Provided', fontsize=20)
-    ax.set_ylabel('Consistency Rate (%)', fontsize=20)
-    ax.tick_params(axis='both', which='major', labelsize=12)
+    ax.set_title(f'Early Answering, {model_name.upper()}', fontsize=fontsize)
+    ax.set_xlabel('Percentage % of Sentences Kept', fontsize=fontsize)
+    ax.set_ylabel('Consistency (%)', fontsize=fontsize)
+    ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
     
     if y_zoom:
         ax.set_ylim(50, 100.5)
     else:
         ax.set_ylim(0, 105)
     ax.set_xlim(-5, 105)
-    ax.legend(title='Dataset', fontsize=12, title_fontsize=16)
+    
+    legend = ax.legend(
+        title='Dataset', 
+        fontsize=(fontsize - 4),  # Smaller font for legend text
+        title_fontsize=(fontsize - 2), # Slightly larger font for legend title
+        frameon=True, 
+        facecolor='white', 
+        framealpha=0.8
+    )
+    # --- END OF FIX ---
+
+    ax.grid(True)
     fig.tight_layout()
 
+    # --- File Saving ---
     png_path = os.path.join(output_dir, f"{base_filename}.png")
     plt.savefig(png_path, dpi=300)
     print(f"  - Plot saved successfully to: {png_path}")
