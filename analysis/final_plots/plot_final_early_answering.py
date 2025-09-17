@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 import sys
+import seaborn as sns
 
 # Add the parent directory to the path to allow importing 'utils'
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,7 +22,7 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}  # Strong Purple
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: bool, print_line_data: bool, save_stats: bool, save_pdf: bool):
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: bool, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool):
     """
     Generates a final, cross-dataset consistency plot for the Early Answering experiment
     with the new, publication-quality aesthetic.
@@ -108,19 +109,29 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(12, 8), dpi=100)
     
+    # Convert boolean to integer (1/0) for seaborn's CI calculation
+    super_df['is_consistent_int'] = super_df['is_consistent_with_baseline'].astype(int)
+    
+    # --- AESTHETIC ENHANCEMENTS with CONFIDENCE INTERVALS ---
     for dataset_name in sorted(super_df['dataset'].unique()):
         dataset_df = super_df[super_df['dataset'] == dataset_name]
-        consistency_curve = dataset_df.groupby('percent_binned')['is_consistent_with_baseline'].mean() * 100
-        
         style = FINAL_PLOT_STYLES.get(dataset_name, {"label": dataset_name, "color": "black", "marker": "."})
         
-        ax.plot(consistency_curve.index, consistency_curve.values, 
-                label=style['label'], 
-                color=style['color'], 
-                marker=style['marker'], 
-                linestyle='-',
-                linewidth=2,
-                markersize=9)
+        # Seaborn handles the aggregation and CI calculation automatically
+        sns.lineplot(data=dataset_df, 
+                     x='percent_binned', 
+                     y='is_consistent_int', 
+                     label=style['label'], 
+                     color=style['color'], 
+                     marker=style['marker'], 
+                     linestyle='-',
+                     linewidth=2,
+                     markersize=9,
+                     ci=95 if show_ci else None, # Conditionally show CI
+                     ax=ax)
+        
+    # Convert Y-axis back to percentage format
+    ax.set_yticklabels(['{:.0f}%'.format(x*100) for x in ax.get_yticks()])
 
     ax.set_title(f'Early Answering, {model_name.upper()}', fontsize=fontsize)
     ax.set_xlabel('Percentage % of Sentences Kept', fontsize=fontsize)
@@ -128,9 +139,9 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
     
     if y_zoom:
-        ax.set_ylim(50, 100.5)
+        ax.set_ylim(0.5, 1.005) # Operate on 0-1 scale before labels are set
     else:
-        ax.set_ylim(0, 105)
+        ax.set_ylim(0, 1.05)
     ax.set_xlim(-5, 105)
     
     legend = ax.legend(
@@ -168,6 +179,7 @@ if __name__ == "__main__":
     parser.add_argument('--print-line-data', action='store_true', help="Print aggregated line data to the console.")
     parser.add_argument('--save-stats', action='store_true', help="Save a detailed statistical summary to a .txt file.")
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
+    parser.add_argument('--show-ci', action='store_true', help="Show the 95% confidence interval as a shaded region.")
     args = parser.parse_args()
     
-    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf)
+    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci)
