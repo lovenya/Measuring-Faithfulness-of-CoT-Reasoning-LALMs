@@ -127,7 +127,8 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
                      linewidth=2,
                      markersize=9,
                      ci=95 if show_ci else None,
-                     ax=ax)
+                     ax=ax,
+                     legend=False)
         
     # The broken y-tick re-labeling code has been REMOVED.
     ax.set_title(f'Early Answering, {model_name.upper()}', fontsize=fontsize)
@@ -142,14 +143,14 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
         ax.set_ylim(0, 105)
     ax.set_xlim(-5, 105)
     
-    legend = ax.legend(
-        title='Dataset', 
-        fontsize=(fontsize - 4),
-        title_fontsize=(fontsize - 2),
-        frameon=True, 
-        facecolor='white', 
-        framealpha=0.8
-    )
+    # legend = ax.legend(
+    #     title='Dataset', 
+    #     fontsize=(fontsize - 4),
+    #     title_fontsize=(fontsize - 2),
+    #     frameon=True, 
+    #     facecolor='white', 
+    #     framealpha=0.8
+    # )
 
     ax.grid(True)
     fig.tight_layout()
