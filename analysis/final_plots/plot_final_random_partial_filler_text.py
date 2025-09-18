@@ -122,7 +122,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     super_df['consistency_pct'] = super_df['is_consistent_with_baseline'].astype(int) * 100
 
     # --- Plotting ---
-    fontsize = 24
+    fontsize = 32
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(12, 8), dpi=100)
     
@@ -140,7 +140,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
                      marker=style['marker'], 
                      linestyle='-',
                      linewidth=2,
-                     markersize=9,
+                     markersize=20,
                      ci=95 if show_ci else None,
                      ax=ax,
                      legend=False)
