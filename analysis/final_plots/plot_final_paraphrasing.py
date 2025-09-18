@@ -20,55 +20,45 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
+# --- Hard-coded list of datasets ---
+DATASET_NAMES = ["mmar", "sakura-animal", "sakura-emotion", "sakura-gender", "sakura-language"]
+
 def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: bool, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool):
     """
-    Generates a final, cross-dataset consistency plot for the Paraphrasing experiment.
+    Generates a final, self-contained, cross-dataset consistency plot for the Paraphrasing experiment.
     """
     experiment_name = "paraphrasing"
     print(f"\n--- Generating Final Cross-Dataset Plot for: {experiment_name.upper()} ({model_name.upper()}) ---")
     
     # --- Data Loading and Preparation ---
     all_dfs = []
-    try:
-        baseline_dir = os.path.join(results_dir, model_name, 'baseline')
-        dataset_names = sorted(list(set([f.replace(f'baseline_{model_name}_', '').replace('-restricted.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('-restricted.jsonl')])))
-        print(f"Found restricted datasets to process: {dataset_names}")
+    print(f"Processing hard-coded datasets: {DATASET_NAMES}")
 
-        for dataset in dataset_names:
-            try:
-                df = load_results(model_name, results_dir, experiment_name, dataset, is_restricted=True)
-                # "Meaningful Manipulation" Filter: Paraphrasing requires at least one sentence.
-                df = df[df['total_sentences_in_chain'] > 0].copy()
-                if not df.empty:
-                    # Experiment-specific X-axis calculation
-                    df['percent_paraphrased'] = (df['num_sentences_paraphrased'] / df['total_sentences_in_chain']) * 100
-                    df['dataset'] = dataset
-                    all_dfs.append(df)
-                else:
-                    print(f"  - WARNING: No valid data for '{dataset}' in {experiment_name} results. Skipping.")
-            except FileNotFoundError:
-                print(f"  - WARNING: '{experiment_name}' results for dataset '{dataset}' not found. Skipping.")
-                continue
-        
-        if not all_dfs:
-            print("No data found for any dataset. Halting analysis.")
-            return
-            
-        super_df = pd.concat(all_dfs, ignore_index=True)
-        # Binning is based on the experiment-specific percentage column
-        super_df['percent_binned'] = (super_df['percent_paraphrased'] / 5).round() * 5
-
-    except FileNotFoundError:
-        print(f"Could not find baseline directory for model '{model_name}' at {baseline_dir}.")
+    for dataset in DATASET_NAMES:
+        try:
+            df = load_results(model_name, results_dir, experiment_name, dataset, is_restricted=True)
+            df = df[df['total_sentences_in_chain'] > 0].copy()
+            if not df.empty:
+                df['percent_paraphrased'] = (df['num_sentences_paraphrased'] / df['total_sentences_in_chain']) * 100
+                df['dataset'] = dataset
+                all_dfs.append(df)
+            else:
+                print(f"  - WARNING: No valid data for '{dataset}' in {experiment_name} results. Skipping.")
+        except FileNotFoundError:
+            print(f"  - WARNING: '{experiment_name}' results for dataset '{dataset}' not found. Skipping.")
+            continue
+    
+    if not all_dfs:
+        print("No data found for any dataset. Halting analysis.")
         return
+        
+    super_df = pd.concat(all_dfs, ignore_index=True)
+    super_df['percent_binned'] = (super_df['percent_paraphrased'] / 10).round() * 10
 
     # --- Synthetically Add the 0% Data Point ---
-    # We create a new DataFrame representing the 0% paraphrased condition for all chains.
     zero_percent_df = super_df.drop_duplicates(subset=['id', 'chain_id', 'dataset']).copy()
     zero_percent_df['percent_binned'] = 0
-    zero_percent_df['is_consistent_with_baseline'] = True # 0% paraphrased is always consistent
-    
-    # Append this to our main DataFrame before any plotting or stats.
+    zero_percent_df['is_consistent_with_baseline'] = True
     super_df = pd.concat([super_df, zero_percent_df], ignore_index=True)
 
     # --- Prepare Output Path ---
@@ -140,14 +130,13 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
                      ax=ax,
                      legend=False)
         
-    # Update plot titles and labels for this specific experiment
     ax.set_title(f'Paraphrasing, {model_name.upper()}', fontsize=fontsize)
     ax.set_xlabel('Percentage % of Sentences Paraphrased', fontsize=fontsize)
     ax.set_ylabel('Consistency (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
     
     if y_zoom:
-        ax.set_ylim(79, 100.5)
+        ax.set_ylim(30, 100.5)
     else:
         ax.set_ylim(0, 105)
     ax.set_xlim(-5, 105)
@@ -182,7 +171,7 @@ if __name__ == "__main__":
     parser.add_argument('--model', type=str, required=True, help="The name of the model to analyze (e.g., 'qwen', 'salmonn').")
     parser.add_argument('--results_dir', type=str, default='./results')
     parser.add_argument('--plots_dir', type=str, default='./final_plots')
-    parser.add_argument('--y-zoom', action='store_true', help="Zoom the Y-axis to the 30-100% range.")
+    parser.add_argument('--y-zoom', action='store_true', help="Zoom the Y-axis to the 45-100% range.")
     parser.add_argument('--print-line-data', action='store_true', help="Print aggregated line data to the console.")
     parser.add_argument('--save-stats', action='store_true', help="Save a detailed statistical summary to a .txt file.")
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
