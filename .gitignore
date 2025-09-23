@@ -69,3 +69,6 @@ analysis/generate_cot_stats.py
 analysis/final_plots
 
 misc-old-scripts/
+
+.gitattributes
+helper.txt
