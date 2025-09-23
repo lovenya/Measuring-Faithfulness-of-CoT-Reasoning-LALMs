@@ -3,7 +3,7 @@
 import os
 import json
 import collections
-from core.lalm_utils import run_inference, parse_answer
+from core.qwen_utils import run_inference, parse_answer
 
 from core.filler_text_utils import create_filler_for_text
 
