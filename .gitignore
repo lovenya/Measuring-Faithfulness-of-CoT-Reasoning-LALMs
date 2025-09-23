@@ -62,3 +62,7 @@ data_processing/enrich_mmar_dataset.py
 data_processing/create_silent_audio.py
 
 experiments/robustness_to_noise.py
+
+analysis/plot_robustness_to_noise.py
+
+misc-old-scripts/
