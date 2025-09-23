@@ -50,6 +50,13 @@ def run(model, processor, model_utils, config):
     logging.info(f"Reading baseline data from '{baseline_results_path}'...")
     all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
     
+    if config.NUM_CHAINS_PER_QUESTION > 0:
+        logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
+        all_baseline_trials = [
+            trial for trial in all_baseline_trials
+            if trial['chain_id'] < config.NUM_CHAINS_PER_QUESTION
+        ]
+    
     logging.info(f"Reading no-reasoning data from '{no_reasoning_results_path}'...")
     all_no_reasoning_trials = [json.loads(line) for line in open(no_reasoning_results_path, 'r')]
         

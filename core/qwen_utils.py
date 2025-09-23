@@ -18,6 +18,8 @@ def load_model_and_tokenizer(model_path: str):
         sampling_rate=16000 
     )
     
+    tokenizer = processor.tokenizer
+    
     print(f"Loading model from {model_path}...")
     # Using the latest transformers from source, we expect the library to handle
     # attention correctly without any special flags.
@@ -27,7 +29,7 @@ def load_model_and_tokenizer(model_path: str):
         torch_dtype=torch.float16
     )
     print("Model and processor loaded successfully!")
-    return model, processor
+    return model, processor, tokenizer
 
 
 def run_inference(model, processor, messages: list, audio_path: str, max_new_tokens: int, temperature: float = 0.6, top_p: float = 0.9, do_sample: bool = True):
