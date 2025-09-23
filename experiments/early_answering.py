@@ -1,5 +1,20 @@
 # experiments/early_answering.py
 
+"""
+This script conducts the "Early Answering" experiment, a powerful test to probe
+for post-hoc reasoning.
+
+Methodology:
+1. It takes a reasoning chain (CoT) from a baseline run.
+2. It reveals the CoT to the model one sentence at a time, asking for a final
+   answer at each step (from 0 sentences to N sentences).
+3. The 0-sentence step is optimized by reusing the pre-computed 'no_reasoning' results.
+4. By plotting the model's answer consistency at each step, we can visualize
+   when its decision "locks in." An answer that is consistent from the very
+   first sentence is strong evidence that the reasoning was generated to justify
+   a pre-determined conclusion.
+"""
+
 import os
 import json
 import collections
@@ -9,7 +24,7 @@ import logging
 # This is a 'dependent' experiment because it relies on the CoTs from a 'baseline' run.
 EXPERIMENT_TYPE = "dependent"
 
-def run_early_answering_trial(model, processor, model_utils, question: str, choices_formatted: str, audio_path: str, truncated_cot: str) -> dict:
+def run_early_answering_trial(model, processor, tokenizer, model_utils, question: str, choices_formatted: str, audio_path: str, truncated_cot: str) -> dict:
     """
     Runs a single trial with a CoT that has been truncated to a specific number of sentences.
     """
@@ -23,7 +38,7 @@ def run_early_answering_trial(model, processor, model_utils, question: str, choi
         max_new_tokens=10, do_sample=False, temperature=0.7, top_p=0.9
     )
     
-    # We return a complete dictionary to ensure a robust data flow.
+    # We return a complete dictionary to ensure a robust data flow, mirroring baseline.py.
     return {
         "question": question,
         "choices": choices_formatted,
@@ -33,12 +48,14 @@ def run_early_answering_trial(model, processor, model_utils, question: str, choi
         "final_prompt_messages": final_answer_prompt_messages
     }
 
-def run(model, processor, model_utils, config):
+def run(model, processor, tokenizer, model_utils, config):
     """
     Orchestrates the full early answering experiment with a robust, model-agnostic,
     and restartable design.
     """
     # --- 1. Load Dependent Data (Centralized Pathing) ---
+    # This script uses the definitive paths provided by main.py, making it
+    # fully compatible with the --restricted flag.
     baseline_results_path = config.BASELINE_RESULTS_PATH
     no_reasoning_results_path = config.NO_REASONING_RESULTS_PATH
 
@@ -53,9 +70,19 @@ def run(model, processor, model_utils, config):
     logging.info(f"Reading no-reasoning data from '{no_reasoning_results_path}'...")
     all_no_reasoning_trials = [json.loads(line) for line in open(no_reasoning_results_path, 'r')]
         
-    # --- 2. Prepare Data for Efficient Processing ---
+    # --- 2. Prepare Data & Apply Filters ---
+    # This block correctly enforces the chain limit for dependent experiments.
+    if config.NUM_CHAINS_PER_QUESTION > 0:
+        logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
+        all_baseline_trials = [
+            trial for trial in all_baseline_trials
+            if trial['chain_id'] < config.NUM_CHAINS_PER_QUESTION
+        ]
+    
+    # We create a lookup dictionary for no-reasoning results for instant access.
     no_reasoning_lookup = {(res['id'], res['chain_id']): res for res in all_no_reasoning_trials}
 
+    # This logic correctly handles the --num-samples flag for quick test runs.
     if config.NUM_SAMPLES_TO_RUN > 0:
         trials_by_question = collections.defaultdict(list)
         for trial in all_baseline_trials: trials_by_question[trial['id']].append(trial)
@@ -73,6 +100,7 @@ def run(model, processor, model_utils, config):
             for line in f:
                 try:
                     data = json.loads(line)
+                    # A chain is considered complete if we have the result for its final sentence.
                     if data['num_sentences_provided'] == data['total_sentences_in_chain']:
                         completed_chains.add((data['id'], data['chain_id']))
                 except (json.JSONDecodeError, KeyError): continue
@@ -104,6 +132,7 @@ def run(model, processor, model_utils, config):
                 nr_result = no_reasoning_lookup.get(lookup_key)
 
                 if nr_result:
+                    # We add all metadata and then explicitly order the keys for readability.
                     zero_sentence_result = {
                         "id": q_id, "chain_id": chain_id,
                         "num_sentences_provided": 0,
@@ -113,8 +142,11 @@ def run(model, processor, model_utils, config):
                         "is_correct": (nr_result['predicted_choice'] == baseline_trial['correct_choice']),
                         "corresponding_baseline_predicted_choice": baseline_trial['predicted_choice'],
                         "is_consistent_with_baseline": (nr_result['predicted_choice'] == baseline_trial['predicted_choice']),
+                        "final_answer_raw": nr_result.get('final_answer_raw', ''),
                         "final_prompt_messages": nr_result['final_prompt_messages'],
-                        "final_answer_raw": nr_result['final_answer_raw']
+                        "question": baseline_trial['question'],
+                        "choices": choices_formatted,
+                        "audio_path": baseline_trial['audio_path']
                     }
                     f.write(json.dumps(zero_sentence_result, ensure_ascii=False) + "\n")
                     f.flush()
@@ -127,13 +159,14 @@ def run(model, processor, model_utils, config):
                     truncated_cot = " ".join(sentences[:num_sentences_provided])
                     
                     trial_result = run_early_answering_trial(
-                        model, processor, model_utils, 
+                        model, processor, tokenizer, model_utils, 
                         baseline_trial['question'], 
                         choices_formatted, 
                         baseline_trial['audio_path'], 
                         truncated_cot
                     )
                     
+                    # Add the final metadata.
                     trial_result['id'] = q_id
                     trial_result['chain_id'] = chain_id
                     trial_result['num_sentences_provided'] = num_sentences_provided
@@ -144,7 +177,25 @@ def run(model, processor, model_utils, config):
                     trial_result['corresponding_baseline_predicted_choice'] = baseline_trial['predicted_choice']
                     trial_result['is_consistent_with_baseline'] = (trial_result['predicted_choice'] == baseline_trial['predicted_choice'])
                     
-                    f.write(json.dumps(trial_result, ensure_ascii=False) + "\n")
+                    # Explicitly order the keys for the final JSON object.
+                    final_ordered_result = {
+                        "id": trial_result['id'],
+                        "chain_id": trial_result['chain_id'],
+                        "num_sentences_provided": trial_result['num_sentences_provided'],
+                        "total_sentences_in_chain": trial_result['total_sentences_in_chain'],
+                        "predicted_choice": trial_result['predicted_choice'],
+                        "correct_choice": trial_result['correct_choice'],
+                        "is_correct": trial_result['is_correct'],
+                        "corresponding_baseline_predicted_choice": trial_result['corresponding_baseline_predicted_choice'],
+                        "is_consistent_with_baseline": trial_result['is_consistent_with_baseline'],
+                        "final_answer_raw": trial_result['final_answer_raw'],
+                        "final_prompt_messages": trial_result['final_prompt_messages'],
+                        "question": trial_result['question'],
+                        "choices": trial_result['choices'],
+                        "audio_path": trial_result['audio_path']
+                    }
+                    
+                    f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
                     f.flush()
 
             except Exception as e:

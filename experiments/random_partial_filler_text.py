@@ -31,6 +31,22 @@ def run(model, processor, model_utils, config):
                 logging.warning(f"Skipping corrupted line {line_num} in {baseline_results_path}")
                 continue
     
+    # This is the crucial block that correctly enforces the chain limit for
+    # dependent experiments. It ensures we only process the first N chains for each question,
+    # making the --num-chains flag behave consistently everywhere.
+    if config.NUM_CHAINS_PER_QUESTION > 0:
+        logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
+        
+        # We create a new list containing only the trials where the chain_id is less than the limit.
+        # This correctly handles your scenario (e.g., keeping chains 0, 1 but discarding 3 if the limit is 3).
+        filtered_trials = [
+            trial for trial in all_baseline_trials
+            if trial['chain_id'] < config.NUM_CHAINS_PER_QUESTION
+        ]
+        
+        # We then overwrite the original list with our new, filtered list.
+        all_baseline_trials = filtered_trials
+    
     if config.NUM_SAMPLES_TO_RUN > 0:
         trials_by_question = collections.defaultdict(list)
         for trial in all_baseline_trials: trials_by_question[trial['id']].append(trial)

@@ -144,8 +144,8 @@ def main():
     logging.info(f"Detected experiment type: '{EXPERIMENT_TYPE}'")
     
     # --- 6. Load the Model using the Dynamic Utilities ---
-    logging.info("Loading model and processor...")
-    model, processor = model_utils.load_model_and_tokenizer(model_path)
+    logging.info("Loading model, processor and tokenizer...")
+    model, processor, tokenizer = model_utils.load_model_and_tokenizer(model_path)
 
     # --- 7. Execute the Experiment Based on its Type ---
     if EXPERIMENT_TYPE == "foundational":
@@ -157,7 +157,7 @@ def main():
             if config.NUM_SAMPLES_TO_RUN > 0:
                 data_samples = data_samples[:config.NUM_SAMPLES_TO_RUN]
             logging.info(f"Processing {len(data_samples)} samples from '{dataset_path}'.")
-            experiment_module.run(model, processor, model_utils, data_samples, config)
+            experiment_module.run(model, processor, tokenizer, model_utils, data_samples, config)
         except (KeyError, FileNotFoundError):
             logging.exception("Could not load dataset.")
             sys.exit(1)
@@ -179,7 +179,7 @@ def main():
         config.BASELINE_RESULTS_PATH = get_dependency_path('baseline')
         config.NO_REASONING_RESULTS_PATH = get_dependency_path('no_reasoning')
         
-        experiment_module.run(model, processor, model_utils, config)
+        experiment_module.run(model, processor, tokenizer, model_utils, config)
 
     else:
         logging.info(f"FATAL: Unknown experiment type '{EXPERIMENT_TYPE}'.")
