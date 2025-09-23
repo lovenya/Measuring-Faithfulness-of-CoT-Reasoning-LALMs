@@ -1,2 +1,0 @@
-# results/**/*.jsonl filter=lfs diff=lfs merge=lfs -text
-# plots/**/* filter=lfs diff=lfs merge=lfs -text
