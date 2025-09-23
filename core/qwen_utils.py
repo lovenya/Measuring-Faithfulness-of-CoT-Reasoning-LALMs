@@ -1,5 +1,6 @@
-# core/lalm_utils.py
+# core/qwen_utils.py
 
+from typing import List
 import nltk
 import torch
 from transformers import Qwen2AudioForConditionalGeneration, AutoProcessor
@@ -31,107 +32,51 @@ def load_model_and_tokenizer(model_path: str):
 
 def run_inference(model, processor, messages: list, audio_path: str, max_new_tokens: int, temperature: float = 0.6, top_p: float = 0.9, do_sample: bool = True):
     """
-    A condition-aware, universal inference function. It acts as a gatekeeper,
-    dispatching to the correct logic based on the global experimental condition.
+    This is the universal, multi-modal inference function for the Qwen model.
     """
-    # ==============================================================================
-    # --- CONDITION GATEKEEPER ---
-    # This is the core of our new, flexible architecture. It checks the global
-    # condition set by main.py and routes the request accordingly.
-    # ==============================================================================
-    if config.CONDITION == 'transcribed_audio':
-        # --- 1. Handle the "Repurposed" audio_path ---
-        # In this condition, we know the 'audio_path' variable is not a path,
-        # but rather the full transcribed text string from our specialized dataset.
-        transcribed_text = audio_path
-
-        # --- 2. Transform the Prompt for Text-Only Inference ---
-        # The original 'messages' contain the "audio\n\n" placeholder. We must
-        # replace this with our transcribed text to create a valid, text-only prompt.
-        text_only_messages = []
-        for msg in messages:
-            new_msg = msg.copy()
-            if "audio\n\n" in new_msg.get("content", ""):
-                original_content = new_msg["content"]
-                # This creates a prompt like: "A cat meows.\n\nQuestion: What animal..."
-                new_content = original_content.replace("audio\n\n", f"{transcribed_text}\n\n")
-                new_msg["content"] = new_content
-            text_only_messages.append(new_msg)
-
-        # --- 3. Dispatch to the Text-Only Inference Function ---
-        # We pass the newly constructed prompt to our specialized text function.
-        # The 'return' is critical, as it exits this function and prevents
-        # the multi-modal code below from ever being executed.
-        return run_text_only_inference(
-            model, processor, text_only_messages, max_new_tokens, temperature, top_p, do_sample
-        )
-
-
-    elif config.CONDITION == 'cascaded_text':
-        # This block handles the case where the input is the combined ASR + Caption string.
-        # The logic is identical to the 'transcribed_audio' case, as both are text-only.
-        cascaded_text = audio_path
-        text_only_messages = []
-        for msg in messages:
-            new_msg = msg.copy()
-            if "audio\n\n" in new_msg.get("content", ""):
-                original_content = new_msg["content"]
-                new_content = original_content.replace("audio\n\n", f"{cascaded_text}\n\n")
-                new_msg["content"] = new_content
-            text_only_messages.append(new_msg)
-        return run_text_only_inference(
-            model, processor, text_only_messages, max_new_tokens, temperature, top_p, do_sample
-        )
-
-    # ==============================================================================
-    # --- DEFAULT MULTI-MODAL LOGIC ---
-    # This code is only executed if config.CONDITION is 'default'.
-    # ==============================================================================
     
-    else:    
-        conversation = []
-        for message in messages:
-            if message["role"] == "user" and "audio" in message.get("content", ""):
-                conversation.append({
-                    "role": "user", 
-                    "content": [
-                        {"type": "audio", "audio_path": audio_path},
-                        {"type": "text", "text": message["content"]},
-                    ]
-                })
-            else:
-                conversation.append(message)
-        
-        text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
-        
-        audio_data, sampling_rate = librosa.load(
-            audio_path, 
-            sr=processor.feature_extractor.sampling_rate
-        )
-        
-        inputs = processor(
-            text=text,
-            audio=audio_data,
-            sampling_rate=sampling_rate,
-            return_tensors="pt",
-            padding=True
-        )
-
-        device = model.device
-        inputs = {k: v.to(device) for k, v in inputs.items()}
-        
-        if do_sample:
-            generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": True, "temperature": temperature, "top_p": top_p}
+    conversation = []
+    for message in messages:
+        if message["role"] == "user" and "audio" in message.get("content", ""):
+            conversation.append({
+                "role": "user", 
+                "content": [
+                    {"type": "audio", "audio_path": audio_path},
+                    {"type": "text", "text": message["content"]},
+                ]
+            })
         else:
-            generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": False}
+            conversation.append(message)
+    
+    text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
+    
+    audio_data, sampling_rate = librosa.load(
+        audio_path, 
+        sr=processor.feature_extractor.sampling_rate
+    )
+    
+    inputs = processor(
+        text=text,
+        audio=audio_data,
+        sampling_rate=sampling_rate,
+        return_tensors="pt",
+        padding=True
+    )
 
-        with torch.no_grad():
-            generate_ids = model.generate(**inputs, **generation_kwargs)
-            generate_ids = generate_ids[:, inputs['input_ids'].size(1):]
-            response = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-        
-        return response
+    device = model.device
+    inputs = {k: v.to(device) for k, v in inputs.items()}
+    
+    if do_sample:
+        generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": True, "temperature": temperature, "top_p": top_p}
+    else:
+        generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": False}
 
+    with torch.no_grad():
+        generate_ids = model.generate(**inputs, **generation_kwargs)
+        generate_ids = generate_ids[:, inputs['input_ids'].size(1):]
+        response = processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+    
+    return response
 
 
 def run_text_only_inference(model, processor, messages: list, max_new_tokens: int, temperature: float = 0.7, top_p: float = 0.9, do_sample: bool = True):

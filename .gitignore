@@ -56,6 +56,7 @@ old_comparitive_plots/
 old_unused_results/
 
 flamingo_result/
+qwen_results/
 
 # removing for repo readability
 data_processing/add_noise_to_dataset.py
