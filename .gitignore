@@ -67,9 +67,14 @@ analysis/plot_robustness_to_noise.py
 analysis/analyze_mmar_subcategories.py
 analysis/generate_cot_stats.py
 analysis/final_plots
+analysis/
+
+final_plots/delta_slope_vs_accuracy
+final_plots/flamingo
+final_plots/slope_vs_accuracy
 
 misc-old-scripts/
 
 .gitattributes
 helper.txt
-salmonn_requirements.txt
+salmonn_helper.txt
