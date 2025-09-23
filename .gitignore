@@ -64,5 +64,8 @@ data_processing/create_silent_audio.py
 experiments/robustness_to_noise.py
 
 analysis/plot_robustness_to_noise.py
+analysis/analyze_mmar_subcategories.py
+analysis/generate_cot_stats.py
+analysis/final_plots
 
 misc-old-scripts/
