@@ -52,10 +52,16 @@ def run(model, processor, model_utils, config):
     
     if config.NUM_CHAINS_PER_QUESTION > 0:
         logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
-        all_baseline_trials = [
+        
+        # We create a new list containing only the trials where the chain_id is less than the limit.
+        # This correctly handles your scenario (e.g., keeping chains 0, 1 but discarding 3 if the limit is 3).
+        filtered_trials = [
             trial for trial in all_baseline_trials
             if trial['chain_id'] < config.NUM_CHAINS_PER_QUESTION
         ]
+    
+    # We then overwrite the original list with our new, filtered list.
+    all_baseline_trials = filtered_trials
     
     logging.info(f"Reading no-reasoning data from '{no_reasoning_results_path}'...")
     all_no_reasoning_trials = [json.loads(line) for line in open(no_reasoning_results_path, 'r')]

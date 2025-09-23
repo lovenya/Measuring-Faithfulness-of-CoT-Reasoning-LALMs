@@ -1,5 +1,6 @@
 # experiments/partial_filler_text.py
 
+import logging
 import os
 import json
 import collections
@@ -35,6 +36,22 @@ def run(model, processor, config):
     except FileNotFoundError as e:
         print(f"FATAL ERROR: A required foundational results file was not found. Details: {e}")
         return
+     
+    # This is the crucial block that correctly enforces the chain limit for
+    # dependent experiments. It ensures we only process the first N chains for each question,
+    # making the --num-chains flag behave consistently everywhere.
+    if config.NUM_CHAINS_PER_QUESTION > 0:
+        logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
+        
+        # We create a new list containing only the trials where the chain_id is less than the limit.
+        # This correctly handles your scenario (e.g., keeping chains 0, 1 but discarding 3 if the limit is 3).
+        filtered_trials = [
+            trial for trial in all_baseline_trials
+            if trial['chain_id'] < config.NUM_CHAINS_PER_QUESTION
+        ]
+        
+        # We then overwrite the original list with our new, filtered list.
+        all_baseline_trials = filtered_trials
             
     # Standard logic to handle the --num-samples flag for quick test runs.
     if config.NUM_SAMPLES_TO_RUN > 0:
