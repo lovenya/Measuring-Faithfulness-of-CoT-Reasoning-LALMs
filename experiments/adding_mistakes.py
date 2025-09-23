@@ -33,7 +33,7 @@ Original sentence: {original_sentence}
 Assistant: Sentence with mistake added:"""
 
 
-def generate_mistake(model, processor, model_utils, question: str, choices_formatted: str, original_sentence: str) -> str | None:
+def generate_mistake(model, processor, tokenizer, model_utils, question: str, choices_formatted: str, original_sentence: str) -> str | None:
     """ 
     Uses the LLM to generate a mistaken version of a sentence.
     """
@@ -50,7 +50,7 @@ def generate_mistake(model, processor, model_utils, question: str, choices_forma
     return mistaken_sentence.strip()
 
 
-def continue_reasoning(model, processor, model_utils, audio_path: str, question: str, choices_formatted: str, partial_cot: str) -> str:
+def continue_reasoning(model, processor, tokenizer, model_utils, audio_path: str, question: str, choices_formatted: str, partial_cot: str) -> str:
     """ Has the model continue generating the CoT from a given starting point. """
     prompt_messages = [
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices_formatted}"},
@@ -62,7 +62,7 @@ def continue_reasoning(model, processor, model_utils, audio_path: str, question:
     return continuation.strip()
 
 
-def run_final_trial(model, processor, model_utils, question: str, choices_formatted: str, audio_path: str, corrupted_cot: str) -> dict:
+def run_final_trial(model, processor, tokenizer, model_utils, question: str, choices_formatted: str, audio_path: str, corrupted_cot: str) -> dict:
     """ Runs the final trial with the fully corrupted CoT to get an answer. """
     final_answer_prompt_messages = [
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices_formatted}"},
@@ -72,21 +72,25 @@ def run_final_trial(model, processor, model_utils, question: str, choices_format
     final_answer_text = model_utils.run_inference(
         model, processor, final_answer_prompt_messages, audio_path, max_new_tokens=10, do_sample=False, temperature=0.7, top_p=0.9
     )
+    # We return a complete dictionary to ensure a robust data flow, mirroring baseline.py.
     return {
+        "question": question,
+        "choices": choices_formatted,
+        "audio_path": audio_path,
         "predicted_choice": model_utils.parse_answer(final_answer_text),
         "final_answer_raw": final_answer_text,
         "final_prompt_messages": final_answer_prompt_messages
     }
 
 
-def run(model, processor, model_utils, config):
+def run(model, processor, tokenizer, model_utils, config):
     """ 
     Orchestrates the 'Adding Mistakes' experiment with robust validation,
     error handling, and restartable design.
     """
     # --- 1. Load Dependent Data (Centralized Pathing) ---
-    # This is the new, cleaner logic. This script no longer decides which file to load.
-    # It simply uses the definitive path provided by the main.py orchestrator.
+    # This script no longer decides which file to load. It uses the definitive path
+    # provided by main.py, making it fully compatible with the --restricted flag.
     baseline_results_path = config.BASELINE_RESULTS_PATH
 
     if not os.path.exists(baseline_results_path):
@@ -103,22 +107,17 @@ def run(model, processor, model_utils, config):
                 logging.warning(f"Skipping corrupted line {line_num} in {baseline_results_path}: {e}")
                 continue
     
-    # This is the crucial block that correctly enforces the chain limit for
-# dependent experiments. It ensures we only process the first N chains for each question,
-# making the --num-chains flag behave consistently everywhere.
+    # --- NEW: Apply the --num-chains Filter ---
+    # This block correctly enforces the chain limit for dependent experiments.
     if config.NUM_CHAINS_PER_QUESTION > 0:
         logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
-        
-        # We create a new list containing only the trials where the chain_id is less than the limit.
-        # This correctly handles your scenario (e.g., keeping chains 0, 1 but discarding 3 if the limit is 3).
         filtered_trials = [
             trial for trial in all_baseline_trials
             if trial['chain_id'] < config.NUM_CHAINS_PER_QUESTION
         ]
-        
-        # We then overwrite the original list with our new, filtered list.
         all_baseline_trials = filtered_trials
     
+    # This logic correctly handles the --num-samples flag for quick test runs.
     if config.NUM_SAMPLES_TO_RUN > 0:
         trials_by_question = collections.defaultdict(list)
         for trial in all_baseline_trials: trials_by_question[trial['id']].append(trial)
@@ -155,6 +154,7 @@ def run(model, processor, model_utils, config):
                 if config.VERBOSE:
                     logging.info(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
 
+                # We correctly trust that the 'choices' field is the pre-formatted string.
                 choices_formatted = baseline_trial['choices']
                 sanitized_cot = baseline_trial['sanitized_cot']
                 sentences = nltk.sent_tokenize(sanitized_cot)
@@ -172,7 +172,7 @@ def run(model, processor, model_utils, config):
                     if config.VERBOSE:
                         logging.info(f"  - Introducing mistake at sentence {mistake_idx + 1}/{total_sentences}...")
                     
-                    mistaken_sentence = generate_mistake(model, processor, model_utils, baseline_trial['question'], choices_formatted, original_sentence)
+                    mistaken_sentence = generate_mistake(model, processor, tokenizer, model_utils, baseline_trial['question'], choices_formatted, original_sentence)
                     
                     if mistaken_sentence is None:
                         if config.VERBOSE:
@@ -181,23 +181,27 @@ def run(model, processor, model_utils, config):
                     
                     cot_up_to_mistake = " ".join(sentences[:mistake_idx])
                     cot_with_mistake_intro = (cot_up_to_mistake + " " + mistaken_sentence).strip()
-                    reasoning_continuation = continue_reasoning(model, processor, model_utils, baseline_trial['audio_path'], baseline_trial['question'], choices_formatted, cot_with_mistake_intro)
+                    reasoning_continuation = continue_reasoning(model, processor, tokenizer, model_utils, baseline_trial['audio_path'], baseline_trial['question'], choices_formatted, cot_with_mistake_intro)
                     
                     fully_corrupted_cot = (cot_with_mistake_intro + " " + reasoning_continuation).strip()
                     final_sanitized_corrupted_cot = model_utils.sanitize_cot(fully_corrupted_cot)
                     
-                    trial_result = run_final_trial(model, processor, model_utils, baseline_trial['question'], choices_formatted, baseline_trial['audio_path'], final_sanitized_corrupted_cot)
+                    trial_result = run_final_trial(model, processor, tokenizer, model_utils, baseline_trial['question'], choices_formatted, baseline_trial['audio_path'], final_sanitized_corrupted_cot)
 
+                    # The data flow now mirrors baseline.py. We get a complete dictionary back
+                    # and simply add the final pieces of metadata.
+                    trial_result['id'] = q_id
+                    trial_result['chain_id'] = chain_id
+                    trial_result['mistake_position'] = mistake_idx + 1
+                    trial_result['total_sentences_in_chain'] = total_sentences
+                    
                     baseline_final_choice = baseline_trial['predicted_choice']
-                    final_ordered_result = {
-                        "id": q_id, "chain_id": chain_id, "mistake_position": mistake_idx + 1,
-                        "total_sentences_in_chain": total_sentences, "predicted_choice": trial_result['predicted_choice'],
-                        "correct_choice": baseline_trial['correct_choice'], "is_correct": (trial_result['predicted_choice'] == baseline_trial['correct_choice']),
-                        "corresponding_baseline_predicted_choice": baseline_final_choice,
-                        "is_consistent_with_baseline": (trial_result['predicted_choice'] == baseline_final_choice),
-                        "final_prompt_messages": trial_result['final_prompt_messages'], "final_answer_raw": trial_result['final_answer_raw']
-                    }
-                    f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
+                    trial_result['correct_choice'] = baseline_trial['correct_choice']
+                    trial_result['is_correct'] = (trial_result['predicted_choice'] == trial_result['correct_choice'])
+                    trial_result['corresponding_baseline_predicted_choice'] = baseline_final_choice
+                    trial_result['is_consistent_with_baseline'] = (trial_result['predicted_choice'] == baseline_final_choice)
+                    
+                    f.write(json.dumps(trial_result, ensure_ascii=False) + "\n")
                     f.flush()
 
             except Exception as e:
