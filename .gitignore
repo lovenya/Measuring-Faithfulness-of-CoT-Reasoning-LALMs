@@ -54,4 +54,6 @@ plots/
 old_comparitive_plots/
 old_unused_results/
 
-flamingo_result
+flamingo_result/
+
+# removing for repo readability
