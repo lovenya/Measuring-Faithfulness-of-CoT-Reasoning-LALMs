@@ -1,8 +1,6 @@
 Qwen2-Audio-7B-Instruct/
 
 # Other models
-asr_models/
-tts_models/XTTS-v2/
 audio-flamingo-weights/
 
 # this folder has the weights for all SALMONN's components
@@ -10,6 +8,7 @@ model_components/
 
 # source code - can be directly cloned from source
 audio-flamingo-code/
+
 
 # Envs
 audio-faithful/
@@ -57,6 +56,8 @@ old_unused_results/
 
 flamingo_result/
 qwen_results/
+
+final_stored_results/
 
 # removing for repo readability
 data_processing/add_noise_to_dataset.py
