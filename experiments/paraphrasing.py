@@ -1,5 +1,22 @@
 # experiments/paraphrasing.py
 
+"""
+This script conducts the "Paraphrasing" experiment, which tests whether a model's
+reasoning is based on the semantic meaning of its CoT or on fragile, specific
+phrasing ("magic words").
+
+Methodology:
+1. It takes a reasoning chain (CoT) from a baseline run.
+2. It progressively paraphrases the CoT, one sentence at a time, using the
+   model itself as the paraphrasing engine.
+3. At each step, it presents the partially-paraphrased CoT to the model and
+   asks for a final answer.
+4. By plotting the model's accuracy and consistency against the number of
+   paraphrased sentences, we can measure its robustness to changes in phrasing.
+   A model that maintains high performance is likely relying on the deeper
+   semantic meaning of its reasoning.
+"""
+
 import os
 import json
 import collections
@@ -9,7 +26,7 @@ import logging
 # This is a 'dependent' experiment because it manipulates the CoTs from a 'baseline' run.
 EXPERIMENT_TYPE = "dependent"
 
-def get_paraphrased_text(model, processor, model_utils, text_to_paraphrase: str) -> str | None:
+def get_paraphrased_text(model, processor, tokenizer, model_utils, text_to_paraphrase: str) -> str | None:
     """
     Uses the LLM to paraphrase a given piece of text.
     This is a text-only operation and correctly uses the silent audio methodology.
@@ -28,12 +45,9 @@ def get_paraphrased_text(model, processor, model_utils, text_to_paraphrase: str)
     return paraphrased_text.strip()
 
 
-def run_paraphrasing_trial(model, processor, model_utils, question: str, choices_formatted: str, audio_path: str, modified_cot: str) -> dict:
+def run_paraphrasing_trial(model, processor, tokenizer, model_utils, question: str, choices_formatted: str, audio_path: str, modified_cot: str) -> dict:
     """
     Runs a single trial with a (potentially) paraphrased Chain-of-Thought.
-    
-    This function now correctly accepts and returns the question and formatted choices,
-    mimicking the robust data flow of the baseline script to prevent data corruption.
     """
     final_answer_prompt_messages = [
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices_formatted}"},
@@ -44,11 +58,10 @@ def run_paraphrasing_trial(model, processor, model_utils, question: str, choices
         model, processor, final_answer_prompt_messages, audio_path, max_new_tokens=10, do_sample=False, temperature=0.7, top_p=0.9
     )
     
-    # We now return a complete dictionary, just like in baseline.py, to ensure
-    # all necessary data is passed back to the main loop.
+    # We return a complete dictionary to ensure a robust data flow, mirroring baseline.py.
     return {
         "question": question,
-        "choices": choices_formatted, # We return the formatted string
+        "choices": choices_formatted,
         "audio_path": audio_path,
         "predicted_choice": model_utils.parse_answer(final_answer_text),
         "final_answer_raw": final_answer_text,
@@ -56,12 +69,14 @@ def run_paraphrasing_trial(model, processor, model_utils, question: str, choices
     }
 
 
-def run(model, processor, model_utils, config):
+def run(model, processor, tokenizer, model_utils, config):
     """
     Orchestrates the full paraphrasing experiment with a robust, model-agnostic,
     and restartable design.
     """
     # --- 1. Load Dependent Data (Centralized Pathing) ---
+    # This script uses the definitive path provided by main.py, making it
+    # fully compatible with the --restricted flag.
     baseline_results_path = config.BASELINE_RESULTS_PATH
     if not os.path.exists(baseline_results_path):
         logging.error(f"Baseline results file not found at the path provided by main.py: '{baseline_results_path}'")
@@ -77,22 +92,16 @@ def run(model, processor, model_utils, config):
                 logging.warning(f"Skipping corrupted line {line_num} in {baseline_results_path}")
                 continue
     
-    # This is the crucial block that correctly enforces the chain limit for
-# dependent experiments. It ensures we only process the first N chains for each question,
-# making the --num-chains flag behave consistently everywhere.
-    if config.NUM_CHAINS_PER_QUESTION > 0: # We assume 10 is the max/default
+    # --- 2. Apply Command-Line Filters ---
+    # This block correctly enforces the chain limit for dependent experiments.
+    if config.NUM_CHAINS_PER_QUESTION > 0:
         logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
-        
-        # We create a new list containing only the trials where the chain_id is less than the limit.
-        # This correctly handles your scenario (e.g., keeping chains 0, 1 but discarding 3 if the limit is 3).
-        filtered_trials = [
+        all_baseline_trials = [
             trial for trial in all_baseline_trials
             if trial['chain_id'] < config.NUM_CHAINS_PER_QUESTION
         ]
-        
-        # We then overwrite the original list with our new, filtered list.
-        all_baseline_trials = filtered_trials
     
+    # This logic correctly handles the --num-samples flag for quick test runs.
     if config.NUM_SAMPLES_TO_RUN > 0:
         trials_by_question = collections.defaultdict(list)
         for trial in all_baseline_trials: trials_by_question[trial['id']].append(trial)
@@ -101,7 +110,7 @@ def run(model, processor, model_utils, config):
     else:
         samples_to_process = all_baseline_trials
 
-    # --- 2. Restartability Logic ---
+    # --- 3. Restartability Logic ---
     output_path = config.OUTPUT_PATH
     completed_chains = set()
     if os.path.exists(output_path):
@@ -116,7 +125,7 @@ def run(model, processor, model_utils, config):
                 except (json.JSONDecodeError, KeyError): continue
     if completed_chains: logging.info(f"Found {len(completed_chains)} fully completed chains. They will be skipped.")
 
-    # --- 3. Run Experiment ---
+    # --- 4. Run Experiment ---
     logging.info(f"Running Paraphrasing Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path}")
     
     skipped_trials_count = 0
@@ -130,11 +139,8 @@ def run(model, processor, model_utils, config):
                 if config.VERBOSE:
                     logging.info(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
 
-                # We format the choices once here and pass the resulting STRING to all helpers.
-                # This was the source of the original data corruption bug.
+                # We correctly trust that the 'choices' field is the pre-formatted string.
                 choices_formatted = baseline_trial['choices']
-                print(f"DEBUG - choices_formatted type: {type(choices_formatted)}")
-                print(f"DEBUG - choices_formatted content: {repr(choices_formatted[:200])}")  # First 200 chars
                 
                 sanitized_cot = baseline_trial['sanitized_cot']
                 sentences = nltk.sent_tokenize(sanitized_cot)
@@ -149,7 +155,7 @@ def run(model, processor, model_utils, config):
                     part_to_paraphrase = " ".join(sentences[:num_to_paraphrase])
                     remaining_part = " ".join(sentences[num_to_paraphrase:])
                     
-                    paraphrased_part = get_paraphrased_text(model, processor, model_utils, part_to_paraphrase)
+                    paraphrased_part = get_paraphrased_text(model, processor, tokenizer, model_utils, part_to_paraphrase)
                     if paraphrased_part is None:
                         if config.VERBOSE:
                             logging.warning(f"  - SKIPPING STEP: Model failed to generate a valid paraphrase for step {num_to_paraphrase}.")
@@ -157,17 +163,15 @@ def run(model, processor, model_utils, config):
 
                     modified_cot = (paraphrased_part + " " + remaining_part).strip()
                     
-                    # The call now correctly passes the formatted choices string.
                     trial_result = run_paraphrasing_trial(
-                        model, processor, model_utils, 
+                        model, processor, tokenizer, model_utils, 
                         baseline_trial['question'], 
                         choices_formatted, 
                         baseline_trial['audio_path'], 
                         modified_cot
                     )
                     
-                    # The data flow now mirrors baseline.py. We get a complete dictionary back
-                    # and simply add the final pieces of metadata.
+                    # Add the final metadata.
                     trial_result['id'] = q_id
                     trial_result['chain_id'] = chain_id
                     trial_result['num_sentences_paraphrased'] = num_to_paraphrase
@@ -179,7 +183,25 @@ def run(model, processor, model_utils, config):
                     trial_result['corresponding_baseline_predicted_choice'] = baseline_final_choice
                     trial_result['is_consistent_with_baseline'] = (trial_result['predicted_choice'] == baseline_final_choice)
                     
-                    f.write(json.dumps(trial_result, ensure_ascii=False) + "\n")
+                    # Explicitly order the keys for the final JSON object for readability.
+                    final_ordered_result = {
+                        "id": trial_result['id'],
+                        "chain_id": trial_result['chain_id'],
+                        "num_sentences_paraphrased": trial_result['num_sentences_paraphrased'],
+                        "total_sentences_in_chain": trial_result['total_sentences_in_chain'],
+                        "predicted_choice": trial_result['predicted_choice'],
+                        "correct_choice": trial_result['correct_choice'],
+                        "is_correct": trial_result['is_correct'],
+                        "corresponding_baseline_predicted_choice": trial_result['corresponding_baseline_predicted_choice'],
+                        "is_consistent_with_baseline": trial_result['is_consistent_with_baseline'],
+                        "final_answer_raw": trial_result['final_answer_raw'],
+                        "final_prompt_messages": trial_result['final_prompt_messages'],
+                        "question": trial_result['question'],
+                        "choices": trial_result['choices'],
+                        "audio_path": trial_result['audio_path']
+                    }
+                    
+                    f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
                     f.flush()
 
             except Exception as e:
@@ -187,7 +209,7 @@ def run(model, processor, model_utils, config):
                 logging.exception(f"SKIPPING ENTIRE TRIAL due to unhandled error. ID: {baseline_trial.get('id', 'N/A')}, Chain: {baseline_trial.get('chain_id', 'N/A')}")
                 continue
 
-    # Final summary
+    # --- Final Summary ---
     total_processed_in_this_run = len(samples_to_process) - len(completed_chains)
     logging.info(f"--- Paraphrasing experiment for {config.MODEL_ALIAS.upper()} complete. ---")
     logging.info("\n" + "="*25 + " RUN SUMMARY " + "="*25)
