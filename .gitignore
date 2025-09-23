@@ -8,6 +8,8 @@ audio-flamingo-weights/
 # this folder has the weights for all SALMONN's components
 model_components/
 
+# source code - can be directly cloned from source
+audio-flamingo-code/
 
 # Envs
 audio-faithful/
