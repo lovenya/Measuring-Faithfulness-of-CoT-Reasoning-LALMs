@@ -151,25 +151,25 @@ def parse_answer(text: str) -> str | None:
 
     # Priority 1: The most robust pattern, `(X)`, searched anywhere.
     # This handles "The answer is (A)." etc.
-    match = re.search(r'\(([A-Z])\)', cleaned_text)
+    match = re.search(r'\(([a-zA-Z])\)', cleaned_text)
     if match:
         return match.group(1)
 
     # Priority 2: Strict check for the entire string being `X)`.
     # The ^ and $ anchors are critical to prevent false positives.
-    match = re.search(r'^([A-Z])\)$', cleaned_text)
+    match = re.search(r'^([a-zA-Z])\)$', cleaned_text)
     if match:
         return match.group(1)
 
     # Priority 3: Strict check for the entire string being `(X`.
-    match = re.search(r'^\(([A-Z])$', cleaned_text)
+    match = re.search(r'^\(([a-zA-Z])$', cleaned_text)
     if match:
         return match.group(1)
 
     # Priority 4: The most minimal case, a single letter.
     # This must check the length to avoid matching 'A' in "A good answer...".
-    if len(cleaned_text) == 1 and 'A' <= cleaned_text <= 'Z':
-        return cleaned_text
+    if len(cleaned_text) == 1 and cleaned_text.isalpha():
+        return cleaned_text.upper()
 
     # Priority 5: If no choice is found, check for a refusal.
     refusal_keywords = [
