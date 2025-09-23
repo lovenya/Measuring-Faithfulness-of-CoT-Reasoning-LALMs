@@ -1,4 +1,4 @@
-# data_processing/filter_dependent_results.py
+# data_processing/filter_dependent_results_to_restricted_version.py
 
 """
 This is a standalone utility script for post-processing our experimental results.

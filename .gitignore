@@ -57,3 +57,6 @@ old_unused_results/
 flamingo_result/
 
 # removing for repo readability
+data_processing/add_noise_to_dataset.py
+data_processing/convert_csv_to_jsonl.py
+data_processing/enrich_mmar_dataset.py

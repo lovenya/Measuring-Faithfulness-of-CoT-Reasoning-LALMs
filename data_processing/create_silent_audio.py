@@ -1,5 +1,7 @@
 # data_processing/create_silent_audio.py
 
+# standalone script to make a silent audio for AF3 and SALMONN's infernece to work
+
 import numpy as np
 import soundfile as sf
 import os
