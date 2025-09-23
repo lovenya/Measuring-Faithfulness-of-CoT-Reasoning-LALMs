@@ -5,9 +5,8 @@ asr_models/
 tts_models/XTTS-v2/
 audio-flamingo-weights/
 
+# this folder has the weights for all SALMONN's components
 model_components/
-
-salmonn-source-code/
 
 
 # Envs
@@ -60,3 +59,6 @@ flamingo_result/
 data_processing/add_noise_to_dataset.py
 data_processing/convert_csv_to_jsonl.py
 data_processing/enrich_mmar_dataset.py
+data_processing/create_silent_audio.py
+
+experiments/robustness_to_noise.py
