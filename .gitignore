@@ -9,7 +9,6 @@ model_components/
 audio-flamingo-code/
 salmonn-source-code/
 
-
 # Envs
 audio-faithful/
 tts-env/
@@ -67,11 +66,8 @@ data_processing/create_silent_audio.py
 
 experiments/robustness_to_noise.py
 
-analysis/plot_robustness_to_noise.py
-analysis/analyze_mmar_subcategories.py
-analysis/generate_cot_stats.py
+analysis/extra_scripts
 analysis/final_plots
-analysis/
 
 final_plots/delta_slope_vs_accuracy
 final_plots/flamingo
