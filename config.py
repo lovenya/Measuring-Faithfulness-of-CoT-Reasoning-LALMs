@@ -10,7 +10,7 @@ parameters. This single source of truth makes our framework robust and easy to m
 # This dictionary holds the master paths to all our model assets.
 MODEL_PATHS = {
     # --- Qwen (Self-Contained) ---
-    "qwen": "./Qwen2-Audio-7B-Instruct",
+    "qwen": "./qwen2-audio-weights",
 
     # --- Audio Flamingo (Complex) ---
     "flamingo_code": "./audio-flamingo-code",
