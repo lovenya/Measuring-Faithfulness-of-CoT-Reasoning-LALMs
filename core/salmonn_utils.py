@@ -217,20 +217,25 @@ def parse_answer(text: str) -> str | None:
 
     # We check for patterns in a specific order, from most to least specific.
     # The character class [a-zA-Z] makes the regex case-insensitive.
-    match = re.search(r'\(([a-zA-Z])\)$', cleaned_text)
-    if match: return match.group(1).upper()
+    
+    # Priority 1: The most robust pattern, `(X)`, searched anywhere.
+    # This handles "The answer is (A)." etc.
+    match = re.search(r'\(([a-zA-Z])\)', cleaned_text)
+    if match:
+        return match.group(1)
 
-    match = re.search(r'^([a-zA-Z])\)$', cleaned_text)
-    if match: return match.group(1).upper()
+    # Priority 2: Strict check for the entire string `X)` having anywhere.
+    match = re.search(r'([a-zA-Z])\)', cleaned_text)
+    if match:
+        return match.group(1)
 
-    match = re.search(r'^\(([a-zA-Z])$', cleaned_text)
-    if match: return match.group(1).upper()
+    # Priority 3: Strict check for the string having `(X` anywhere.
+    match = re.search(r'\(([a-zA-Z])', cleaned_text)
+    if match:
+        return match.group(1)
 
-    # Here, the re.IGNORECASE flag is a cleaner way to handle case-insensitivity.
-    match = re.search(r'answer is\s+([a-zA-Z])', cleaned_text, re.IGNORECASE)
-    if match: return match.group(1).upper()
-
-    # The most minimal case: the entire output is just a single letter.
+    # Priority 4: The most minimal case, a single letter.
+    # This must check the length to avoid matching 'A' in "A good answer...".
     if len(cleaned_text) == 1 and cleaned_text.isalpha():
         return cleaned_text.upper()
         
