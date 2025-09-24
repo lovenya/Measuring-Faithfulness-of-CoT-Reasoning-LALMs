@@ -1,5 +1,18 @@
 # analysis/final_plots/plot_final_random_partial_filler_text.py
 
+"""
+This script generates the final, publication-quality cross-dataset plot for the
+'Random Partial Filler Text' experiment.
+
+The scientific goal is to test the importance of the reasoning content by
+replacing a random percentage of words in the CoT with meaningless filler.
+This plot visualizes the model's consistency as a function of how much of the
+reasoning chain has been randomly corrupted.
+
+This script is hard-coded to run on the 'restricted' data subset (1-6 step CoTs)
+and produces a single, cross-dataset aggregated plot.
+"""
+
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -20,10 +33,21 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: bool, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool):
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool):
     """
-    Generates a final, cross-dataset consistency plot for the Random Partial Filler experiment.
+    Orchestrates the data loading, processing, and plotting for the Random Partial Filler experiment.
+
+    Args:
+        model_name (str): The name of the model to analyze.
+        results_dir (str): The root directory for the results.
+        plots_dir (str): The root directory where plots will be saved.
+        y_zoom (list | None): A list of two floats for the y-axis range, or None.
+        print_line_data (bool): Flag to print aggregated line data to the console.
+        save_stats (bool): Flag to save a detailed statistical summary to a file.
+        save_pdf (bool): Flag to save a PDF copy of the plot.
+        show_ci (bool): Flag to show the 95% confidence interval on the plot.
     """
+    
     experiment_name = "random_partial_filler_text"
     print(f"\n--- Generating Final Cross-Dataset Plot for: {experiment_name.upper()} ({model_name.upper()}) ---")
     
@@ -70,11 +94,10 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
         print(f"Could not find baseline directory for model '{model_name}' at {baseline_dir}.")
         return
 
-    # --- THE CRITICAL OVERRIDE: Hard-code 0% to be 100% consistent ---
+    # --- Hard-code 0% to be 100% consistent ---
     # We locate all rows where the binned percentage is 0 and set their consistency to True.
     # This ensures the plot and stats correctly reflect the theoretical baseline.
     super_df.loc[super_df['percent_binned'] == 0, 'is_consistent_with_baseline'] = True
-    # --- END OF OVERRIDE ---
 
     # --- Prepare Output Path ---
     output_dir = os.path.join(plots_dir, model_name, experiment_name)
@@ -151,8 +174,9 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     ax.set_ylabel('Consistency (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
     
+    
     if y_zoom:
-        ax.set_ylim(45, 100.5)
+        ax.set_ylim(y_zoom[0], y_zoom[1])
     else:
         ax.set_ylim(0, 105)
     ax.set_xlim(-5, 105)
@@ -186,8 +210,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate final cross-dataset plots for the Random Partial Filler experiment.")
     parser.add_argument('--model', type=str, required=True, help="The name of the model to analyze (e.g., 'qwen', 'salmonn').")
     parser.add_argument('--results_dir', type=str, default='./results')
-    parser.add_argument('--plots_dir', type=str, default='./final_plots')
-    parser.add_argument('--y-zoom', action='store_true', help="Zoom the Y-axis to the 30-100% range.")
+    parser.add_argument('--plots_dir', type=str, default='plots/cross_dataset_plots', help="The root directory for final plots.")
+    parser.add_argument('--y-zoom', nargs=2, type=float, default=None, help="Set a custom Y-axis range (e.g., --y-zoom 45 100.5).")
     parser.add_argument('--print-line-data', action='store_true', help="Print aggregated line data to the console.")
     parser.add_argument('--save-stats', action='store_true', help="Save a detailed statistical summary to a .txt file.")
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")

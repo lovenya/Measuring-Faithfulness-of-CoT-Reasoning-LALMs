@@ -1,4 +1,17 @@
-# analysis/final_plots/plot_final_paraphrasing.py
+# analysis/cross_dataset_aggregated_scripts/plot_final_paraphrasing.py
+
+"""
+This script generates the final cross-dataset plot for the
+'Paraphrasing' experiment.
+
+The scientific goal of this experiment is to test whether the model relies on
+specific keywords ("magic words") or understands the semantic meaning of its
+reasoning. It does this by paraphrasing the reasoning and observing if the
+model's final answer remains consistent.
+
+This script is hard-coded to run on the 'restricted' data subset (1-6 step CoTs)
+and produces a single, cross-dataset aggregated plot.
+"""
 
 import os
 import pandas as pd
@@ -20,10 +33,21 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: bool, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool):
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool):
     """
-    Generates a final, cross-dataset consistency plot for the Paraphrasing experiment.
+    Orchestrates the data loading, processing, and plotting for the Paraphrasing experiment.
+
+    Args:
+        model_name (str): The name of the model to analyze.
+        results_dir (str): The root directory for the results.
+        plots_dir (str): The root directory where plots will be saved.
+        y_zoom (list | None): A list of two floats for the y-axis range, or None.
+        print_line_data (bool): Flag to print aggregated line data to the console.
+        save_stats (bool): Flag to save a detailed statistical summary to a file.
+        save_pdf (bool): Flag to save a PDF copy of the plot.
+        show_ci (bool): Flag to show the 95% confidence interval on the plot.
     """
+    
     experiment_name = "paraphrasing"
     print(f"\n--- Generating Final Cross-Dataset Plot for: {experiment_name.upper()} ({model_name.upper()}) ---")
     
@@ -146,8 +170,9 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: b
     ax.set_ylabel('Consistency (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
     
+    
     if y_zoom:
-        ax.set_ylim(79, 100.5)
+        ax.set_ylim(y_zoom[0], y_zoom[1])
     else:
         ax.set_ylim(0, 105)
     ax.set_xlim(-5, 105)
@@ -181,8 +206,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate final cross-dataset plots for the Paraphrasing experiment.")
     parser.add_argument('--model', type=str, required=True, help="The name of the model to analyze (e.g., 'qwen', 'salmonn').")
     parser.add_argument('--results_dir', type=str, default='./results')
-    parser.add_argument('--plots_dir', type=str, default='./final_plots')
-    parser.add_argument('--y-zoom', action='store_true', help="Zoom the Y-axis to the 30-100% range.")
+    parser.add_argument('--plots_dir', type=str, default='plots/cross_dataset_plots', help="The root directory for final plots.")
+    parser.add_argument('--y-zoom', nargs=2, type=float, default=None, help="Set a custom Y-axis range (e.g., --y-zoom 45 100.5).")
     parser.add_argument('--print-line-data', action='store_true', help="Print aggregated line data to the console.")
     parser.add_argument('--save-stats', action='store_true', help="Save a detailed statistical summary to a .txt file.")
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
