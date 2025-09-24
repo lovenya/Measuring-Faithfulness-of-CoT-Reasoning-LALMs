@@ -1,125 +1,162 @@
 # experiments/partial_filler_text.py
 
-import logging
+"""
+This script conducts the "Partial Filler Text" experiment (corruption from start).
+This is a variant of the filler text experiments designed to test if the position
+of corrupted reasoning matters.
+
+Methodology:
+1. It takes a reasoning chain (CoT) from a baseline run.
+2. For a given percentage (e.g., 20%), it replaces that percentage of the
+   *words* in the CoT with a filler token ("..."). The words to be replaced
+   are taken from the START of the reasoning chain.
+3. It then presents this partially corrupted CoT to the model and asks for a
+   final answer.
+4. By comparing the results to the "end" and "random" corruption variants, we
+   can determine if the model is more sensitive to errors at the beginning or
+   end of its reasoning chain.
+"""
+
 import os
 import json
 import collections
+import logging
 from core.filler_text_utils import create_word_level_masked_cot, run_filler_trial
 
 # This is a 'dependent' experiment because it manipulates the CoTs from a 'baseline' run.
 EXPERIMENT_TYPE = "dependent"
 
-def run(model, processor, config):
+def run(model, processor, tokenizer, model_utils, config):
     """
-    Orchestrates the WORD-LEVEL partial filler text experiment (corruption from start).
-    This version is now fully condition-aware and adheres to our SOP.
+    Orchestrates the WORD-LEVEL partial filler text experiment with a
+    robust, model-agnostic, and restartable design.
     """
-    output_path = config.OUTPUT_PATH
-
-    # --- 1. Condition-Aware Path Construction ---
-    # This block correctly constructs the path to the necessary baseline results file,
-    # accounting for both the condition-specific directory and the condition-specific filename.
-    if config.CONDITION == 'default':
-        baseline_results_dir = os.path.join(config.RESULTS_DIR, 'baseline')
-        baseline_filename = f"baseline_{config.DATASET_NAME}.jsonl"
-    else:
-        condition_dir = f"{config.CONDITION}_experiments"
-        baseline_results_dir = os.path.join(config.RESULTS_DIR, condition_dir, 'baseline')
-        baseline_filename = f"baseline_{config.DATASET_NAME}_{config.CONDITION}.jsonl"
-    
-    baseline_results_path = os.path.join(baseline_results_dir, baseline_filename)
-
-    # --- 2. Load Data ---
-    try:
-        print(f"Reading baseline data for condition '{config.CONDITION}' from '{baseline_results_path}'...")
-        all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
-    except FileNotFoundError as e:
-        print(f"FATAL ERROR: A required foundational results file was not found. Details: {e}")
+    # --- 1. Load Dependent Data (Centralized Pathing) ---
+    baseline_results_path = config.BASELINE_RESULTS_PATH
+    if not os.path.exists(baseline_results_path):
+        logging.error(f"Baseline results file not found at the path provided by main.py: '{baseline_results_path}'")
         return
-     
-    # This is the crucial block that correctly enforces the chain limit for
-    # dependent experiments. It ensures we only process the first N chains for each question,
-    # making the --num-chains flag behave consistently everywhere.
+
+    logging.info(f"Reading baseline data for model '{config.MODEL_ALIAS}' from '{baseline_results_path}'...")
+    all_baseline_trials = []
+    with open(baseline_results_path, 'r') as f:
+        for line_num, line in enumerate(f, 1):
+            try:
+                all_baseline_trials.append(json.loads(line))
+            except json.JSONDecodeError:
+                logging.warning(f"Skipping corrupted line {line_num} in {baseline_results_path}")
+                continue
+    
+    # --- 2. Apply Command-Line Filters ---
     if config.NUM_CHAINS_PER_QUESTION > 0:
         logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
-        
-        # We create a new list containing only the trials where the chain_id is less than the limit.
-        # This correctly handles your scenario (e.g., keeping chains 0, 1 but discarding 3 if the limit is 3).
-        filtered_trials = [
+        all_baseline_trials = [
             trial for trial in all_baseline_trials
             if trial['chain_id'] < config.NUM_CHAINS_PER_QUESTION
         ]
-        
-        # We then overwrite the original list with our new, filtered list.
-        all_baseline_trials = filtered_trials
-            
-    # Standard logic to handle the --num-samples flag for quick test runs.
+    
     if config.NUM_SAMPLES_TO_RUN > 0:
         trials_by_question = collections.defaultdict(list)
-        for trial in all_baseline_trials:
-            trials_by_question[trial['id']].append(trial)
+        for trial in all_baseline_trials: trials_by_question[trial['id']].append(trial)
         unique_question_ids = list(trials_by_question.keys())[:config.NUM_SAMPLES_TO_RUN]
         samples_to_process = [trial for q_id in unique_question_ids for trial in trials_by_question[q_id]]
     else:
         samples_to_process = all_baseline_trials
 
-    # --- 3. Run the Experiment ---
-    print(f"\n--- Running WORD-LEVEL Partial Filler (Start) Experiment ({config.CONDITION} condition): Saving to {output_path} ---")
-    print(f"Processing {len(samples_to_process)} total trials.")
+    # --- 3. Restartability Logic ---
+    output_path = config.OUTPUT_PATH
+    completed_chains = set()
+    if os.path.exists(output_path):
+        logging.info("Found existing results file. Checking for completed work...")
+        progress_counts = collections.defaultdict(int)
+        with open(output_path, 'r') as f:
+            for line in f:
+                try:
+                    data = json.loads(line)
+                    progress_counts[(data['id'], data['chain_id'])] += 1
+                except (json.JSONDecodeError, KeyError): continue
+        
+        for chain_key, count in progress_counts.items():
+            if count >= 21: # 21 steps from 0 to 100 inclusive, with step 5
+                completed_chains.add(chain_key)
+
+    if completed_chains: logging.info(f"Found {len(completed_chains)} fully completed chains. They will be skipped.")
+
+    # --- 4. Run Experiment ---
+    logging.info(f"Running WORD-LEVEL Partial Filler (Start) Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path}")
     
     skipped_trials_count = 0
-    with open(output_path, 'w') as f:
+    with open(output_path, 'a') as f:
         for i, baseline_trial in enumerate(samples_to_process):
             try:
                 q_id, chain_id = baseline_trial['id'], baseline_trial['chain_id']
-                if config.VERBOSE:
-                    print(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
+                if (q_id, chain_id) in completed_chains:
+                    continue
 
+                if config.VERBOSE:
+                    logging.info(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
+
+                choices_formatted = baseline_trial['choices']
                 sanitized_cot = baseline_trial['sanitized_cot']
                 
                 for percentile in range(0, 101, 5):
+                    if config.VERBOSE:
+                        logging.info(f"  - Processing {percentile}% replacement...")
                     
-                    # Call the centralized utility to perform word-level masking from the start.
-                    modified_cot = create_word_level_masked_cot(sanitized_cot, percentile, mode='start')
+                    # We call our centralized utility with mode='start'.
+                    modified_cot = create_word_level_masked_cot(
+                        sanitized_cot, percentile, mode='start'
+                    )
                     
                     trial_result = run_filler_trial(
-                        model, processor, 
+                        model, processor, tokenizer, model_utils,
                         baseline_trial['question'], 
-                        baseline_trial['choices'], 
+                        choices_formatted, 
                         baseline_trial['audio_path'], 
                         modified_cot
                     )
 
-                    baseline_final_choice = baseline_trial['predicted_choice']
+                    trial_result['id'] = q_id
+                    trial_result['chain_id'] = chain_id
+                    trial_result['percent_replaced'] = percentile
                     
-                    # Add metadata and save according to our SOP.
+                    baseline_final_choice = baseline_trial['predicted_choice']
+                    trial_result['correct_choice'] = baseline_trial['correct_choice']
+                    trial_result['is_correct'] = (trial_result['predicted_choice'] == trial_result['correct_choice'])
+                    trial_result['corresponding_baseline_predicted_choice'] = baseline_final_choice
+                    trial_result['is_consistent_with_baseline'] = (trial_result['predicted_choice'] == baseline_final_choice)
+                    
                     final_ordered_result = {
-                        "id": q_id,
-                        "chain_id": chain_id,
-                        "percent_replaced": percentile,
+                        "id": trial_result['id'],
+                        "chain_id": trial_result['chain_id'],
+                        "percent_replaced": trial_result['percent_replaced'],
                         "predicted_choice": trial_result['predicted_choice'],
-                        "correct_choice": baseline_trial['correct_choice'],
-                        "is_correct": (trial_result['predicted_choice'] == baseline_trial['correct_choice']),
-                        "corresponding_baseline_predicted_choice": baseline_final_choice,
-                        "is_consistent_with_baseline": (trial_result['predicted_choice'] == baseline_final_choice),
+                        "correct_choice": trial_result['correct_choice'],
+                        "is_correct": trial_result['is_correct'],
+                        "corresponding_baseline_predicted_choice": trial_result['corresponding_baseline_predicted_choice'],
+                        "is_consistent_with_baseline": trial_result['is_consistent_with_baseline'],
+                        "final_answer_raw": trial_result['final_answer_raw'],
                         "final_prompt_messages": trial_result['final_prompt_messages'],
-                        "final_answer_raw": trial_result['final_answer_raw']
+                        "question": trial_result['question'],
+                        "choices": trial_result['choices'],
+                        "audio_path": trial_result['audio_path']
                     }
-                    # Ensure human-readable output.
+                    
                     f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
+                    f.flush()
 
             except Exception as e:
                 skipped_trials_count += 1
-                print("\n" + "="*60)
-                print(f"WARNING: SKIPPING TRIAL DUE TO ERROR.")
-                print(f"  - Question ID: {baseline_trial.get('id', 'N/A')}, Chain ID: {baseline_trial.get('chain_id', 'N/A')}")
-                print(f"  - Error Type: {type(e).__name__}")
-                print(f"  - Error Details: {e}")
-                print("="*60 + "\n")
+                logging.exception(f"SKIPPING ENTIRE TRIAL due to unhandled error. ID: {baseline_trial.get('id', 'N/A')}, Chain: {baseline_trial.get('chain_id', 'N/A')}")
                 continue
 
     # --- Final Summary ---
-    print("\n--- WORD-LEVEL Partial Filler (Start) experiment complete. ---")
-    print(f"Total trials processed: {len(samples_to_process)}")
-    print(f"Skipped trials due to errors: {skipped_trials_count}")
-    print(f"Results saved to: {config.OUTPUT_PATH}")
+    total_processed_in_this_run = len(samples_to_process) - len(completed_chains)
+    logging.info(f"--- WORD-LEVEL Partial Filler (Start) experiment for {config.MODEL_ALIAS.upper()} complete. ---")
+    logging.info("\n" + "="*25 + " RUN SUMMARY " + "="*25)
+    logging.info(f"Total trials in dataset: {len(samples_to_process)}")
+    logging.info(f"Trials already complete: {len(completed_chains)}")
+    logging.info(f"Trials processed in this run: {total_processed_in_this_run - skipped_trials_count}")
+    logging.info(f"Skipped trials due to errors in this run: {skipped_trials_count}")
+    logging.info(f"Results saved to: {output_path}")
+    logging.info("="*65)
