@@ -1,5 +1,15 @@
 # core/salmonn_utils.py
 
+"""
+This file is the specific 'driver' or 'utility module' for the SALMONN model.
+
+Its purpose is to act as an adapter. It takes the standard, model-agnostic commands
+from our experiment scripts and translates them into the unique, specific API calls
+that the SALMONN model requires. This design is what allows our main
+experiment code (like baseline.py) to remain clean and unaware of the specific
+model it's working with.
+"""
+
 import sys
 import os
 import torch
@@ -15,7 +25,9 @@ import logging
 import config as framework_config
 
 # --- THE CRITICAL FIX: MANUAL, UNAMBIGUOUS IMPORT ---
-# This block is the definitive solution to the 'config' name collision.
+# This block is the definitive solution to a complex "name collision" bug.
+# The SALMONN library has a file named 'config.py', which conflicts with our
+# project's 'config.py'. This manual import ensures we load the correct one.
 
 # 1. Define the absolute path to the SALMONN source code and its config file.
 _SALMONN_CODE_PATH = framework_config.SALMONN_COMPONENT_PATHS['source_code']
@@ -38,96 +50,82 @@ SalmonnConfig = salmonn_config_module.Config
 #    directory to the path to allow for the other, non-conflicting imports.
 if _SALMONN_CODE_PATH not in sys.path:
     sys.path.append(_SALMONN_CODE_PATH)
-    print(f"INFO: Temporarily added '{_SALMONN_CODE_PATH}' to Python path.")
+    logging.info(f"Temporarily added '{_SALMONN_CODE_PATH}' to Python path.")
 
 try:
     from models.salmonn import SALMONN
     from transformers import WhisperFeatureExtractor
-    from utils import prepare_one_sample
 except ImportError as e:
-    print(f"FATAL: Failed to import SALMONN library components. Error: {e}")
+    logging.exception("Failed to import SALMONN library components.")
     sys.exit(1)
-# --- END OF FIX ---
 
 
-def load_model_and_tokenizer(model_path: str) -> Tuple[object, object]:
+def load_model_and_tokenizer(model_path: str) -> Tuple[object, object, object]:
     """
-    Loads the SALMONN model, now with detailed logging for debugging.
+    Loads the complex, multi-component SALMONN model, processor, and tokenizer.
+    This function fulfills our framework's 3-part "contract".
     """
-    logging.info("--- Loading SALMONN Model System ---")
+    logging.info("--- Loading SALMONN Model System (using native config loader) ---")
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logging.info(f"Target device for model loading: {device.upper()}")
     
-    logging.info("Loading SALMONN's native YAML config...")
+    # We use the model's own YAML config as a template, which is more robust
+    # than creating the configuration from scratch.
     config_path = os.path.join(framework_config.SALMONN_COMPONENT_PATHS['source_code'], 'configs/decode_config.yaml')
+    # We create a mock argparse object to satisfy the SALMONN Config class constructor.
     mock_args = type('Args', (), {'cfg_path': config_path, 'options': None})()
     cfg = SalmonnConfig(mock_args)
-    logging.info("YAML config loaded.")
 
-    logging.info("Overriding component paths in config...")
+    # We then override the placeholder paths in the YAML with our actual local paths.
     cfg.config.model.llama_path = framework_config.SALMONN_COMPONENT_PATHS['vicuna']
     cfg.config.model.whisper_path = framework_config.SALMONN_COMPONENT_PATHS['whisper']
     cfg.config.model.beats_path = framework_config.SALMONN_COMPONENT_PATHS['beats']
     cfg.config.model.ckpt = framework_config.SALMONN_COMPONENT_PATHS['salmonn_checkpoint']
-    logging.info("Component paths overridden.")
 
     logging.info("Instantiating SALMONN model from config...")
     model = SALMONN.from_config(cfg.config.model)
-    logging.info("SALMONN model instantiated.")
-    
-    logging.info(f"Moving model to {device.upper()}...")
     model.to(device)
-    logging.info("Model moved to device.")
-    
     model.eval()
 
     logging.info("Loading WhisperFeatureExtractor...")
     processor = WhisperFeatureExtractor.from_pretrained(framework_config.SALMONN_COMPONENT_PATHS['whisper'])
-    logging.info("Processor loaded.")
     
+    # We correctly extract the tokenizer from the loaded model to return it separately.
+    tokenizer = model.llama_tokenizer
+    
+    # We attach the full config object to the model for easy access later.
     model.custom_config = cfg.config
 
-    logging.info("SALMONN model and processor loaded successfully.")
-    return model, processor
+    logging.info("SALMONN model, processor, and tokenizer loaded successfully.")
+    return model, processor, tokenizer
 
 
 def _convert_messages_to_salmonn_prompt(messages: List[Dict[str, str]], model_config: dict) -> str:
     """
-    A helper to translate our standard 'messages' format into the specific,
-    templated string that SALMONN's generate method expects.
-    
-    This version is corrected to use a more explicit prompt to elicit
-    a detailed Chain-of-Thought.
+    A helper "translator" that converts our framework's standard 'messages' list
+    into the specific, templated string that SALMONN's generate method expects.
     """
     full_text = ""
     is_cot_generation = False
-    
     for msg in messages:
         content = msg.get("content", "")
         if "audio\n\n" in content:
             content = content.replace("audio\n\n", "").strip()
-        
         # We check if this is a prompt for CoT generation.
         if "Let's think step by step:" in content:
             is_cot_generation = True
-            # We remove our generic phrase because we will replace it.
             content = content.replace("Let's think step by step:", "").strip()
-
         full_text += content + "\n"
-    
     full_text = full_text.strip()
 
-    # --- THE CRITICAL FIX ---
-    # If this is a CoT generation step, we append a much more explicit and
-    # directive instruction, combining our goal with the patterns seen in the
-    # model's own prompt templates.
+    # If this is a CoT generation step, we append a more explicit instruction
+    # to reliably elicit a detailed reasoning chain from this specific model.
     if is_cot_generation:
         full_text += "\nPlease provide a detailed, step-by-step reasoning before giving your final answer. Let's think step by step:"
-    # --- END OF FIX ---
 
+    # Finally, we wrap the entire text in the model's required chat template.
     prompt_template = model_config.model.prompt_template
     wrapped_text = "<Speech><SpeechHere></Speech> " + full_text
-    
     return prompt_template.format(wrapped_text)
 
 
@@ -137,66 +135,60 @@ def run_inference(
     temperature: float, top_p: float
 ) -> str:
     """
-    Runs inference, now with detailed logging for debugging.
+    Runs multi-modal inference using the SALMONN model, including audio preprocessing.
     """
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    logging.info(f"Starting inference on device: {device.upper()}")
-
+    
     try:
-        logging.info(f"Loading and resampling audio from: {audio_path}")
+        # We MUST resample to 16kHz, as this is the sampling rate the model's
+        # Whisper audio encoder was trained on.
         resampled_wav, sr = librosa.load(audio_path, sr=16000)
-        logging.info("Audio resampling complete.")
-
-        logging.info("Creating spectrogram with WhisperFeatureExtractor...")
+        
+        # We use the WhisperFeatureExtractor (our 'processor') to convert the
+        # raw audio waveform into a spectrogram (a visual representation of the sound).
         spectrogram = processor(resampled_wav, sampling_rate=sr, return_tensors="pt").input_features
-        logging.info("Spectrogram created.")
-
-        logging.info("Constructing samples dictionary and moving tensors to device...")
+        
+        # We construct the 'samples' dictionary in the exact format the model requires.
         samples = {
             "spectrogram": spectrogram.to(model.device, dtype=torch.float32),
             "raw_wav": torch.from_numpy(resampled_wav).unsqueeze(0).to(model.device, dtype=torch.float32)
         }
-        logging.info("Samples dictionary created.")
-
-        logging.info("Converting messages to SALMONN prompt format...")
+        
         prompt = _convert_messages_to_salmonn_prompt(messages, model.custom_config)
-        logging.info("Prompt conversion complete.")
-
+        
+        # We take the default generation settings from the model's config and
+        # override them with the parameters for our specific experiment.
         generate_cfg = model.custom_config.generate
         generate_cfg['max_new_tokens'] = max_new_tokens
         generate_cfg['do_sample'] = do_sample
         generate_cfg['temperature'] = temperature
         generate_cfg['top_p'] = top_p
-        generate_cfg['num_beams'] = 1
+        generate_cfg['num_beams'] = 1 # We use greedy/sampling, not beam search.
 
-        logging.info(f"Calling model.generate() with do_sample={do_sample}...")
+        # We use automatic mixed precision for better performance on the GPU.
         if device == "cuda":
             with torch.amp.autocast(device_type='cuda', dtype=torch.float16):
                 result = model.generate(samples, generate_cfg, prompts=[prompt])
         else:
             result = model.generate(samples, generate_cfg, prompts=[prompt])
-        logging.info("model.generate() call finished.")
         
         raw_output = result[0]
         
-        # Removing <s> flags - which are <SOS>, <EOS> basically
+        # The model's output includes special start/end tokens; we remove them for clean results.
         cleaned_output = raw_output.replace("<s>", "").replace("</s>", "").strip()
-        
         return cleaned_output
-
     except Exception as e:
-        # This will give us a detailed traceback if any step inside fails.
         logging.exception("An error occurred during the run_inference process.")
-        # Re-raise the exception to be caught by the experiment's main error handler.
         raise
     
 
 def run_text_only_inference(
-    model: object, processor: object, messages: List[Dict[str, str]],
+    model: object, processor: object, tokenizer: object, messages: List[Dict[str, str]],
     max_new_tokens: int, do_sample: bool, temperature: float, top_p: float
 ) -> str:
     """
     Handles text-only tasks by providing a dummy silent audio input.
+    This ensures a scientifically pure test of the model's language capabilities.
     """
     silent_audio_path = framework_config.SILENT_AUDIO_PATH
     if not os.path.exists(silent_audio_path):
@@ -209,7 +201,7 @@ def run_text_only_inference(
 
 
 def sanitize_cot(cot_text: str) -> str:
-    """ Model-agnostic utility to remove the final sentence from a CoT. """
+    """ A model-agnostic utility to remove the final 'spoiler' sentence from a CoT. """
     if not cot_text: return ""
     sentences = nltk.sent_tokenize(cot_text)
     if len(sentences) > 1:
@@ -219,24 +211,39 @@ def sanitize_cot(cot_text: str) -> str:
 
 
 def parse_answer(text: str) -> str | None:
-    """ Model-agnostic utility to find the final letter choice in the model's output. """
+    """ A universal, robust, and case-insensitive parser for all experiments. """
     if not text: return None
     cleaned_text = text.strip().strip('.').strip()
-    match = re.search(r'\(([a-zA-Z])\)', cleaned_text)
-    if match: return match.group(1)
+
+    # We check for patterns in a specific order, from most to least specific.
+    # The character class [a-zA-Z] makes the regex case-insensitive.
+    match = re.search(r'\(([a-zA-Z])\)$', cleaned_text)
+    if match: return match.group(1).upper()
+
     match = re.search(r'^([a-zA-Z])\)$', cleaned_text)
-    if match: return match.group(1)
+    if match: return match.group(1).upper()
+
     match = re.search(r'^\(([a-zA-Z])$', cleaned_text)
-    if match: return match.group(1)
+    if match: return match.group(1).upper()
+
+    # Here, the re.IGNORECASE flag is a cleaner way to handle case-insensitivity.
     match = re.search(r'answer is\s+([a-zA-Z])', cleaned_text, re.IGNORECASE)
-    if match: return match.group(1)
+    if match: return match.group(1).upper()
+
+    # The most minimal case: the entire output is just a single letter.
     if len(cleaned_text) == 1 and cleaned_text.isalpha():
         return cleaned_text.upper()
+        
+    # If no choice is found, we check for a refusal to answer.
+    refusal_keywords = ["cannot be determined", "none of the choices", "ambiguous", "not enough information", "no definitive answer"]
+    if any(keyword in cleaned_text.lower() for keyword in refusal_keywords):
+        return "REFUSAL"
+        
     return None
 
 
 def format_choices_for_prompt(choices: List[str]) -> str:
-    """ Model-agnostic utility to format choices for the prompt. """
+    """ A model-agnostic utility to format choices into a lettered string. """
     if not choices: return ""
     formatted_choices = []
     for i, choice in enumerate(choices):

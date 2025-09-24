@@ -1,26 +1,37 @@
 # experiments/no_reasoning.py
 
+"""
+This script conducts the "No-Reasoning" experiment. It is a crucial foundational
+baseline that measures the model's performance when it is given the exact same
+prompt structure as the main baseline, but with a deliberately empty reasoning string.
+
+This allows us to isolate and measure the model's "structural prior"—its ability
+to answer a question based on the format of the prompt alone, without any
+semantic reasoning content. The results from this experiment are used as an
+optimization in several dependent experiments (like early_answering).
+"""
+
 import os
 import json
+import collections
+import logging
 
-# This is a 'foundational' experiment. It provides a crucial baseline for
-# the model's performance when given the prompt structure but no reasoning content.
+# This is a 'foundational' experiment.
 EXPERIMENT_TYPE = "foundational"
 
-def run_no_reasoning_trial(model, processor, model_utils, question: str, choices: str, audio_path: str) -> dict:
+def run_no_reasoning_trial(model, processor, tokenizer, model_utils, question: str, choices: str, audio_path: str) -> dict:
     """
     Runs a single, deterministic trial with an empty CoT.
     """
     # This prompt structure perfectly matches the final prompt of the baseline
-    # experiment, but with an empty string for the assistant's CoT. This isolates
-    # the effect of the prompt format itself.
+    # experiment, but with an empty string for the assistant's CoT.
     final_answer_prompt_messages = [
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
         {"role": "assistant", "content": ""}, # The reasoning is an empty string
         {"role": "user", "content": "What is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else."}
     ]
 
-    # This is a deterministic call (do_sample=False) since there's no creative generation.
+    # This is a deterministic call (do_sample=False).
     final_answer_text = model_utils.run_inference(
         model, processor, final_answer_prompt_messages, audio_path, 
         max_new_tokens=10, do_sample=False, temperature=0.7, top_p=0.9
@@ -28,7 +39,7 @@ def run_no_reasoning_trial(model, processor, model_utils, question: str, choices
     
     parsed_choice = model_utils.parse_answer(final_answer_text)
 
-    # Return a self-documenting dictionary, including the prompt, per our SOP.
+    # Return a self-documenting dictionary.
     return {
         "question": question,
         "choices": choices,
@@ -38,17 +49,17 @@ def run_no_reasoning_trial(model, processor, model_utils, question: str, choices
         "final_prompt_messages": final_answer_prompt_messages
     }
 
-def run(model, processor, model_utils, data_samples, config):
+def run(model, processor, tokenizer, model_utils, data_samples, config):
     """
     Orchestrates the full "No-Reasoning" experiment with a robust, restartable design.
     """
     output_path = config.OUTPUT_PATH
-    print(f"\n--- Running 'No-Reasoning' Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path} ---")
+    logging.info(f"--- Running 'No-Reasoning' Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path} ---")
 
     # --- RESTARTABILITY LOGIC (SIMPLIFIED FOR DETERMINISTIC EXPERIMENT) ---
     completed_ids = set()
     if os.path.exists(output_path):
-        print("  - Found existing results file. Checking for completed work...")
+        logging.info("Found existing results file. Checking for completed work...")
         with open(output_path, 'r') as f:
             for line in f:
                 try:
@@ -56,10 +67,10 @@ def run(model, processor, model_utils, data_samples, config):
                     # exists in the file. If it does, we consider it complete.
                     completed_ids.add(json.loads(line)['id'])
                 except (json.JSONDecodeError, KeyError):
-                    continue # Ignore corrupted lines or lines missing an 'id'
+                    continue # Ignore corrupted lines
     
     if completed_ids:
-        print(f"  - Found {len(completed_ids)} completed questions. They will be skipped.")
+        logging.info(f"Found {len(completed_ids)} completed questions. They will be skipped.")
     # --- END OF RESTARTABILITY LOGIC ---
     
     skipped_samples_count = 0
@@ -72,7 +83,7 @@ def run(model, processor, model_utils, data_samples, config):
                     continue
 
                 if config.VERBOSE:
-                    print(f"Processing sample {i+1}/{len(data_samples)}: {sample['id']}")
+                    logging.info(f"Processing sample {i+1}/{len(data_samples)}: {sample['id']}")
                 
                 choices_formatted = model_utils.format_choices_for_prompt(sample['choices'])
                 
@@ -80,7 +91,7 @@ def run(model, processor, model_utils, data_samples, config):
                 # Since this is a deterministic experiment, the result will be the same
                 # for all chains. We run the expensive inference call a single time...
                 cached_result = run_no_reasoning_trial(
-                    model, processor, model_utils,
+                    model, processor, tokenizer, model_utils,
                     sample['question'], 
                     choices_formatted, 
                     sample['audio_path']
@@ -101,27 +112,35 @@ def run(model, processor, model_utils, data_samples, config):
                     if 'source' in sample: trial_result['source'] = sample['source']
                     if 'hop_type' in sample: trial_result['hop_type'] = sample['hop_type']
 
-                    f.write(json.dumps(trial_result, ensure_ascii=False) + "\n")
-                    
+                    # We explicitly order the keys to make the output file easy to read.
+                    final_ordered_result = {
+                        "id": trial_result['id'],
+                        "chain_id": trial_result['chain_id'],
+                        "predicted_choice": trial_result['predicted_choice'],
+                        "correct_choice": trial_result['correct_choice'],
+                        "is_correct": trial_result['is_correct'],
+                        "final_answer_raw": trial_result['final_answer_raw'],
+                        "final_prompt_messages": trial_result['final_prompt_messages'],
+                        "question": trial_result['question'],
+                        "choices": trial_result['choices'],
+                        "audio_path": trial_result['audio_path']
+                    }
+
+                    f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
                     f.flush()
 
             except Exception as e:
                 skipped_samples_count += 1
-                print("\n" + "="*60)
-                print(f"WARNING: SKIPPING SAMPLE DUE TO ERROR.")
-                print(f"  - Sample ID: {sample.get('id', 'Not Available')}")
-                print(f"  - Error Type: {type(e).__name__}")
-                print(f"  - Error Details: {e}")
-                print("="*60 + "\n")
+                logging.exception(f"SKIPPING SAMPLE due to unhandled error. ID: {sample.get('id', 'N/A')}")
                 continue
 
     # The final summary provides a clear report of what was accomplished in this specific run.
     total_processed_in_this_run = len(data_samples) - len(completed_ids)
-    print(f"\n--- 'No-Reasoning' experiment for {config.MODEL_ALIAS.upper()} complete. ---")
-    print("\n" + "="*25 + " RUN SUMMARY " + "="*25)
-    print(f"Total samples in dataset: {len(data_samples)}")
-    print(f"Samples already complete: {len(completed_ids)}")
-    print(f"Samples processed in this run: {total_processed_in_this_run - skipped_samples_count}")
-    print(f"Skipped samples due to errors in this run: {skipped_samples_count}")
-    print(f"Results saved to: {output_path}")
-    print("="*65)
+    logging.info(f"--- 'No-Reasoning' experiment for {config.MODEL_ALIAS.upper()} complete. ---")
+    logging.info("\n" + "="*25 + " RUN SUMMARY " + "="*25)
+    logging.info(f"Total samples in dataset: {len(data_samples)}")
+    logging.info(f"Samples already complete: {len(completed_ids)}")
+    logging.info(f"Samples processed in this run: {total_processed_in_this_run - skipped_samples_count}")
+    logging.info(f"Skipped samples due to errors in this run: {skipped_samples_count}")
+    logging.info(f"Results saved to: {output_path}")
+    logging.info("="*65)
