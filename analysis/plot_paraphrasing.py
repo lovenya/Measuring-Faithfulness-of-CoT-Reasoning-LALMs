@@ -1,15 +1,43 @@
 # analysis/plot_paraphrasing.py
 
+"""
+This script generates plots for the "Paraphrasing" experiment.
+
+The scientific goal is to test the model's reliance on specific keywords or "magic
+words" versus its understanding of the underlying semantic meaning. We do this by
+progressively paraphrasing a reasoning chain from the beginning and observing
+how the model's accuracy and consistency are affected.
+
+A sharp drop in performance suggests a reliance on fragile keywords, while stable
+performance suggests a more robust semantic understanding.
+
+The script produces aggregated and per-CoT-length (grouped) plots.
+"""
+
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import argparse
 from utils import load_results
 
 def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_df: pd.DataFrame, plot_group_name: str, model_name: str, dataset_name: str, plots_dir: str, is_restricted: bool, save_as_pdf: bool, show_accuracy: bool, show_consistency: bool, show_baseline: bool, show_nr: bool):
     """
-    Generates a single plot for 'Paraphrasing' data, with full feature control.
+    Generates and saves a single plot for a given group of 'Paraphrasing' data.
+
+    Args:
+        df (pd.DataFrame): The main DataFrame for the plot.
+        baseline_df (pd.DataFrame): DataFrame with baseline results for benchmarks.
+        no_reasoning_df (pd.DataFrame): DataFrame with no-reasoning results for benchmarks.
+        plot_group_name (str): The name of the group being plotted (e.g., 'aggregated').
+        model_name (str): The name of the model being analyzed.
+        dataset_name (str): The name of the dataset being analyzed.
+        plots_dir (str): The root directory to save the plots in.
+        is_restricted (bool): Flag indicating if the analysis is on the restricted dataset.
+        save_as_pdf (bool): If True, saves a PDF copy of the plot.
+        show_accuracy (bool): If True, plots the accuracy curve.
+        show_consistency (bool): If True, plots the consistency curve.
+        show_baseline (bool): If True, plots the baseline benchmark line.
+        show_nr (bool): If True, plots the no-reasoning benchmark line.
     """
     num_chains = len(df[['id', 'chain_id']].drop_duplicates())
 
@@ -35,9 +63,10 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
         accuracy_curve = df.groupby('percent_paraphrased')['is_correct'].mean() * 100
         consistency_curve = df.groupby('percent_paraphrased')['is_consistent_with_baseline'].mean() * 100
 
-    # Synthetically add the 0% data point.
+    # Methodological Step: Synthetically add the 0% data point, as it's not in the
+    # results file. This is because 0% paraphrased is identical to the baseline.
     accuracy_curve[0] = baseline_accuracy
-    consistency_curve[0] = 100.0
+    consistency_curve[0] = 100.0 # By definition, 0% paraphrasing is 100% consistent.
     accuracy_curve.sort_index(inplace=True)
     consistency_curve.sort_index(inplace=True)
 
@@ -66,7 +95,7 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
     ax.set_ylabel('Rate (%)', fontsize=12)
     ax.set_xlim(-5, 105); ax.set_ylim(0, 105); ax.legend(title='Metrics', loc='best'); fig.tight_layout()
 
-    # --- Output Path ---
+    # --- Output Path Construction ---
     if plot_group_name == 'aggregated':
         output_plot_dir = os.path.join(plots_dir, model_name, 'paraphrasing', dataset_name, 'aggregated')
     else:
@@ -87,119 +116,10 @@ def plot_single_graph(df: pd.DataFrame, baseline_df: pd.DataFrame, no_reasoning_
     
     plt.close()
 
-def plot_cross_dataset_graph(df: pd.DataFrame, model_name: str, plots_dir: str, is_restricted: bool, save_as_pdf: bool, show_accuracy: bool, show_consistency: bool):
-    """
-    Generates a single plot comparing aggregated results across multiple datasets.
-    """
-    plt.style.use('seaborn-v0_8-whitegrid')
-    fig, ax = plt.subplots(figsize=(14, 9))
-    
-    palette = sns.color_palette("viridis", n_colors=df['dataset'].nunique())
-    df['percent_binned'] = (df['percent_paraphrased'] / 10).round() * 10
-
-    # We need to handle the 0% point for each dataset individually before plotting
-    all_curves_df = []
-    for dataset_name, group_df in df.groupby('dataset'):
-        # Calculate baseline accuracy for this specific dataset to get the 0% point
-        baseline_df = load_results(model_name, './results', 'baseline', dataset_name, is_restricted)
-        baseline_accuracy = baseline_df.groupby('id')['is_correct'].mean().mean() * 100
-
-        if show_accuracy:
-            accuracy_curve = group_df.groupby('percent_binned')['is_correct'].mean().reset_index()
-            accuracy_curve['is_correct'] *= 100
-            accuracy_curve.loc[len(accuracy_curve)] = [0, baseline_accuracy] # Add 0% point
-            accuracy_curve.sort_values('percent_binned', inplace=True)
-            accuracy_curve['dataset'] = dataset_name
-            accuracy_curve['metric'] = 'Accuracy'
-            accuracy_curve.rename(columns={'is_correct': 'value'}, inplace=True)
-            all_curves_df.append(accuracy_curve)
-
-        if show_consistency:
-            consistency_curve = group_df.groupby('percent_binned')['is_consistent_with_baseline'].mean().reset_index()
-            consistency_curve['is_consistent_with_baseline'] *= 100
-            consistency_curve.loc[len(consistency_curve)] = [0, 100.0] # Add 0% point
-            consistency_curve.sort_values('percent_binned', inplace=True)
-            consistency_curve['dataset'] = dataset_name
-            consistency_curve['metric'] = 'Consistency'
-            consistency_curve.rename(columns={'is_consistent_with_baseline': 'value'}, inplace=True)
-            all_curves_df.append(consistency_curve)
-    
-    if not all_curves_df:
-        print("  - No data to plot for cross-dataset comparison.")
-        return
-
-    plot_df = pd.concat(all_curves_df)
-    
-    sns.lineplot(data=plot_df, x='percent_binned', y='value', hue='dataset', style='metric', ax=ax, marker='o', palette=palette)
-
-    plotted_metrics = plot_df['metric'].unique()
-    restriction_str = " (Restricted)" if is_restricted else " (Full Dataset)"
-    ax.set_title(f'Cross-Dataset Comparison of { " & ".join(plotted_metrics) }: Paraphrasing ({model_name.upper()}){restriction_str}', fontsize=16, pad=20)
-    
-    ax.set_xlabel('% of Reasoning Chain Paraphrased', fontsize=12)
-    ax.set_ylabel('Rate (%)', fontsize=12)
-    ax.set_xlim(-5, 105); ax.set_ylim(0, 105); ax.legend(title='Legend'); fig.tight_layout()
-
-    output_plot_dir = os.path.join(plots_dir, model_name, 'paraphrasing', 'cross_dataset')
-    os.makedirs(output_plot_dir, exist_ok=True)
-    
-    suffix = "-restricted" if is_restricted else ""
-    base_filename = f"cross_dataset_paraphrasing_{model_name}{suffix}"
-    
-    png_path = os.path.join(output_plot_dir, f"{base_filename}.png")
-    plt.savefig(png_path, dpi=300)
-    print(f"  - Cross-dataset plot saved to: {png_path}")
-
-    if save_as_pdf:
-        pdf_path = os.path.join(output_plot_dir, f"{base_filename}.pdf")
-        plt.savefig(pdf_path, format='pdf')
-        print(f"  - PDF copy saved to: {pdf_path}")
-    
-    plt.close()
-
-def create_cross_dataset_analysis(model_name: str, results_dir: str, plots_dir: str, is_restricted: bool, save_as_pdf: bool, show_flags: dict):
-    """
-    Loads data from ALL datasets and generates a single comparative plot.
-    """
-    print(f"\n--- Generating CROSS-DATASET Paraphrasing Analysis for: {model_name.upper()}{' (Restricted)' if is_restricted else ''} ---")
-    
-    all_dfs = []
-    try:
-        baseline_dir = os.path.join(results_dir, model_name, 'baseline')
-        if is_restricted:
-            dataset_names = sorted(list(set([f.replace(f'baseline_{model_name}_', '').replace('-restricted.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('-restricted.jsonl')])))
-        else:
-            dataset_names = sorted(list(set([f.replace(f'baseline_{model_name}_', '').replace('.jsonl', '') for f in os.listdir(baseline_dir) if not f.endswith('-restricted.jsonl')])))
-        
-        print(f"Found datasets to process: {dataset_names}")
-
-        for dataset in dataset_names:
-            try:
-                df = load_results(model_name, results_dir, 'paraphrasing', dataset, is_restricted)
-                df = df[df['total_sentences_in_chain'] > 0].copy()
-                if not df.empty:
-                    df['percent_paraphrased'] = (df['num_sentences_paraphrased'] / df['total_sentences_in_chain']) * 100
-                    df['dataset'] = dataset
-                    all_dfs.append(df)
-                else:
-                    print(f"  - WARNING: No valid data for '{dataset}' in paraphrasing results. Skipping.")
-            except FileNotFoundError:
-                print(f"  - WARNING: 'paraphrasing' results for dataset '{dataset}' not found. Skipping.")
-                continue
-        
-        if not all_dfs:
-            print("No data found for any dataset. Halting analysis.")
-            return
-            
-        super_df = pd.concat(all_dfs, ignore_index=True)
-        plot_cross_dataset_graph(super_df, model_name, plots_dir, is_restricted, save_as_pdf, **show_flags)
-
-    except FileNotFoundError:
-        print(f"Could not find baseline directory for model '{model_name}' at {baseline_dir}.")
-        return
-
 def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_dir: str, is_restricted: bool, generate_grouped: bool, save_as_pdf: bool, show_flags: dict):
-    """ Main function to orchestrate the paraphrasing analysis. """
+    """
+    Main function to orchestrate the paraphrasing analysis for a single dataset.
+    """
     print(f"\n--- Generating Paraphrasing Analysis for: {model_name.upper()} on {dataset_name.upper()}{' (Restricted)' if is_restricted else ''} ---")
     
     try:
@@ -209,11 +129,13 @@ def create_analysis(model_name: str, dataset_name: str, results_dir: str, plots_
     except FileNotFoundError:
         return
     
+    # --- "Meaningful Manipulation" Filter ---
     paraphrasing_df = paraphrasing_df[paraphrasing_df['total_sentences_in_chain'] > 0].copy()
     if paraphrasing_df.empty:
         print("  - No valid data with non-empty CoTs found. Skipping analysis.")
         return
 
+    # Calculate the normalized x-axis value.
     paraphrasing_df['percent_paraphrased'] = (paraphrasing_df['num_sentences_paraphrased'] / paraphrasing_df['total_sentences_in_chain']) * 100
 
     print("Generating main aggregated plot...")
@@ -238,24 +160,21 @@ if __name__ == "__main__":
     parser.add_argument('--restricted', action='store_true')
     parser.add_argument('--grouped', action='store_true')
     parser.add_argument('--save-pdf', action='store_true')
-    parser.add_argument('--cross-dataset-plot', action='store_true')
-    # Opt-In flags
+    # "Opt-In" flags for controlling which elements are visible on the plot.
     parser.add_argument('--show-accuracy-curve', action='store_true')
     parser.add_argument('--show-consistency-curve', action='store_true')
     parser.add_argument('--show-baseline-benchmark', action='store_true')
     parser.add_argument('--show-nr-benchmark', action='store_true')
     args = parser.parse_args()
     
-    show_flags = { "show_accuracy": args.show_accuracy_curve, "show_consistency": args.show_consistency_curve, "show_baseline": args.show_baseline_benchmark, "show_nr": args.show_nr_benchmark }
-    cross_dataset_show_flags = { "show_accuracy": args.show_accuracy_curve, "show_consistency": args.show_consistency_curve }
+    show_flags = {
+        "show_accuracy": args.show_accuracy_curve,
+        "show_consistency": args.show_consistency_curve,
+        "show_baseline": args.show_baseline_benchmark,
+        "show_nr": args.show_nr_benchmark
+    }
 
-    if args.cross_dataset_plot:
-        if args.dataset != 'all':
-            parser.error("--cross-dataset-plot can only be used with --dataset all")
-        if args.grouped:
-            parser.error("--cross-dataset-plot cannot be used with --grouped")
-        create_cross_dataset_analysis(args.model, args.results_dir, args.plots_dir, args.restricted, args.save_pdf, cross_dataset_show_flags)
-    elif args.dataset == 'all':
+    if args.dataset == 'all':
         try:
             baseline_dir = os.path.join(args.results_dir, args.model, 'baseline')
             if args.restricted:
