@@ -155,14 +155,13 @@ def parse_answer(text: str) -> str | None:
     if match:
         return match.group(1)
 
-    # Priority 2: Strict check for the entire string being `X)`.
-    # The ^ and $ anchors are critical to prevent false positives.
-    match = re.search(r'^([a-zA-Z])\)$', cleaned_text)
+    # Priority 2: Strict check for the entire string `X)` having anywhere.
+    match = re.search(r'([a-zA-Z])\)', cleaned_text)
     if match:
         return match.group(1)
 
-    # Priority 3: Strict check for the entire string being `(X`.
-    match = re.search(r'^\(([a-zA-Z])$', cleaned_text)
+    # Priority 3: Strict check for the string having `(X` anywhere.
+    match = re.search(r'\(([a-zA-Z])', cleaned_text)
     if match:
         return match.group(1)
 
