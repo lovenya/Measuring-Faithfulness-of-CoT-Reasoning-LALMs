@@ -17,14 +17,7 @@ MODEL_PATHS = {
     "flamingo_weights": "./audio-flamingo-weights",
 
     # --- SALMONN (Multi-Component) ---
-    # This is the key that was causing the error. It must be present and spelled correctly.
     "salmonn_checkpoint": "./model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
-    
-    # These are the other component paths our salmonn_utils.py script needs.
-    "salmonn_code": "./salmonn-source-code",
-    "salmonn_whisper": "./model_components/whisper-large-v2",
-    "salmonn_beats": "./model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
-    "salmonn_vicuna": "./model_components/vicuna-13b-v1.1",
 }
 
 SALMONN_COMPONENT_PATHS = {
