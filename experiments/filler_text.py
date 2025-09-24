@@ -46,6 +46,7 @@ def run(model, processor, tokenizer, model_utils, config):
     logging.info(f"Reading baseline data from '{baseline_results_path}'...")
     all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
     
+    # --- 2. Apply Command-Line Filters ---
     if config.NUM_CHAINS_PER_QUESTION > 0:
         logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
         all_baseline_trials = [
@@ -56,7 +57,7 @@ def run(model, processor, tokenizer, model_utils, config):
     logging.info(f"Reading no-reasoning data from '{no_reasoning_results_path}'...")
     all_no_reasoning_trials = [json.loads(line) for line in open(no_reasoning_results_path, 'r')]
         
-    # --- 2. Prepare Data for Efficient Processing ---
+    # --- 3. Prepare Data for Efficient Processing ---
     # We group all baseline chains by their question ID.
     trials_by_question = collections.defaultdict(list)
     for trial in all_baseline_trials:
@@ -72,7 +73,7 @@ def run(model, processor, tokenizer, model_utils, config):
     else:
         samples_to_process = all_questions_to_process
 
-    # --- 3. Restartability Logic ---
+    # --- 4. Restartability Logic ---
     output_path = config.OUTPUT_PATH
     completed_questions = set()
     if os.path.exists(output_path):
@@ -88,12 +89,12 @@ def run(model, processor, tokenizer, model_utils, config):
                 except (json.JSONDecodeError, KeyError): continue
         
         for q_id, count in progress_counts.items():
-            if count >= 21:
+            if count >= 21: # 21 steps from 0% to 100%
                 completed_questions.add(q_id)
 
     if completed_questions: logging.info(f"Found {len(completed_questions)} fully completed questions. They will be skipped.")
 
-    # --- 4. Run the Experiment ---
+    # --- 5. Run the Experiment ---
     logging.info(f"Running Percentile Filler Text Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path}")
     
     skipped_questions_count = 0
@@ -107,7 +108,6 @@ def run(model, processor, tokenizer, model_utils, config):
                 if config.VERBOSE:
                     logging.info(f"Processing question {i+1}/{len(samples_to_process)}: ID {q_id}")
                 
-                # --- THE METHODOLOGICALLY CORRECT FIX ---
                 # This experiment is a per-question analysis. We must first identify the
                 # single longest reasoning chain, as this represents the model's
                 # "best effort" at reasoning for this question.
@@ -121,7 +121,7 @@ def run(model, processor, tokenizer, model_utils, config):
 
                 # --- Optimization: Reuse No-Reasoning Data for 0% Step ---
                 # We now use the no_reasoning result that corresponds ONLY to our
-                # identified longest chain. This is methodologically pure.
+                # identified longest chain.
                 lookup_key = (q_id, longest_chain['chain_id'])
                 nr_result = no_reasoning_lookup.get(lookup_key)
                 if nr_result:
@@ -130,14 +130,15 @@ def run(model, processor, tokenizer, model_utils, config):
                         "id": q_id, "chain_id": longest_chain['chain_id'], "percentile": 0,
                         "predicted_choice": nr_result['predicted_choice'], "correct_choice": nr_result['correct_choice'],
                         "is_correct": nr_result['is_correct'], "final_prompt_messages": nr_result['final_prompt_messages'],
-                        "final_answer_raw": nr_result.get('final_answer_raw', '')
+                        "final_answer_raw": nr_result.get('final_answer_raw', ''),
+                        "question": longest_chain['question'], "choices": longest_chain['choices'],
+                        "audio_path": longest_chain['audio_path']
                     }
                     f.write(json.dumps(zero_percentile_result, ensure_ascii=False) + "\n")
                     f.flush()
-                # --- END OF FIX ---
 
                 # --- Run Inferences for 5% to 100% Percentiles ---
-                # This loop constitutes the main "dose-response" part of the experiment.
+                # This loop constitutes the main "compute-simulation-response" part of the experiment.
                 for percentile in range(5, 101, 5):
                     # The filler text is now based on the length of the single longest chain.
                     modified_cot = create_word_level_masked_cot(" " * max_len, percentile, mode='start')
@@ -150,17 +151,29 @@ def run(model, processor, tokenizer, model_utils, config):
                         modified_cot
                     )
                     
+                    
+                    trial_result['id'] = q_id
+                    trial_result['chain_id'] = longest_chain['chain_id']
+                    trial_result['percentile'] = percentile
+                    trial_result['correct_choice'] = longest_chain['correct_choice']
+                    trial_result['is_correct'] = (trial_result['predicted_choice'] == longest_chain['correct_choice'])
+                    
+                    
                     # We save a single result per percentile, but now we also record the
                     # chain_id of the longest chain for full traceability.
+                    # And also - explicitly order the keys for the final JSON object for readability.
                     final_ordered_result = {
-                        "id": q_id,
-                        "chain_id": longest_chain['chain_id'],
-                        "percentile": percentile,
+                        "id": trial_result['id'],
+                        "chain_id": trial_result['chain_id'],
+                        "percentile": trial_result['percentile'],
                         "predicted_choice": trial_result['predicted_choice'],
-                        "correct_choice": longest_chain['correct_choice'],
-                        "is_correct": (trial_result['predicted_choice'] == longest_chain['correct_choice']),
+                        "correct_choice": trial_result['correct_choice'],
+                        "is_correct": trial_result['is_correct'],
+                        "final_answer_raw": trial_result['final_answer_raw'],
                         "final_prompt_messages": trial_result['final_prompt_messages'],
-                        "final_answer_raw": trial_result['final_answer_raw']
+                        "question": trial_result['question'],
+                        "choices": trial_result['choices'],
+                        "audio_path": trial_result['audio_path']
                     }
                     f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
                     f.flush()

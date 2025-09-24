@@ -85,6 +85,7 @@ salmonn_helper.txt
 
 # to be used later
 core/audio_flamingo_utils.py
+requirements_txts/requirements_af3.txt
 
 # vs-code
 .vscode/
