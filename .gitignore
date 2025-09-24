@@ -49,7 +49,7 @@ nltk_data/
 # Output files
 results/
 plots/
-final_plots/
+final_plots
 
 old_comparitive_plots/
 old_unused_results/
