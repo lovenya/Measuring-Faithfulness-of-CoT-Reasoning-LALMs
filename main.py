@@ -52,8 +52,8 @@ def main():
     
     parser.add_argument('--restricted', action='store_true', help="Run on the '-restricted' subset of data (3, 4, 5, 6-step CoTs).")
     
-    # --- NEW: Arguments for Parallelization ---
-    # These flags are the core of our parallel processing ("map-reduce") strategy.
+    # --- Arguments for Parallelization ---
+    # These flags are the core of the parallel processing strategy.
     # They are used by a Slurm job array to tell each job which chunk of the data it is responsible for.
     parser.add_argument('--part', type=int, default=None, help="The part number of the data chunk to process (e.g., 7).")
     parser.add_argument('--total-parts', type=int, default=None, help="The total number of chunks the data was split into (e.g., 10).")
@@ -66,7 +66,7 @@ def main():
 
     # --- 1. Global Configuration Setup ---
     if args.num_samples is not None: config.NUM_SAMPLES_TO_RUN = args.num_samples
-    if args.num_chains: config.NUM_CHAINS_PER_QUESTION = args.num_chains
+    if args.num_chains is not None: config.NUM_CHAINS_PER_QUESTION = args.num_chains
     
     config.MODEL_ALIAS = args.model
     config.DATASET_NAME = args.dataset
@@ -142,6 +142,28 @@ def main():
         sys.exit(1)
 
     logging.info(f"Detected experiment type: '{EXPERIMENT_TYPE}'")
+
+    # --- GUARDRAIL 1: Check for num_chains > 0 ---
+    if config.NUM_CHAINS_PER_QUESTION <= 0:
+        logging.error("FATAL: NUM_CHAINS_PER_QUESTION must be a positive integer.")
+        logging.error("Please set a value > 0 in config.py or use the --num-chains flag.")
+        sys.exit(1)
+
+    if EXPERIMENT_TYPE == "foundational":
+        # --- GUARDRAIL 2 & 3 for Foundational Experiments ---
+        if args.restricted:
+            logging.error("FATAL: The --restricted flag cannot be used with foundational experiments.")
+            logging.error("The 'restricted' dataset is created FROM foundational results, not the other way around.")
+            logging.error("To create a restricted dataset, first run the 'baseline' and 'no_reasoning' experiments, then run:")
+            logging.error(f"  python data_processing/create_restricted_dataset.py --model {model_alias} --dataset {args.dataset}")
+            sys.exit(1)
+        
+        if args.part is not None:
+            logging.error("FATAL: Parallelization with the --part flag is not supported for foundational experiments as of yet.")
+            logging.error("To run a dependent experiment in parallel, you must first generate the full foundational results, then split them using:")
+            logging.error(f"  python data_processing/split_dataset_for_parallel_runs.py --model {model_alias} --dataset {args.dataset} --num-parts <N>")
+            sys.exit(1)
+    
     
     # --- 6. Load the Model using the Dynamic Utilities ---
     logging.info("Loading model, processor and tokenizer...")
@@ -189,4 +211,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
