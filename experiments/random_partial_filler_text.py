@@ -1,5 +1,22 @@
 # experiments/random_partial_filler_text.py
 
+"""
+This script conducts the "Random Partial Filler Text" experiment. This is a
+variant of the filler text experiments designed to test if the position of
+corrupted reasoning matters.
+
+Methodology:
+1. It takes a reasoning chain (CoT) from a baseline run.
+2. For a given percentage (e.g., 20%), it replaces that percentage of the
+   *words* in the CoT with a filler token ("..."). The words to be replaced
+   are chosen randomly.
+3. It then presents this partially corrupted CoT to the model and asks for a
+   final answer.
+4. By comparing the results to the "start" and "end" corruption variants, we
+   can determine if the model is more sensitive to errors at the beginning or
+   end of its reasoning chain.
+"""
+
 import os
 import json
 import collections
@@ -10,12 +27,14 @@ from core.filler_text_utils import create_word_level_masked_cot, run_filler_tria
 # This is a 'dependent' experiment because it manipulates the CoTs from a 'baseline' run.
 EXPERIMENT_TYPE = "dependent"
 
-def run(model, processor, model_utils, config):
+def run(model, processor, tokenizer, model_utils, config):
     """
     Orchestrates the WORD-LEVEL RANDOM partial filler text experiment with a
     robust, model-agnostic, and restartable design.
     """
     # --- 1. Load Dependent Data (Centralized Pathing) ---
+    # This script uses the definitive path provided by main.py, making it
+    # fully compatible with the --restricted flag.
     baseline_results_path = config.BASELINE_RESULTS_PATH
     if not os.path.exists(baseline_results_path):
         logging.error(f"Baseline results file not found at the path provided by main.py: '{baseline_results_path}'")
@@ -31,22 +50,16 @@ def run(model, processor, model_utils, config):
                 logging.warning(f"Skipping corrupted line {line_num} in {baseline_results_path}")
                 continue
     
-    # This is the crucial block that correctly enforces the chain limit for
-    # dependent experiments. It ensures we only process the first N chains for each question,
-    # making the --num-chains flag behave consistently everywhere.
+    # --- 2. Apply Command-Line Filters ---
+    # This block correctly enforces the chain limit for dependent experiments.
     if config.NUM_CHAINS_PER_QUESTION > 0:
         logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
-        
-        # We create a new list containing only the trials where the chain_id is less than the limit.
-        # This correctly handles your scenario (e.g., keeping chains 0, 1 but discarding 3 if the limit is 3).
-        filtered_trials = [
+        all_baseline_trials = [
             trial for trial in all_baseline_trials
             if trial['chain_id'] < config.NUM_CHAINS_PER_QUESTION
         ]
-        
-        # We then overwrite the original list with our new, filtered list.
-        all_baseline_trials = filtered_trials
     
+    # This logic correctly handles the --num-samples flag for quick test runs.
     if config.NUM_SAMPLES_TO_RUN > 0:
         trials_by_question = collections.defaultdict(list)
         for trial in all_baseline_trials: trials_by_question[trial['id']].append(trial)
@@ -55,13 +68,12 @@ def run(model, processor, model_utils, config):
     else:
         samples_to_process = all_baseline_trials
 
-    # --- 2. Restartability Logic ---
+    # --- 3. Restartability Logic ---
     output_path = config.OUTPUT_PATH
     completed_chains = set()
     if os.path.exists(output_path):
         logging.info("Found existing results file. Checking for completed work...")
-        # To check for completion, we count the number of percentile steps for each chain.
-        # A chain is complete if it has all 21 steps (0% to 100% in 5% increments).
+        # A chain is complete if it has all 21 percentile steps.
         progress_counts = collections.defaultdict(int)
         with open(output_path, 'r') as f:
             for line in f:
@@ -76,7 +88,7 @@ def run(model, processor, model_utils, config):
 
     if completed_chains: logging.info(f"Found {len(completed_chains)} fully completed chains. They will be skipped.")
 
-    # --- 3. Run Experiment ---
+    # --- 4. Run Experiment ---
     logging.info(f"Running WORD-LEVEL Partial Filler (Random) Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path}")
     
     skipped_trials_count = 0
@@ -94,22 +106,25 @@ def run(model, processor, model_utils, config):
                 choices_formatted = baseline_trial['choices']
                 sanitized_cot = baseline_trial['sanitized_cot']
                 
+                # The main loop iterates through each percentile of corruption.
                 for percentile in range(0, 101, 5):
                     if config.VERBOSE:
                         logging.info(f"  - Processing {percentile}% replacement...")
                     
+                    # We call our centralized utility to perform the word-level masking.
                     modified_cot = create_word_level_masked_cot(
-                        model_utils, sanitized_cot, percentile, mode='random'
+                        sanitized_cot, percentile, mode='random'
                     )
                     
                     trial_result = run_filler_trial(
-                        model, processor, model_utils,
+                        model, processor, tokenizer, model_utils,
                         baseline_trial['question'], 
                         choices_formatted, 
                         baseline_trial['audio_path'], 
                         modified_cot
                     )
 
+                    # Add all necessary metadata for a complete record.
                     trial_result['id'] = q_id
                     trial_result['chain_id'] = chain_id
                     trial_result['percent_replaced'] = percentile
@@ -120,7 +135,24 @@ def run(model, processor, model_utils, config):
                     trial_result['corresponding_baseline_predicted_choice'] = baseline_final_choice
                     trial_result['is_consistent_with_baseline'] = (trial_result['predicted_choice'] == baseline_final_choice)
                     
-                    f.write(json.dumps(trial_result, ensure_ascii=False) + "\n")
+                    # Explicitly order the keys for the final JSON object for readability.
+                    final_ordered_result = {
+                        "id": trial_result['id'],
+                        "chain_id": trial_result['chain_id'],
+                        "percent_replaced": trial_result['percent_replaced'],
+                        "predicted_choice": trial_result['predicted_choice'],
+                        "correct_choice": trial_result['correct_choice'],
+                        "is_correct": trial_result['is_correct'],
+                        "corresponding_baseline_predicted_choice": trial_result['corresponding_baseline_predicted_choice'],
+                        "is_consistent_with_baseline": trial_result['is_consistent_with_baseline'],
+                        "final_answer_raw": trial_result['final_answer_raw'],
+                        "final_prompt_messages": trial_result['final_prompt_messages'],
+                        "question": trial_result['question'],
+                        "choices": trial_result['choices'],
+                        "audio_path": trial_result['audio_path']
+                    }
+                    
+                    f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
                     f.flush()
 
             except Exception as e:
@@ -128,7 +160,7 @@ def run(model, processor, model_utils, config):
                 logging.exception(f"SKIPPING ENTIRE TRIAL due to unhandled error. ID: {baseline_trial.get('id', 'N/A')}, Chain: {baseline_trial.get('chain_id', 'N/A')}")
                 continue
 
-    # Final summary
+    # --- Final Summary ---
     total_processed_in_this_run = len(samples_to_process) - len(completed_chains)
     logging.info(f"--- WORD-LEVEL Partial Filler (Random) experiment for {config.MODEL_ALIAS.upper()} complete. ---")
     logging.info("\n" + "="*25 + " RUN SUMMARY " + "="*25)

@@ -183,7 +183,7 @@ def run_inference(
     
 
 def run_text_only_inference(
-    model: object, processor: object, tokenizer: object, messages: List[Dict[str, str]],
+    model: object, processor: object, messages: List[Dict[str, str]],
     max_new_tokens: int, do_sample: bool, temperature: float, top_p: float
 ) -> str:
     """
