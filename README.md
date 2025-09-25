@@ -203,6 +203,39 @@ Here is a complete example command that generates the **grouped** plots for the 
 python analysis/plot_early_answering.py --model salmonn --dataset all --grouped --show-accuracy-curve --show-consistency-curve --show-baseline-benchmark --show-nr-benchmark --save-pdf
 ```
 
+==================================================================================  
 
+After generating the experimental results, you can use the scripts in the `analysis/cross_dataset_aggregated_scripts/` directory to produce the final figures presented in our paper.
+
+These scripts are designed to generate a single, high-level plot for each experiment, comparing the model's consistency across all available datasets. They operate exclusively on the `restricted` data subset (1-6 step CoTs) to ensure a focused and efficient analysis.
+
+We currently provide final plotting scripts for our four core interventional experiments:
+*   `plot_final_early_answering.py`
+*   `plot_final_paraphrasing.py`
+*   `plot_final_adding_mistakes.py`
+*   `plot_final_random_partial_filler_text.py`
+
+*(Support for the remaining experiments will be added soon.)*
+
+#### **Key Command-Line Flags**
+
+These scripts share a common, streamlined set of flags for controlling the output.
+
+| Flag | Description |
+| :--- | :--- |
+| `--model` | **(Required)** The model whose results you want to analyze.<br>_Choices: `qwen`, `salmonn`_ |
+| `--y-zoom <MIN> <MAX>` | (Optional) Set a custom Y-axis range for the plot.<br>_Example: `--y-zoom 45 100.5`_ |
+| `--show-ci` | (Optional) Render the 95% confidence interval as a shaded region around the mean. |
+| `--save-pdf` | (Optional) Save a high-quality PDF copy of the plot in addition to the standard PNG. |
+| `--print-line-data` | (Optional) Print the final aggregated X and Y coordinates for each dataset's line to the console. |
+| `--save-stats` | (Optional) Save a detailed statistical summary (including per-bin distributional stats) to a `.txt` file. |
+
+#### **Example Command:**
+
+Here is a complete example command that generates the final cross-dataset plot for the **paraphrasing** experiment on the **qwen** model. It enables the confidence interval shading, saves a PDF copy, and zooms the y-axis to the 45-100% range.
+
+```bash
+python analysis/cross_dataset_aggregated_scripts/plot_final_paraphrasing.py --model qwen --show-ci --save-pdf --y-zoom 45 100.5
+```
 
 
