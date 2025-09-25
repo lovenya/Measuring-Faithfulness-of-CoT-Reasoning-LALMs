@@ -173,25 +173,36 @@ Key Command-Line Flags</b>
 
 Here is a complete example command that runs the `adding_mistakes` experiment on the `salmonn` model using the `mmar` dataset. It uses the `restricted` data subset, processes only the first 5 samples, uses the first 3 chains for each, and enables verbose logging.
 
-<details>
-<summary>Click to expand code</summary>
+```bash
+python main.py --model salmonn --dataset mmar --experiment adding_mistakes --restricted --num-samples 5 --num-chains 3 --verbose
+```
+
+### 4. Generating the Plots
+
+After generating the experimental results, you can use the scripts in the `analysis/` directory to produce the final plots for the paper. These scripts are designed to be flexible and model-agnostic.  
+The following are the scripts for the aggregated and grouped (per step) plots. They generate plots for a single dataset, single model at a time.
+
+#### Key Command-Line Flags
+
+| Flag | Description |
+| :--- | :--- |
+| `--model` | (Required) The model whose results you want to analyze. Choices: `qwen`, `salmonn` |
+| `--dataset` | (Required) The dataset to analyze. Can be a single dataset name or `all` to run on all available datasets for the specified model.|
+| `--restricted` | (Optional) Analyze the results from a `--restricted` experiment run. The script will look for the `-restricted.jsonl` files.|
+| `--grouped` | (Optional) Generate detailed, per-CoT-length plots in addition to the main aggregated plot.|
+| `--save-pdf` | (Optional) Save a high-quality PDF copy of each plot in addition to the standard PNG.|
+| `--show-...-curve` | (Optional, "Opt-In") Flags to control which metrics are plotted. Example: `--show-consistency-curve` , `--show-accuracy-curve` |
+| `--show-...-benchmark` | (Optional, "Opt-In") Flags to control which benchmark lines are shown. Example: `--show-baseline-benchmark`, `--show-nr-benchmark`|
+
+#### Example Command:
+
+Here is a complete example command that generates the **grouped** plots for the **early_answering** experiment on the **salmonn** model for **all available datasets**. It analyzes the **full** (non-restricted) data and plots **all available metrics** (both curves and both benchmarks), saving a PDF copy of each plot.
+
 
 ```bash
-python main.py \
-    --model salmonn \
-    --dataset mmar \
-    --experiment adding_mistakes \
-    --restricted \
-    --num-samples 5 \
-    --num-chains 3 \
-    --verbose
+python analysis/plot_early_answering.py --model salmonn --dataset all --grouped --show-accuracy-curve --show-consistency-curve --show-baseline-benchmark --show-nr-benchmark --save-pdf
 ```
-</details>
 
-### 5. Generating the Plots
 
-**(Coming Soon)**
-
-Instructions on how to use the scripts in the `analysis/` directory to generate the final plots from the results files will be added shortly.
 
 
