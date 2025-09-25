@@ -1,6 +1,8 @@
 # Measuring Faithfulness in Chain-of-Thought Reasoning for Large Audio-Language Models
 
-This repository contains the complete framework and results for a series of behavioral experiments designed to measure the reasoning faithfulness of Large Audio-Language Models (LALMs). We investigate the conditions under which a model's generated explanation (its Chain-of-Thought) can be trusted as a true reflection of its decision-making process. Our framework is modular, model-agnostic, and designed for reproducibility in HPC enviroments (online login nodes, offline compute nodes - we're not using any API for inference, downloading all the weights)
+This repository contains the complete framework and results for a series of behavioral experiments designed to measure the reasoning faithfulness of Large Audio-Language Models (LALMs). We investigate the conditions under which a model's generated explanation (its Chain-of-Thought) can be trusted as a true reflection of its decision-making process. Our framework is modular, model-agnostic, and designed for reproducibility in HPC enviroments (online login nodes, offline compute nodes - we're not using any API for inference, downloading all the weights)  
+
+**COMING SOON!! - more models, more datasets**
 
 ## Key Findings & Visualizations
 
@@ -32,17 +34,19 @@ This section provides a complete guide to setting up the environment and replica
 
 ### 1. Installation
 
-First, clone this repository to your local machine:
+First, clone this repository to your local machine. Note that this project uses a `git submodule` to include a modified, bug-fixed version of the SALMONN source code. The `--recurse-submodules` flag is the easiest way to ensure you get everything in one command.
+
 
 ```bash
-git clone https://github.com/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs.git
+# The --recurse-submodules flag automatically initializes and clones the SALMONN source code submodule.
+git clone --recurse-submodules https://github.com/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs.git
 cd Measuring-Faithfulness-of-CoT-Reasoning-LALMs
 ```
 
 This project supports multiple models, each with its own specific dependencies. You only need to set up the environment for the model you wish to test.
 
 <details>
-<summary><b>Environment Setup for Qwen-2-Audio-7B</b></summary>
+<summary><b>Setup for Qwen-2 Audio</b></summary>
 
 The environment for Qwen can be set up using the provided requirements file.
 
@@ -57,19 +61,11 @@ pip install -r requirements/requirements_qwen.txt
 </details>
 
 <details>
-<summary><b>Environment Setup for SALMONN-13B</b></summary>
+<summary><b>Setup for SALMONN-13B</b></summary>
 
-SALMONN is a custom research model and requires a more detailed setup.
+SALMONN is a custom research model and requires a specific Python environment.  
+Along with Python 3.10, Cuda 12.2 is recommended.  
 
-**Step 1: Clone the SALMONN Source Code**
-The model's code is a required dependency. We add it to our project as a `git submodule` to lock it to the specific version we used.
-
-```bash
-# From the root of this project, run:
-git submodule add --branch salmonn --depth 1 https://github.com/bytedance/SALMONN.git ./salmonn-source-code
-```
-
-**Step 2: Set up the Python Environment (Python 3.9/3.10 is recommended)**
 ```bash
 # Create and activate a new virtual environment
 python3.10 -m venv salmonn_env
@@ -133,11 +129,11 @@ git clone https://huggingface.co/lmsys/vicuna-13b-v1.1 ./model_components/vicuna
 
 **Step 4: Download the SALMONN Checkpoint**
 ```bash
-# Create the specific subdirectory
-mkdir -p ./model_components/salmonn-13b-checkpoint
+# Ensure you have Git LFS installed
+git lfs install
 
-# Download the checkpoint file into it
-wget -P ./model_components/salmonn-13b-checkpoint/ https://huggingface.co/tsinghua-ee/SALMONN/resolve/main/salmonn_v1.pth
+# Clone the SALMONN checkpoint repository
+git clone https://huggingface.co/tsinghua-ee/SALMONN ./model_components/salmonn-13b-checkpoint
 ```
 
 **Step 5: Manually Download the BEATs Checkpoint**
@@ -165,7 +161,7 @@ Key Command-Line Flags</b>
 | :--- | :--- |
 | `--model` | **(Required)** The model to use. Your choices are defined in the `MODEL_ALIASES` dictionary in `config.py`.<br>_Choices: `qwen`, `salmonn`_ |
 | `--dataset` | **(Required)** The dataset to run on. Your choices are defined in the `DATASET_MAPPING` dictionary in `config.py`.<br>_Choices: `mmar`, `sakura-animal`, `sakura-language`, `sakura-emotion`, `sakura-gender`_ |
-| `--experiment`| **(Required)** The experiment to run.<br>_Choices: `baseline`, `no_reasoning`, `no_cot`, `filler_text`, `partial_filler_text`, `flipped_partial_filler_text`, `random_partial_filler_text`, `early_answering`, `paraphrasing`, `adding_mistakes`, `robustness_to_noise`_ |
+| `--experiment`| **(Required)** The experiment to run.<br>_Choices: `baseline`, `no_reasoning`, `filler_text`, `partial_filler_text`, `flipped_partial_filler_text`, `random_partial_filler_text`, `early_answering`, `paraphrasing`, `adding_mistakes`_ |
 | `--restricted` | (Optional) Use the pre-filtered dataset (3-6 step CoTs) for a dependent experiment. This significantly reduces runtime. |
 | `--num-samples`| (Optional) Run on only the first N samples from the dataset. Ideal for quick debugging runs. |
 | `--num-chains` | (Optional) For `baseline` runs, this determines how many reasoning chains to generate per question. For dependent runs, this determines how many of the generated chains to process. |
@@ -197,3 +193,5 @@ python main.py \
 **(Coming Soon)**
 
 Instructions on how to use the scripts in the `analysis/` directory to generate the final plots from the results files will be added shortly.
+
+
