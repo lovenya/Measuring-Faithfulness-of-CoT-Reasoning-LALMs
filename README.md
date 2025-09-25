@@ -203,7 +203,7 @@ Here is a complete example command that generates the **grouped** plots for the 
 python analysis/plot_early_answering.py --model salmonn --dataset all --grouped --show-accuracy-curve --show-consistency-curve --show-baseline-benchmark --show-nr-benchmark --save-pdf
 ```
 
-==================================================================================  
+===========================================================================  
 
 After generating the experimental results, you can use the scripts in the `analysis/cross_dataset_aggregated_scripts/` directory to produce the final figures presented in our paper.
 
