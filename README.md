@@ -173,25 +173,69 @@ Key Command-Line Flags</b>
 
 Here is a complete example command that runs the `adding_mistakes` experiment on the `salmonn` model using the `mmar` dataset. It uses the `restricted` data subset, processes only the first 5 samples, uses the first 3 chains for each, and enables verbose logging.
 
-<details>
-<summary>Click to expand code</summary>
+```bash
+python main.py --model salmonn --dataset mmar --experiment adding_mistakes --restricted --num-samples 5 --num-chains 3 --verbose
+```
+
+### 4. Generating the Plots
+
+After generating the experimental results, you can use the scripts in the `analysis/` directory to produce the final plots for the paper. These scripts are designed to be flexible and model-agnostic.  
+The following are the scripts for the aggregated and grouped (per step) plots. They generate plots for a single dataset, single model at a time.
+
+#### Key Command-Line Flags
+
+| Flag | Description |
+| :--- | :--- |
+| `--model` | (Required) The model whose results you want to analyze. Choices: `qwen`, `salmonn` |
+| `--dataset` | (Required) The dataset to analyze. Can be a single dataset name or `all` to run on all available datasets for the specified model.|
+| `--restricted` | (Optional) Analyze the results from a `--restricted` experiment run. The script will look for the `-restricted.jsonl` files.|
+| `--grouped` | (Optional) Generate detailed, per-CoT-length plots in addition to the main aggregated plot.|
+| `--save-pdf` | (Optional) Save a high-quality PDF copy of each plot in addition to the standard PNG.|
+| `--show-...-curve` | (Optional, "Opt-In") Flags to control which metrics are plotted. Example: `--show-consistency-curve` , `--show-accuracy-curve` |
+| `--show-...-benchmark` | (Optional, "Opt-In") Flags to control which benchmark lines are shown. Example: `--show-baseline-benchmark`, `--show-nr-benchmark`|
+
+#### Example Command:
+
+Here is a complete example command that generates the **grouped** plots for the **early_answering** experiment on the **salmonn** model for **all available datasets**. It analyzes the **full** (non-restricted) data and plots **all available metrics** (both curves and both benchmarks), saving a PDF copy of each plot.
+
 
 ```bash
-python main.py \
-    --model salmonn \
-    --dataset mmar \
-    --experiment adding_mistakes \
-    --restricted \
-    --num-samples 5 \
-    --num-chains 3 \
-    --verbose
+python analysis/plot_early_answering.py --model salmonn --dataset all --grouped --show-accuracy-curve --show-consistency-curve --show-baseline-benchmark --show-nr-benchmark --save-pdf
 ```
-</details>
 
-### 5. Generating the Plots
+===========================================================================  
 
-**(Coming Soon)**
+After generating the experimental results, you can use the scripts in the `analysis/cross_dataset_aggregated_scripts/` directory to produce the final figures presented in our paper.
 
-Instructions on how to use the scripts in the `analysis/` directory to generate the final plots from the results files will be added shortly.
+These scripts are designed to generate a single, high-level plot for each experiment, comparing the model's consistency across all available datasets. They operate exclusively on the `restricted` data subset (1-6 step CoTs) to ensure a focused and efficient analysis.
+
+We currently provide final plotting scripts for our four core interventional experiments:
+*   `plot_final_early_answering.py`
+*   `plot_final_paraphrasing.py`
+*   `plot_final_adding_mistakes.py`
+*   `plot_final_random_partial_filler_text.py`
+
+*(Support for the remaining experiments will be added soon.)*
+
+#### **Key Command-Line Flags**
+
+These scripts share a common, streamlined set of flags for controlling the output.
+
+| Flag | Description |
+| :--- | :--- |
+| `--model` | **(Required)** The model whose results you want to analyze.<br>_Choices: `qwen`, `salmonn`_ |
+| `--y-zoom <MIN> <MAX>` | (Optional) Set a custom Y-axis range for the plot.<br>_Example: `--y-zoom 45 100.5`_ |
+| `--show-ci` | (Optional) Render the 95% confidence interval as a shaded region around the mean. |
+| `--save-pdf` | (Optional) Save a high-quality PDF copy of the plot in addition to the standard PNG. |
+| `--print-line-data` | (Optional) Print the final aggregated X and Y coordinates for each dataset's line to the console. |
+| `--save-stats` | (Optional) Save a detailed statistical summary (including per-bin distributional stats) to a `.txt` file. |
+
+#### **Example Command:**
+
+Here is a complete example command that generates the final cross-dataset plot for the **paraphrasing** experiment on the **qwen** model. It enables the confidence interval shading, saves a PDF copy, and zooms the y-axis to the 45-100% range.
+
+```bash
+python analysis/cross_dataset_aggregated_scripts/plot_final_paraphrasing.py --model qwen --show-ci --save-pdf --y-zoom 45 100.5
+```
 
 
