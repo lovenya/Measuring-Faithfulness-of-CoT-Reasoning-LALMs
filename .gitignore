@@ -6,9 +6,10 @@ model_components/
 
 
 # source code - can be directly cloned from source
-audio-flamingo-code/
-# to be removed from gitignore, just a backup, in case new submodule of source code doenst work
+# audio-flamingo-code/
+# to be removed from gitignore, just a backup, in case new submodule of source code doesn't work
 salmonn-source-code-fixed/
+audio-flamingo-code-backup/
 
 # Envs
 audio-faithful/
@@ -18,6 +19,7 @@ audio-analysis-env/
 audio-flamingo-env/
 salmonn_env/
 analysis_env/
+af3-test-env/
 
 # Data
 data/**/audio/

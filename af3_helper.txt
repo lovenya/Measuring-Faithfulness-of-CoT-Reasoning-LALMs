@@ -1,0 +1,5 @@
+module load StdEnv/2023 cuda rust gcc arrow
+
+source af3-test-env/bin/activate
+
+python main.py --model flamingo --experiment baseline --dataset mmar --num-samples 2 --num-chains 2 --verbose
