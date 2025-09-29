@@ -1,7 +1,8 @@
-[submodule "audio-flamingo-code"]
-	path = audio-flamingo-code
-	url = https://github.com/NVIDIA/audio-flamingo.git
 [submodule "salmonn-source-code"]
 	path = salmonn-source-code
 	url = https://github.com/lovenya/SALMONN.git
 	branch = salmonn
+[submodule "audio-flamingo-code"]
+	path = audio-flamingo-code
+	url = git@github.com:lovenya/audio-flamingo-for-LALM-Faithfulness-Project.git
+	branch = audio_flamingo_3
