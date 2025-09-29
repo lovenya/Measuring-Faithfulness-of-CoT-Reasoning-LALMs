@@ -7,7 +7,8 @@ model_components/
 
 # source code - can be directly cloned from source
 audio-flamingo-code/
-salmonn-source-code/
+# to be removed from gitignore, just a backup, in case new submodule of source code doenst work
+salmonn-source-code-fixed/
 
 # Envs
 audio-faithful/
