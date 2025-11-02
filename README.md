@@ -2,9 +2,8 @@
 
 This repository contains the complete framework and results for a series of behavioral experiments designed to measure the reasoning faithfulness of Large Audio-Language Models (LALMs). We investigate the conditions under which a model's generated explanation (its Chain-of-Thought) can be trusted as a true reflection of its decision-making process. Our framework is modular, model-agnostic, and designed for reproducibility in HPC enviroments (online login nodes, offline compute nodes - we're not using any API for inference, downloading all the weights)  
 
-**COMING SOON!! - more models, more datasets**
-**[IN PROGRESS]: Working on adding Audio Flamingo 3**
-**[IN PROGRESS]: Worknig on batch infrence**  
+**COMING SOON!! - more models, more datasets**  
+**[IN PROGRESS]: "Audio Flamingo 3 - thinking mode" runs are underway, we'll soon add the results**
 
 
 ## Key Findings & Visualizations
