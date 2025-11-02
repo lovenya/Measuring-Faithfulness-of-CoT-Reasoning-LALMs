@@ -59,115 +59,89 @@ def load_dataset(jsonl_path: str) -> list:
     return data_samples
 
 
-def get_dataset_info(data_samples: list) -> dict:
-    """
-    Get basic information about the loaded dataset.
+# def get_dataset_info(data_samples: list) -> dict:
+#     """
+#     Get basic information about the loaded dataset.
     
-    Args:
-        data_samples (list): List of data samples.
+#     Args:
+#         data_samples (list): List of data samples.
         
-    Returns:
-        dict: Dictionary containing dataset statistics.
-    """
-    if not data_samples:
-        return {"total_samples": 0}
+#     Returns:
+#         dict: Dictionary containing dataset statistics.
+#     """
+#     if not data_samples:
+#         return {"total_samples": 0}
     
-    info = {
-        "total_samples": len(data_samples),
-        "sample_ids": [sample['id'] for sample in data_samples],
-    }
+#     info = {
+#         "total_samples": len(data_samples),
+#         "sample_ids": [sample['id'] for sample in data_samples],
+#     }
     
-    # Add track information if available
-    if 'track' in data_samples[0]:
-        tracks = set(sample.get('track', 'unknown') for sample in data_samples)
-        info['tracks'] = list(tracks)
+#     # Add track information if available
+#     if 'track' in data_samples[0]:
+#         tracks = set(sample.get('track', 'unknown') for sample in data_samples)
+#         info['tracks'] = list(tracks)
     
-    # Add source information if available
-    if 'source' in data_samples[0]:
-        sources = set(sample.get('source', 'unknown') for sample in data_samples)
-        info['sources'] = list(sources)
+#     # Add source information if available
+#     if 'source' in data_samples[0]:
+#         sources = set(sample.get('source', 'unknown') for sample in data_samples)
+#         info['sources'] = list(sources)
     
-    return info
+#     return info
 
 
-def format_choices_for_prompt(choices: list) -> str:
-    """
-    --- CHANGE 2 (REWRITTEN FUNCTION) ---
-    Formats a list of choices into a standardized, enumerated string
-    on the fly. This ensures a consistent format for the model.
-    Example: ["cat", "dog"] -> "(A) cat\n(B) dog"
+# def format_choices_for_prompt(choices: list) -> str:
+#     """
+#     --- CHANGE 2 (REWRITTEN FUNCTION) ---
+#     Formats a list of choices into a standardized, enumerated string
+#     on the fly. This ensures a consistent format for the model.
+#     Example: ["cat", "dog"] -> "(A) cat\n(B) dog"
     
-    Args:
-        choices (list): List of choice strings.
+#     Args:
+#         choices (list): List of choice strings.
         
-    Returns:
-        str: Formatted and enumerated choices string.
-    """
-    if not choices:
-        return ""
+#     Returns:
+#         str: Formatted and enumerated choices string.
+#     """
+#     if not choices:
+#         return ""
     
-    formatted_choices = []
-    for i, choice in enumerate(choices):
-        # chr(ord('A') + i) generates A, B, C, ...
-        letter = chr(ord('A') + i)
-        formatted_choices.append(f"({letter}) {choice}")
+#     formatted_choices = []
+#     for i, choice in enumerate(choices):
+#         # chr(ord('A') + i) generates A, B, C, ...
+#         letter = chr(ord('A') + i)
+#         formatted_choices.append(f"({letter}) {choice}")
         
-    return "\n".join(formatted_choices)
+#     return "\n".join(formatted_choices)
 
 
-def prepare_jumbled_choices(choices: list, answer_key: int) -> tuple[list, int]:
-    """
-    --- CHANGE 3 (NEW FUNCTION) ---
-    Shuffles the choices and determines the new answer key.
-    This is a utility for experiments testing choice order bias.
+# def prepare_jumbled_choices(choices: list, answer_key: int) -> tuple[list, int]:
+#     """
+#     --- CHANGE 3 (NEW FUNCTION) ---
+#     Shuffles the choices and determines the new answer key.
+#     This is a utility for experiments testing choice order bias.
 
-    Args:
-        choices (list): The original list of choices.
-        answer_key (int): The index of the correct answer in the original list.
+#     Args:
+#         choices (list): The original list of choices.
+#         answer_key (int): The index of the correct answer in the original list.
 
-    Returns:
-        tuple[list, int]: A tuple containing:
-            - The new, shuffled list of choices.
-            - The new integer index of the correct answer.
-    """
-    if not choices or answer_key >= len(choices):
-        # Return original values if input is invalid to avoid crashing
-        return choices, answer_key
+#     Returns:
+#         tuple[list, int]: A tuple containing:
+#             - The new, shuffled list of choices.
+#             - The new integer index of the correct answer.
+#     """
+#     if not choices or answer_key >= len(choices):
+#         # Return original values if input is invalid to avoid crashing
+#         return choices, answer_key
 
-    # Store the correct answer text
-    correct_answer_text = choices[answer_key]
+#     # Store the correct answer text
+#     correct_answer_text = choices[answer_key]
 
-    # Create a new list to shuffle, preserving the original
-    shuffled_choices = list(choices)
-    random.shuffle(shuffled_choices)
+#     # Create a new list to shuffle, preserving the original
+#     shuffled_choices = list(choices)
+#     random.shuffle(shuffled_choices)
 
-    # Find the new index of the correct answer
-    new_answer_key = shuffled_choices.index(correct_answer_text)
+#     # Find the new index of the correct answer
+#     new_answer_key = shuffled_choices.index(correct_answer_text)
 
-    return shuffled_choices, new_answer_key
-
-
-# Example usage and testing
-if __name__ == "__main__":
-    # Test with sample data
-    sample_datasets = [
-        "mmar_test_standardized.jsonl",
-        "sakura_animal_test_standardized.jsonl"
-    ]
-    
-    for dataset_path in sample_datasets:
-        if os.path.exists(dataset_path):
-            print(f"\n--- Testing {dataset_path} ---")
-            try:
-                data = load_dataset(dataset_path)
-                info = get_dataset_info(data)
-                print(f"Dataset info: {info}")
-                
-                if data:
-                    print(f"First sample: {data[0]}")
-                    print(f"Formatted choices: {format_choices_for_prompt(data[0]['choices'])}")
-                    
-            except Exception as e:
-                print(f"Error loading {dataset_path}: {e}")
-        else:
-            print(f"\n{dataset_path} not found - skipping test")
+#     return shuffled_choices, new_answer_key
