@@ -148,10 +148,26 @@ The final component must be downloaded manually from the link provided by the au
 After completing these steps, your `./model_components/` directory will be correctly populated. But it is advised to check and verify once, if the paths are correct.
 </details>
 
-#### Data Setup
-**(Coming Soon)**
+#### Data Setup  
+The scripts will download the datasets from HuggingFace, download the audios as well, and format the dataset into a standardized '.jsonl' format to ensure the dataset is in ready-to-use format.  
+After that please do update the config.py accordingly.  
 
-We will be providing the pre-processing scripts used to convert the raw MMAR and Sakura datasets into our standardized `.jsonl` format. For now, please ensure your data is structured to match the paths defined in the `DATASET_MAPPING` dictionary in `config.py`.
+  
+**MMAR**  
+```bash
+# Ensure that you have enabled an env which has datasets, soundfile, tqdm, requests installed
+python -m data_fetch_and_normalisation.download_and_normalize_mmar
+```
+
+
+
+**SAKURA (All 4 tracks - Animal, Emotion, Gender, Language**  
+```bash
+# Ensure that you have enabled an env which has datasets, soundfile, tqdm, requests installed
+python -m data_fetch_and_normalisation.download_and_normalize_sakura
+```
+
+
 
 ### 3. Running the Experiments
 
