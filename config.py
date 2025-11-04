@@ -62,6 +62,7 @@ DATASET_MAPPING = {
     "sakura-language-noisy": "data/sakura_noisy/language/language_noisy_standardized.jsonl",
 }
 
+MMAR_DATASET_PATH = "data/mmar"
 
 # --- Experiment Default Parameters ---
 NUM_SAMPLES_TO_RUN = 0
