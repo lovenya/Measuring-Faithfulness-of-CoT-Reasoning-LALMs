@@ -167,9 +167,13 @@ python -m data_fetch_and_normalisation.download_and_normalize_mmar
 python -m data_fetch_and_normalisation.download_and_normalize_sakura
 ```
 
+### 3. Flexibility in running the experiments, and HPC friendly settings (Execution details will be included soon)  
 
+1. To save time and compute, and more focused experiment runs, we provide an option to run the experiments in a **`restricted`** setting.
+2. To save time, we provide an option to parallelize the runs, where you can split the dataset in as many chunks as you want (say **N**) and later merge the results. Speeds up the process **N**$\times$.
+3. We have made the scripts restartable, so it picks right from the last completed result, in order to make it HPC-environment friendly, where one-time time allocation might not be enough, or scripts may get terminated abruptly. Saves hours of re-inference.  
 
-### 3. Running the Experiments
+### 4. Running the Experiments
 
 All experiments are launched through our central orchestrator, `main.py`. The script uses a set of flags to control the model, dataset, and experiment to be run.  
 
@@ -195,7 +199,7 @@ Here is a complete example command that runs the `adding_mistakes` experiment on
 python main.py --model salmonn --dataset mmar --experiment adding_mistakes --restricted --num-samples 5 --num-chains 3 --verbose
 ```
 
-### 4. Generating the Plots
+### 5. Generating the Plots
 
 After generating the experimental results, you can use the scripts in the `analysis/` directory to produce the final plots for the paper. These scripts are designed to be flexible and model-agnostic.  
 The following are the scripts for the aggregated and grouped (per step) plots. They generate plots for a single dataset, single model at a time.
