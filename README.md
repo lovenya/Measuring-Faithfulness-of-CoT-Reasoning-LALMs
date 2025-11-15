@@ -211,7 +211,7 @@ python -m data_fetch_and_normalisation.download_and_normalize_sakura
    Note - Mentioning which part to run the experiment on, is really important for the parallel runs, whereas the `--total-parts` flag is not a required flag, but rather good practice for logs.  
    Then after all the **N** runs are finished, we can safely merge the results.
 
-   b. Merging  
+   c. Merging  
    ```bash
    python data_processing/merge_parallel_results.py --model <model_alias> --experiment <exp_name> --dataset <dataset_alias>  
    ```
