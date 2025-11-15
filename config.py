@@ -63,6 +63,7 @@ DATASET_MAPPING = {
 }
 
 MMAR_DATASET_PATH = "data/mmar"
+SAKURA_DATASET_PATH = "data/sakura"
 
 # --- Experiment Default Parameters ---
 NUM_SAMPLES_TO_RUN = 0

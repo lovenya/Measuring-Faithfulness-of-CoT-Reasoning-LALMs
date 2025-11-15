@@ -187,7 +187,7 @@ def main():
     elif EXPERIMENT_TYPE == "dependent":
         logging.info("Running a DEPENDENT experiment...")
         
-        # --- NEW: Centralized, Chunk-Aware Logic for Finding Dependency Files ---
+        # --- Centralized, Chunk-Aware Logic for Finding Dependency Files ---
         def get_dependency_path(exp_name):
             base_dir = os.path.join(config.RESULTS_DIR, model_alias, exp_name)
             filename = f"{exp_name}_{model_alias}_{args.dataset}"
