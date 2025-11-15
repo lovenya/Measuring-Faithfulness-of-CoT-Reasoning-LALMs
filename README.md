@@ -170,8 +170,31 @@ python -m data_fetch_and_normalisation.download_and_normalize_sakura
 ### 3. Flexibility in running the experiments, and HPC friendly settings (Execution details will be included soon)  
 
 1. To save time and compute, and more focused experiment runs, we provide an option to run the experiments in a **`restricted`** setting.
-2. To save time, we provide an option to parallelize the runs, where you can split the dataset in as many chunks as you want (say **N**) and later merge the results. Speeds up the process **N**$\times$.
-3. We have made the scripts restartable, so it picks right from the last completed result, in order to make it HPC-environment friendly, where one-time time allocation might not be enough, or scripts may get terminated abruptly. Saves hours of re-inference.  
+   Restricted setting - the idea is to run the experiments on only those chains, which are 1-6 sentences long only (you can modify the range by editting out line 86 of `data_processing/create_restricted_dataset.py`.
+   Note: This restricted setting is only valid for the **DEPENDENT** experiments and not the **FOUNDATIONAL**: baseline, no_reasoning, obviously.
+
+   Procedure:  
+   a. First create the restricted dataset (filter the desired samples from the baseline and no_reasoning JSONLs) via the command -
+   ```bash
+   python data_processing/create_restricted_dataset.py --model <model_alias> --dataset <dataset_alias_or_'all'> [--num-chains <N>]
+   ```
+   It reads the full foundational results, filters them based on sentence count and (optionally) chain count, and writes the new, smaller -restricted.jsonl files.
+       
+   b. Now for running the experiments in this new restricted setting, simply include the `--restricted` flag.
+   For example -
+   ```bash
+   python main.py --model flamingo --dataset sakura-gender --experiment paraphrasing --restricted --verbose
+   ```
+
+   Just in case if one has done a full experimental run, and not a restricted one, but still wants to run the analysis on the restricted version of the `DEPENDENT` results - they can use the `data_processing/create_restricted_dataset.py` utility file.
+
+   ```bash
+   python data_processing/filter_dependent_results_to_restricted_version.py --model <model_alias> --experiment <exp_name> --dataset <dataset_alias_or_'all'>
+   ```
+   
+3. To save time, we provide an option to parallelize the runs, where you can split the dataset in as many chunks as you want (say **N**) and later merge the results. Speeds up the process **N**$\times$.
+   
+5. We have made the scripts restartable, so it picks right from the last completed result, in order to make it HPC-environment friendly, where one-time time allocation might not be enough, or scripts may get terminated abruptly. Saves hours of re-inference.  
 
 ### 4. Running the Experiments
 
