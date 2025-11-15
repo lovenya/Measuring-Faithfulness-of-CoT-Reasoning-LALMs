@@ -169,13 +169,18 @@ python -m data_fetch_and_normalisation.download_and_normalize_sakura
 
 ### 3. Flexibility in running the experiments, and HPC friendly settings (Execution details will be included soon)  
 
+
 1. To save time and compute, and more focused experiment runs, we provide an option to run the experiments in a **`restricted`** setting.
    Restricted setting - the idea is to run the experiments on only those chains, which are 1-6 sentences long only (you can modify the range by editting out line 86 of `data_processing/create_restricted_dataset.py`.
+     
    Note: This restricted setting is only valid for the **DEPENDENT** experiments and not the **FOUNDATIONAL**: baseline, no_reasoning, obviously.
-
-   Procedure:  
-   a. First create the restricted dataset (filter the desired samples from the baseline and no_reasoning JSONLs) via the command -
-   ```bash
+        
+   <details>
+   <summary><b>See how</b></summary>  
+      
+   a. First create the restricted dataset (filter the desired samples from the baseline and no_reasoning JSONLs) via the command -  
+      
+   ```bash  
    python data_processing/create_restricted_dataset.py --model <model_alias> --dataset <dataset_alias_or_'all'> [--num-chains <N>]
    ```
    It reads the full foundational results, filters them based on sentence count and (optionally) chain count, and writes the new, smaller -restricted.jsonl files.
@@ -191,10 +196,16 @@ python -m data_fetch_and_normalisation.download_and_normalize_sakura
    ```bash
    python data_processing/filter_dependent_results_to_restricted_version.py --model <model_alias> --experiment <exp_name> --dataset <dataset_alias_or_'all'>
    ```
+        
+   </details>
    
 3. To save time, we provide an option to parallelize the restricted runs, where you can split the restrict datasets in as many chunks as you want (say **N**) and later merge the results. Speeds up the process **N**$\times$.
 
    You can use the following two utility scripts for this - `data_processing/split_dataset_for_parallel_runs.py` and subsequently `data_processing/merge_parallel_results.py`.
+
+   <details>
+   <summary><b>See how</b></summary>  
+   
 
    a. Splitting   
    ```bash  
@@ -215,10 +226,12 @@ python -m data_fetch_and_normalisation.download_and_normalize_sakura
    ```bash
    python data_processing/merge_parallel_results.py --model <model_alias> --experiment <exp_name> --dataset <dataset_alias>  
    ```
-   This combines the scattered results from multiple parallel jobs into a single, clean, final .jsonl file. This is the final step of a parallel run. After merging we ca normally continue our analysis by executing the analysis scripts.  
+   This combines the scattered results from multiple parallel jobs into a single, clean, final .jsonl file. This is the final step of a parallel run. After merging we ca normally continue our analysis by executing the analysis scripts.
+
+   </details>
    
    
-3. We have made the scripts restartable, so it picks right from the last completed result, in order to make it HPC-environment friendly, where one-time time allocation might not be enough, or scripts may get terminated abruptly. Saves hours of re-inference.  
+4. We have made the scripts restartable, so it picks right from the last completed result, in order to make it HPC-environment friendly, where one-time time allocation might not be enough, or scripts may get terminated abruptly. Saves hours of re-inference.  
 
 ### 4. Running the Experiments
 
