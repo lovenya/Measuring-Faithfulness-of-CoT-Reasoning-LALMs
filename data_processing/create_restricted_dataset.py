@@ -47,12 +47,10 @@ def create_restricted_files(model: str, dataset: str, results_dir: str, num_chai
     baseline_input_path = os.path.join(results_dir, model, 'baseline', f'baseline_{model}_{dataset}.jsonl')
     no_reasoning_input_path = os.path.join(results_dir, model, 'no_reasoning', f'no_reasoning_{model}_{dataset}.jsonl')
 
-    # --- THE CRITICAL FIX ---
     # The output filename is now standardized to '-restricted.jsonl' and does NOT
     # include the number of chains. This ensures compatibility with all other scripts.
     baseline_output_path = baseline_input_path.replace('.jsonl', '-restricted.jsonl')
     no_reasoning_output_path = no_reasoning_input_path.replace('.jsonl', '-restricted.jsonl')
-    # --- END OF FIX ---
 
     # Check if the required input files exist.
     for path in [baseline_input_path, no_reasoning_input_path]:
