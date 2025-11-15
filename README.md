@@ -186,15 +186,30 @@ python -m data_fetch_and_normalisation.download_and_normalize_sakura
    python main.py --model flamingo --dataset sakura-gender --experiment paraphrasing --restricted --verbose
    ```
 
-   Just in case if one has done a full experimental run, and not a restricted one, but still wants to run the analysis on the restricted version of the `DEPENDENT` results - they can use the `data_processing/create_restricted_dataset.py` utility file.
+   Just in case if one has done a full experimental run, and not a restricted one, but still wants to run the analysis on the restricted version of the `DEPENDENT` results - they can use the `data_processing/create_restricted_dataset.py` utility script.
 
    ```bash
    python data_processing/filter_dependent_results_to_restricted_version.py --model <model_alias> --experiment <exp_name> --dataset <dataset_alias_or_'all'>
    ```
    
-3. To save time, we provide an option to parallelize the runs, where you can split the dataset in as many chunks as you want (say **N**) and later merge the results. Speeds up the process **N**$\times$.
+3. To save time, we provide an option to parallelize the restricted runs, where you can split the restrict datasets in as many chunks as you want (say **N**) and later merge the results. Speeds up the process **N**$\times$.
+
+   You can use the following two utility scripts for this - `data_processing/split_dataset_for_parallel_runs.py` and subsequently `data_processing/merge_parallel_results.py`.
+
+   a. Splitting   
+   ```bash  
+   python data_processing/split_dataset_for_parallel_runs.py --input-file <path_to_input.jsonl> --num-splits <number_of_chunks>
+   ```
+   Divides a large .jsonl dataset file into a specified number of smaller, equally-sized chunks. For example, splitting mmar_test_standardized.jsonl into 10 parts would create mmar_test_standardized_part_0.jsonl, ..._part_1.jsonl, etc.
+
+   b. Merging  
+   ```bash
+   python data_processing/merge_parallel_results.py --model <model_alias> --experiment <exp_name> --dataset <dataset_alias>  
+   ```
+   This combines the scattered results from multiple parallel jobs into a single, clean, final .jsonl file. This is the final step of a parallel run. After merging we ca normally continue our analysis by executing the analysis scripts.  
    
-5. We have made the scripts restartable, so it picks right from the last completed result, in order to make it HPC-environment friendly, where one-time time allocation might not be enough, or scripts may get terminated abruptly. Saves hours of re-inference.  
+   
+3. We have made the scripts restartable, so it picks right from the last completed result, in order to make it HPC-environment friendly, where one-time time allocation might not be enough, or scripts may get terminated abruptly. Saves hours of re-inference.  
 
 ### 4. Running the Experiments
 
