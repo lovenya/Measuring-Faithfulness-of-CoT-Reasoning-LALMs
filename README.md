@@ -228,12 +228,13 @@ python -m data_fetch_and_normalisation.download_and_normalize_sakura
    ```bash
    python data_processing/merge_parallel_results.py --model <model_alias> --experiment <exp_name> --dataset <dataset_alias>  [--restricted]  
    ```
-   This combines the scattered results from multiple parallel jobs into a single, clean, final .jsonl file. This is the final step of a parallel run. After merging we ca normally continue our analysis by executing the analysis scripts. You should include `--restricted` flag if you are trying to merge the results of the restricted runs.  
+   This combines the scattered results from multiple parallel jobs into a single, clean, final .jsonl file. This is the final step of a parallel run.
+   After merging we can normally continue our analysis by executing the analysis scripts. You should include `--restricted` flag if you are trying to merge the results of the restricted runs.  
 
    </details>
    
    
-3. **Restartable Scripts**  
+4. **Restartable Scripts**  
    We have made the scripts restartable, so it picks right from the last completed result, in order to make it HPC-environment friendly, where one-time time allocation might not be enough, or scripts may get terminated abruptly. Saves hours of re-inference.  
 
 ### 4. Running the Experiments
