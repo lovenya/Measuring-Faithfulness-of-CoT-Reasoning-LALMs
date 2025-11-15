@@ -226,9 +226,9 @@ python -m data_fetch_and_normalisation.download_and_normalize_sakura
 
    c. Merging  
    ```bash
-   python data_processing/merge_parallel_results.py --model <model_alias> --experiment <exp_name> --dataset <dataset_alias>  
+   python data_processing/merge_parallel_results.py --model <model_alias> --experiment <exp_name> --dataset <dataset_alias>  [--restricted]  
    ```
-   This combines the scattered results from multiple parallel jobs into a single, clean, final .jsonl file. This is the final step of a parallel run. After merging we ca normally continue our analysis by executing the analysis scripts.
+   This combines the scattered results from multiple parallel jobs into a single, clean, final .jsonl file. This is the final step of a parallel run. After merging we ca normally continue our analysis by executing the analysis scripts. You should include `--restricted` flag if you are trying to merge the results of the restricted runs.  
 
    </details>
    
