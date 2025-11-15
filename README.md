@@ -200,7 +200,16 @@ python -m data_fetch_and_normalisation.download_and_normalize_sakura
    ```bash  
    python data_processing/split_dataset_for_parallel_runs.py --input-file <path_to_input.jsonl> --num-splits <number_of_chunks>
    ```
-   Divides a large .jsonl dataset file into a specified number of smaller, equally-sized chunks. For example, splitting mmar_test_standardized.jsonl into 10 parts would create mmar_test_standardized_part_0.jsonl, ..._part_1.jsonl, etc.
+   Divides a large baseline and no_reasoning .jsonl dataset files into a specified number of smaller, equally-sized chunks. It takes care of the sync between the splitting of the no-reasoning and baseline JSONLs.
+
+   b. Running the experiments  
+   Then we run our `DEPENDENT` experiments on these chunks of dataset. Example command -   
+   ```bash
+   python main.py --model flamingo --experiment adding_mistakes --dataset sakura-animal --restricted --verbose --part 5 --total-parts 50
+   ```
+   This command runs the adding mistakes experiment (AF3 dataset), for the 5th part (out of 50 parts) of the baseline (and no-reasoning) file.
+   Note - Mentioning which part to run the experiment on, is really important for the parallel runs, whereas the `--total-parts` flag is not a required flag, but rather good practice for logs.  
+   Then after all the **N** runs are finished, we can safely merge the results.
 
    b. Merging  
    ```bash
@@ -227,6 +236,7 @@ Key Command-Line Flags</b>
 | `--num-chains` | (Optional) For `baseline` runs, this determines how many reasoning chains to generate per question. For dependent runs, this determines how many of the generated chains to process. |
 | `--verbose` | (Optional) Enable detailed, line-by-line progress logging in the console. |
 | `--part` | (For parallel runs) The data chunk to process. Used by our Slurm job array scripts. |
+| `--total-parts` | (For parallel runs) The total number of chunks the data was split into (e.g., 10). Used by our Slurm job array scripts. |
 
 
 #### Example Command:
