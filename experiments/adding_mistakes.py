@@ -14,6 +14,12 @@ Methodology:
 5. By comparing this new answer to the original, we can measure how sensitive
    the model is to factual and logical errors in its reasoning process. A high
    rate of answer changes (low consistency) is strong evidence of faithful reasoning.
+
+External Perturbation Support:
+    When config.USE_EXTERNAL_PERTURBATIONS is True, this script loads pre-generated
+    mistakes from a JSONL file (created by scripts/generate_perturbations.py using 
+    Mistral Small 3) instead of generating them on-the-fly with the target model.
+    This addresses reviewer concerns about in-distribution bias.
 """
 
 import os
@@ -48,6 +54,32 @@ Choices:
 
 Original sentence: {original_sentence}
 Assistant: Sentence with mistake added:"""
+
+
+def load_external_perturbations(perturbation_path: str) -> dict:
+    """
+    Load pre-generated perturbations from a JSONL file.
+    
+    Returns a dictionary keyed by (id, chain_id, sentence_idx) -> mistaken_sentence.
+    The file is created by scripts/generate_perturbations.py using Mistral Small 3.
+    """
+    perturbations = {}
+    if not os.path.exists(perturbation_path):
+        logging.error(f"External perturbation file not found: {perturbation_path}")
+        return perturbations
+    
+    with open(perturbation_path, 'r') as f:
+        for line in f:
+            try:
+                data = json.loads(line)
+                key = (data['id'], data['chain_id'], data['sentence_idx'])
+                perturbations[key] = data['mistaken_sentence']
+            except (json.JSONDecodeError, KeyError) as e:
+                logging.warning(f"Skipping malformed perturbation line: {e}")
+                continue
+    
+    logging.info(f"Loaded {len(perturbations)} external perturbations from {perturbation_path}")
+    return perturbations
 
 
 def generate_mistake(model, processor, tokenizer, model_utils, question: str, choices_formatted: str, original_sentence: str) -> str | None:
@@ -159,8 +191,21 @@ def run(model, processor, tokenizer, model_utils, config):
                 except (json.JSONDecodeError, KeyError): continue
     if completed_chains: logging.info(f"Found {len(completed_chains)} fully completed chains. They will be skipped.")
 
+    # --- 3.5. Load External Perturbations (if enabled) ---
+    external_perturbations = {}
+    use_external = getattr(config, 'USE_EXTERNAL_PERTURBATIONS', False)
+    if use_external:
+        perturbation_path = getattr(config, 'PERTURBATION_FILE', None)
+        if perturbation_path:
+            external_perturbations = load_external_perturbations(perturbation_path)
+            logging.info(f"Using EXTERNAL perturbations from Mistral (loaded {len(external_perturbations)} entries)")
+        else:
+            logging.warning("USE_EXTERNAL_PERTURBATIONS is True but PERTURBATION_FILE not set. Falling back to self-perturbation.")
+            use_external = False
+
     # --- 4. Run Experiment ---
-    logging.info(f"Running Adding Mistakes Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path}")
+    perturbation_source = "EXTERNAL (Mistral)" if use_external else "SELF (target model)"
+    logging.info(f"Running Adding Mistakes Experiment (Model: {config.MODEL_ALIAS.upper()}, Perturbation: {perturbation_source}): Saving to {output_path}")
     
     skipped_trials_count = 0
     with open(output_path, 'a') as f:
@@ -193,13 +238,21 @@ def run(model, processor, tokenizer, model_utils, config):
                     if config.VERBOSE:
                         logging.info(f"  - Introducing mistake at sentence {mistake_idx + 1}/{total_sentences}...")
                     
-                    mistaken_sentence = generate_mistake(model, processor, tokenizer, model_utils, baseline_trial['question'], choices_formatted, original_sentence)
-                    
-                    # If the model fails to generate a mistake, we skip this step.
-                    if mistaken_sentence is None:
-                        if config.VERBOSE:
-                            logging.info(f"  - SKIPPING STEP: Model failed to generate a valid mistake for sentence {mistake_idx + 1}.")
-                        continue
+                    # Use external perturbation if available, otherwise generate on-the-fly
+                    if use_external:
+                        lookup_key = (q_id, chain_id, mistake_idx)
+                        mistaken_sentence = external_perturbations.get(lookup_key)
+                        if mistaken_sentence is None or mistaken_sentence == "":
+                            if config.VERBOSE:
+                                logging.info(f"  - SKIPPING STEP: No external perturbation found for {lookup_key}.")
+                            continue
+                    else:
+                        mistaken_sentence = generate_mistake(model, processor, tokenizer, model_utils, baseline_trial['question'], choices_formatted, original_sentence)
+                        # If the model fails to generate a mistake, we skip this step.
+                        if mistaken_sentence is None:
+                            if config.VERBOSE:
+                                logging.info(f"  - SKIPPING STEP: Model failed to generate a valid mistake for sentence {mistake_idx + 1}.")
+                            continue
                     
                     cot_up_to_mistake = " ".join(sentences[:mistake_idx])
                     cot_with_mistake_intro = (cot_up_to_mistake + " " + mistaken_sentence).strip()
