@@ -15,6 +15,12 @@ Methodology:
    paraphrased sentences, we can measure its robustness to changes in phrasing.
    A model that maintains high performance is likely relying on the deeper
    semantic meaning of its reasoning.
+
+External Perturbation Support:
+    When config.USE_EXTERNAL_PERTURBATIONS is True, this script loads pre-generated
+    paraphrases from a JSONL file (created by scripts/generate_perturbations.py using 
+    Mistral Small 3) instead of generating them on-the-fly with the target model.
+    This addresses reviewer concerns about in-distribution bias.
 """
 
 import os
@@ -25,6 +31,33 @@ import logging
 
 # This is a 'dependent' experiment because it manipulates the CoTs from a 'baseline' run.
 EXPERIMENT_TYPE = "dependent"
+
+
+def load_external_perturbations(perturbation_path: str) -> dict:
+    """
+    Load pre-generated paraphrases from a JSONL file.
+    
+    Returns a dictionary keyed by (id, chain_id, num_sentences_paraphrased) -> paraphrased_text.
+    The file is created by scripts/generate_perturbations.py using Mistral Small 3.
+    """
+    perturbations = {}
+    if not os.path.exists(perturbation_path):
+        logging.error(f"External perturbation file not found: {perturbation_path}")
+        return perturbations
+    
+    with open(perturbation_path, 'r') as f:
+        for line in f:
+            try:
+                data = json.loads(line)
+                # sentence_idx in paraphrase mode = num_sentences_paraphrased
+                key = (data['id'], data['chain_id'], data['sentence_idx'])
+                perturbations[key] = data['paraphrased_text']
+            except (json.JSONDecodeError, KeyError) as e:
+                logging.warning(f"Skipping malformed perturbation line: {e}")
+                continue
+    
+    logging.info(f"Loaded {len(perturbations)} external paraphrases from {perturbation_path}")
+    return perturbations
 
 def get_paraphrased_text(model, processor, tokenizer, model_utils, text_to_paraphrase: str) -> str | None:
     """
@@ -125,8 +158,21 @@ def run(model, processor, tokenizer, model_utils, config):
                 except (json.JSONDecodeError, KeyError): continue
     if completed_chains: logging.info(f"Found {len(completed_chains)} fully completed chains. They will be skipped.")
 
+    # --- 3.5. Load External Perturbations (if enabled) ---
+    external_perturbations = {}
+    use_external = getattr(config, 'USE_EXTERNAL_PERTURBATIONS', False)
+    if use_external:
+        perturbation_path = getattr(config, 'PERTURBATION_FILE', None)
+        if perturbation_path:
+            external_perturbations = load_external_perturbations(perturbation_path)
+            logging.info(f"Using EXTERNAL paraphrases from Mistral (loaded {len(external_perturbations)} entries)")
+        else:
+            logging.warning("USE_EXTERNAL_PERTURBATIONS is True but PERTURBATION_FILE not set. Falling back to self-paraphrasing.")
+            use_external = False
+
     # --- 4. Run Experiment ---
-    logging.info(f"Running Paraphrasing Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path}")
+    perturbation_source = "EXTERNAL (Mistral)" if use_external else "SELF (target model)"
+    logging.info(f"Running Paraphrasing Experiment (Model: {config.MODEL_ALIAS.upper()}, Perturbation: {perturbation_source}): Saving to {output_path}")
     
     skipped_trials_count = 0
     with open(output_path, 'a') as f:
@@ -155,11 +201,20 @@ def run(model, processor, tokenizer, model_utils, config):
                     part_to_paraphrase = " ".join(sentences[:num_to_paraphrase])
                     remaining_part = " ".join(sentences[num_to_paraphrase:])
                     
-                    paraphrased_part = get_paraphrased_text(model, processor, tokenizer, model_utils, part_to_paraphrase)
-                    if paraphrased_part is None:
-                        if config.VERBOSE:
-                            logging.warning(f"  - SKIPPING STEP: Model failed to generate a valid paraphrase for step {num_to_paraphrase}.")
-                        continue
+                    # Use external paraphrase if available, otherwise generate on-the-fly
+                    if use_external:
+                        lookup_key = (q_id, chain_id, num_to_paraphrase)
+                        paraphrased_part = external_perturbations.get(lookup_key)
+                        if paraphrased_part is None or paraphrased_part == "":
+                            if config.VERBOSE:
+                                logging.info(f"  - SKIPPING STEP: No external paraphrase found for {lookup_key}.")
+                            continue
+                    else:
+                        paraphrased_part = get_paraphrased_text(model, processor, tokenizer, model_utils, part_to_paraphrase)
+                        if paraphrased_part is None:
+                            if config.VERBOSE:
+                                logging.warning(f"  - SKIPPING STEP: Model failed to generate a valid paraphrase for step {num_to_paraphrase}.")
+                            continue
 
                     modified_cot = (paraphrased_part + " " + remaining_part).strip()
                     
