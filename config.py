@@ -10,22 +10,26 @@ parameters. This single source of truth makes our framework robust and easy to m
 # This dictionary holds the master paths to all our model assets.
 MODEL_PATHS = {
     # --- Qwen (Self-Contained) ---
-    "qwen": "./qwen2-audio-weights",
+    "qwen": "/scratch/lovenya/models/Qwen/Qwen2-Audio-7B",
 
     # --- Audio Flamingo (Complex) ---
     "flamingo_code": "./audio-flamingo-code",
-    "flamingo_weights": "./audio-flamingo-weights",
+    "flamingo_weights": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-flamingo-weights",
 
     # --- SALMONN (Multi-Component) ---
-    "salmonn_checkpoint": "./model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
+    "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
+
+    # --- Mistral Small 3 (External Perturbation Model) ---
+    # Used for generating mistakes and paraphrasing to avoid in-distribution bias
+    "mistral_small_3": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/mistral-small-3",
 }
 
 SALMONN_COMPONENT_PATHS = {
     "source_code": "./salmonn-source-code",
-    "whisper": "./model_components/whisper-large-v2",
-    "beats": "./model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
-    "vicuna": "./model_components/vicuna-13b-v1.1",
-    "salmonn_checkpoint": "./model_components/salmonn-13b-checkpoint/salmonn_v1.pth"
+    "whisper": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/whisper-large-v2",
+    "beats": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
+    "vicuna": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/vicuna-13b-v1.1",
+    "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth"
 }
 
 # The main directory where all experimental results will be saved.
