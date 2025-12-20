@@ -22,7 +22,7 @@ import json
 import collections
 import random
 import logging
-from core.filler_text_utils import create_word_level_masked_cot, run_filler_trial
+from core.filler_text_utils import create_word_level_masked_cot, run_filler_trial, load_lorem_token_pool
 
 # This is a 'dependent' experiment because it manipulates the CoTs from a 'baseline' run.
 EXPERIMENT_TYPE = "dependent"
@@ -49,6 +49,13 @@ def run(model, processor, tokenizer, model_utils, config):
             except json.JSONDecodeError:
                 logging.warning(f"Skipping corrupted line {line_num} in {baseline_results_path}")
                 continue
+    
+    # --- Create Lorem Ipsum token pool if needed ---
+    lorem_pool = None
+    if config.FILLER_TYPE == 'lorem':
+        logging.info("Loading pre-computed Lorem Ipsum word pool...")
+        lorem_pool = load_lorem_token_pool()
+        logging.info(f"Loaded pool with {len(lorem_pool)} unique words.")
     
     # --- 2. Apply Command-Line Filters ---
     # This block correctly enforces the chain limit for dependent experiments.
@@ -113,7 +120,8 @@ def run(model, processor, tokenizer, model_utils, config):
                     
                     # We call our centralized utility to perform the word-level masking.
                     modified_cot = create_word_level_masked_cot(
-                        sanitized_cot, percentile, mode='random'
+                        sanitized_cot, percentile, mode='random',
+                        filler_type=config.FILLER_TYPE, lorem_pool=lorem_pool
                     )
                     
                     trial_result = run_filler_trial(
