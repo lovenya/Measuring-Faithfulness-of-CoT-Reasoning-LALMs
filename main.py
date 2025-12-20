@@ -61,6 +61,26 @@ def main():
     parser.add_argument("--num-samples", type=int, default=None)
     parser.add_argument("--num-chains", type=int, default=None)
     parser.add_argument('--verbose', action='store_true', help="Enable detailed, line-by-line progress logging.")
+    
+    # --- Arguments for External Perturbations (Mistral) ---
+    parser.add_argument(
+        '--use-external-perturbations', 
+        action='store_true', 
+        help="Use pre-generated perturbations from an external model (Mistral) instead of self-perturbation."
+    )
+    parser.add_argument(
+        '--perturbation-file', 
+        type=str, 
+        default=None,
+        help="Path to the JSONL file containing pre-generated perturbations (required if --use-external-perturbations is set)."
+    )
+    parser.add_argument(
+        '--filler-type',
+        type=str,
+        default='dots',
+        choices=['dots', 'lorem'],
+        help="Type of filler for filler text experiments: 'dots' uses '...' (default), 'lorem' uses Lorem Ipsum tokens."
+    )
 
     args = parser.parse_args()
 
@@ -72,6 +92,13 @@ def main():
     config.DATASET_NAME = args.dataset
     config.VERBOSE = args.verbose
     config.RESTRICTED = args.restricted
+    
+    # External perturbation settings (for adding_mistakes and paraphrasing experiments)
+    config.USE_EXTERNAL_PERTURBATIONS = args.use_external_perturbations
+    config.PERTURBATION_FILE = args.perturbation_file
+    
+    # Filler type setting (for filler text experiments)
+    config.FILLER_TYPE = args.filler_type
 
     # --- 2. Centralized Path Management (Now Chunk-Aware) ---
     experiment_name = args.experiment
@@ -84,6 +111,14 @@ def main():
     base_filename = f"{experiment_name}_{model_alias}_{args.dataset}"
     if config.RESTRICTED:
         base_filename += "-restricted"
+    
+    # Add suffix for external perturbation runs (to distinguish from self-perturbation)
+    if config.USE_EXTERNAL_PERTURBATIONS:
+        base_filename += "-mistral"
+    
+    # Add suffix for lorem filler type (to distinguish from dots filler results)
+    if config.FILLER_TYPE == 'lorem':
+        base_filename += "-lorem"
     
     # If this is a parallel run, we add the part number to the output filename.
     # e.g., 'adding_mistakes_salmonn_mmar-restricted.part_7.jsonl'
