@@ -9,7 +9,7 @@ Last updated: Sat Dec 20 10:42:00 EST 2025
 | Experiment | Qwen | SALMONN |
 |------------|------|---------|
 | Adding Mistakes (Mistral) | ✅ All 5 DONE | ⏳ 3 pending (mmar, animal, emotion) |
-| Paraphrasing (Mistral) | ✅ All 5 DONE | ✅ All 5 DONE |
+| Paraphrasing (Mistral) | ⏳ 4/5 DONE (sakura-language failed, perturbation needed in that) | ❌ Pending (Perturbations needed) |
 | Lorem Filler (random_partial) | ✅ All 5 DONE | ✅ All 5 DONE |
 
 ---
@@ -40,12 +40,12 @@ Last updated: Sat Dec 20 10:42:00 EST 2025
 - Output: `results/salmonn/adding_mistakes/adding_mistakes_salmonn_<dataset>-restricted-mistral.jsonl`
 
 ### ✅ Qwen Paraphrasing (Mistral) - ALL DONE
-- mmar, sakura-animal, sakura-emotion, sakura-gender, sakura-language
+- mmar, sakura-animal, sakura-emotion, sakura-gender
+- ❌ sakura-language (Perturbation generation failed)
+- Output: `results/qwen/paraphrasing/paraphrasing_qwen_<dataset>-restricted-mistral.jsonl`
 - Output: `results/qwen/paraphrasing/paraphrasing_qwen_<dataset>-restricted-mistral.jsonl`
 
-### ✅ SALMONN Paraphrasing (Mistral) - ALL DONE
-- mmar, sakura-animal, sakura-emotion, sakura-gender, sakura-language
-- Output: `results/salmonn/paraphrasing/paraphrasing_salmonn_<dataset>-restricted-mistral.jsonl`
+
 
 ### ✅ Qwen Lorem Filler (random_partial_filler_text) - ALL DONE
 - mmar, sakura-animal, sakura-emotion, sakura-gender, sakura-language
