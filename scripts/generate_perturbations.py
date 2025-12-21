@@ -77,7 +77,7 @@ def load_existing_perturbations(output_path: str) -> set:
     return completed
 
 
-def generate_mistakes_for_baseline(model, baseline_results: list[dict], output_path: str):
+def generate_mistakes_for_baseline(model, tokenizer, baseline_results: list[dict], output_path: str):
     """Generate mistake perturbations for all sentences in baseline results."""
     
     completed = load_existing_perturbations(output_path)
@@ -108,7 +108,7 @@ def generate_mistakes_for_baseline(model, baseline_results: list[dict], output_p
                     continue
                 
                 # Generate mistake using Mistral
-                mistaken = generate_mistake(model, question, choices, original_sentence)
+                mistaken = generate_mistake(model, tokenizer, question, choices, original_sentence)
                 
                 if mistaken is None:
                     logger.warning(f"Failed to generate mistake for {q_id}/{chain_id}/{sentence_idx}")
@@ -126,7 +126,7 @@ def generate_mistakes_for_baseline(model, baseline_results: list[dict], output_p
                 f.flush()
 
 
-def generate_paraphrases_for_baseline(model, baseline_results: list[dict], output_path: str):
+def generate_paraphrases_for_baseline(model, tokenizer, baseline_results: list[dict], output_path: str):
     """Generate paraphrase perturbations for progressive paraphrasing."""
     
     completed = load_existing_perturbations(output_path)
@@ -153,7 +153,7 @@ def generate_paraphrases_for_baseline(model, baseline_results: list[dict], outpu
                 
                 # Paraphrase first N sentences
                 text_to_paraphrase = " ".join(sentences[:num_to_paraphrase])
-                paraphrased = paraphrase_text(model, text_to_paraphrase)
+                paraphrased = paraphrase_text(model, tokenizer, text_to_paraphrase)
                 
                 if paraphrased is None:
                     logger.warning(f"Failed to paraphrase for {q_id}/{chain_id}/n={num_to_paraphrase}")
@@ -225,15 +225,15 @@ def main():
     
     # Load model
     logger.info("Loading Mistral Small 3...")
-    model = load_mistral_model(model_path=args.model_path)
+    model, tokenizer = load_mistral_model(model_path=args.model_path)
     
     # Generate perturbations
     if args.mode == "mistakes":
         logger.info(f"Generating mistake perturbations -> {args.output}")
-        generate_mistakes_for_baseline(model, baseline_results, args.output)
+        generate_mistakes_for_baseline(model, tokenizer, baseline_results, args.output)
     else:
         logger.info(f"Generating paraphrase perturbations -> {args.output}")
-        generate_paraphrases_for_baseline(model, baseline_results, args.output)
+        generate_paraphrases_for_baseline(model, tokenizer, baseline_results, args.output)
     
     logger.info("Done!")
     return 0

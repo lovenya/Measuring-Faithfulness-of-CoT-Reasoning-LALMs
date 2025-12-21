@@ -1,20 +1,18 @@
 # core/mistral_utils.py
 
 """
-Utility module for Mistral Small 3 inference using vLLM.
+Utility module for Mistral Small 3 inference using native HuggingFace Transformers.
 
 This module provides a standalone interface to Mistral Small 3, used as an
 EXTERNAL LLM for generating perturbations (mistakes, paraphrasing) in our
 CoT faithfulness experiments.
 
-Using an external model for perturbations addresses reviewer concerns about
-in-distribution bias that could arise from using the same model for both
-answering questions and generating perturbations.
+Using native transformers instead of vLLM for better stability and debugging.
 """
 
 import logging
-from vllm import LLM
-from vllm.sampling_params import SamplingParams
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -24,44 +22,63 @@ DEFAULT_MISTRAL_MODEL_ID = "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
 
 # Global model instance (singleton pattern for efficiency)
 _mistral_model = None
+_mistral_tokenizer = None
 _mistral_initialized = False
 
 
-def load_mistral_model(model_path: str = None):
+def load_mistral_model(model_path: str = None, device: str = "cuda"):
     """
-    Load Mistral Small 3 model using vLLM.
+    Load Mistral Small 3 model using native HuggingFace Transformers.
     
     Args:
         model_path: Path to local model weights, or None to use HuggingFace model ID.
+        device: Device to load the model on ('cuda' or 'cpu').
     
     Returns:
-        The vLLM LLM instance
+        Tuple of (model, tokenizer)
     """
-    global _mistral_model, _mistral_initialized
+    global _mistral_model, _mistral_tokenizer, _mistral_initialized
     
     if _mistral_initialized:
         logger.info("Mistral model already loaded, returning cached instance.")
-        return _mistral_model
+        return _mistral_model, _mistral_tokenizer
     
     model_id = model_path if model_path else DEFAULT_MISTRAL_MODEL_ID
     
     logger.info(f"Loading Mistral Small 3 from: {model_id}")
+    logger.info("This may take a few minutes...")
     
-    # Use 'auto' tokenizer mode instead of 'mistral' to avoid MistralTokenizer issues
-    # Disable multimodal processing since we only need text
-    _mistral_model = LLM(
-        model=model_id,
-        tokenizer_mode="auto",  # Use standard HuggingFace tokenizer
-        limit_mm_per_prompt={"image": 0},  # Disable multimodal (images)
+    # Load tokenizer
+    logger.info("Loading tokenizer...")
+    _mistral_tokenizer = AutoTokenizer.from_pretrained(
+        model_id,
+        trust_remote_code=True,
     )
+    
+    # Ensure pad token is set
+    if _mistral_tokenizer.pad_token is None:
+        _mistral_tokenizer.pad_token = _mistral_tokenizer.eos_token
+    
+    # Load model with automatic device mapping and bfloat16 for efficiency
+    logger.info("Loading model weights...")
+    _mistral_model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.bfloat16,
+        device_map="auto",  # Automatically distribute across available GPUs
+        trust_remote_code=True,
+    )
+    
+    _mistral_model.eval()  # Set to evaluation mode
     
     _mistral_initialized = True
     logger.info("Mistral Small 3 loaded successfully!")
-    return _mistral_model
+    
+    return _mistral_model, _mistral_tokenizer
 
 
 def run_mistral_inference(
-    model: LLM,
+    model,
+    tokenizer,
     messages: list[dict],
     max_new_tokens: int = 256,
     do_sample: bool = True,
@@ -69,10 +86,11 @@ def run_mistral_inference(
     top_p: float = 0.9,
 ) -> str:
     """
-    Run inference with Mistral Small 3 using vLLM.
+    Run inference with Mistral Small 3 using native transformers.
     
     Args:
-        model: The vLLM LLM instance.
+        model: The loaded Mistral model.
+        tokenizer: The loaded tokenizer.
         messages: List of message dictionaries with 'role' and 'content' keys.
         max_new_tokens: Maximum number of tokens to generate.
         do_sample: Whether to use sampling (True) or greedy decoding (False).
@@ -82,31 +100,54 @@ def run_mistral_inference(
     Returns:
         Generated text string.
     """
-    # Set up sampling parameters
-    if do_sample:
-        sampling_params = SamplingParams(
-            max_tokens=max_new_tokens,
-            temperature=temperature,
-            top_p=top_p,
-        )
-    else:
-        # Greedy decoding
-        sampling_params = SamplingParams(
-            max_tokens=max_new_tokens,
-            temperature=0.0,
-        )
+    # Apply chat template to format the messages
+    chat_text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
     
-    # Run inference using vLLM chat interface (disable tqdm to reduce log spam)
-    outputs = model.chat(messages, sampling_params=sampling_params, use_tqdm=False)
+    # Tokenize input
+    inputs = tokenizer(
+        chat_text,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+    ).to(model.device)
     
-    # Extract the generated text
-    response = outputs[0].outputs[0].text
+    # Generate
+    with torch.no_grad():
+        if do_sample:
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=True,
+                temperature=temperature,
+                top_p=top_p,
+                pad_token_id=tokenizer.pad_token_id,
+                eos_token_id=tokenizer.eos_token_id,
+            )
+        else:
+            # Greedy decoding
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=False,
+                pad_token_id=tokenizer.pad_token_id,
+                eos_token_id=tokenizer.eos_token_id,
+            )
+    
+    # Decode only the generated tokens (exclude input tokens)
+    input_length = inputs["input_ids"].shape[1]
+    generated_tokens = outputs[0][input_length:]
+    response = tokenizer.decode(generated_tokens, skip_special_tokens=True)
     
     return response.strip()
 
 
 def generate_mistake(
-    model: LLM,
+    model,
+    tokenizer,
     question: str,
     choices: str,
     original_sentence: str,
@@ -119,7 +160,8 @@ def generate_mistake(
     but uses the external Mistral model instead of the target model.
     
     Args:
-        model: The vLLM LLM instance.
+        model: The loaded Mistral model.
+        tokenizer: The loaded tokenizer.
         question: The question being answered.
         choices: The formatted choices string.
         original_sentence: The sentence to introduce a mistake into.
@@ -153,7 +195,7 @@ Sentence with mistake added:"""
     messages = [{"role": "user", "content": prompt}]
     
     response = run_mistral_inference(
-        model, messages,
+        model, tokenizer, messages,
         max_new_tokens=max_new_tokens,
         do_sample=True,
         temperature=0.7,
@@ -167,7 +209,8 @@ Sentence with mistake added:"""
 
 
 def paraphrase_text(
-    model: LLM,
+    model,
+    tokenizer,
     text_to_paraphrase: str,
     max_new_tokens: int = 768,
 ) -> str | None:
@@ -178,7 +221,8 @@ def paraphrase_text(
     but uses the external Mistral model instead of the target model.
     
     Args:
-        model: The vLLM LLM instance.
+        model: The loaded Mistral model.
+        tokenizer: The loaded tokenizer.
         text_to_paraphrase: The text to paraphrase.
         max_new_tokens: Maximum tokens for the response.
     
@@ -190,7 +234,7 @@ def paraphrase_text(
     messages = [{"role": "user", "content": prompt}]
     
     response = run_mistral_inference(
-        model, messages,
+        model, tokenizer, messages,
         max_new_tokens=max_new_tokens,
         do_sample=True,
         temperature=0.7,
