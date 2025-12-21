@@ -76,6 +76,8 @@ squeue -u lovenya
 # Interactive node (3h, rrg-csubakan) - Run this command yourself:
 salloc --time=3:00:00 --gpus=nvidia_h100_80gb_hbm3_3g.40gb:1 --cpus-per-task=8 --mem=64G --account=rrg-csubakan
 
+salloc --time=3:00:00 --gpus=h100:1 --cpus-per-task=8 --mem=64G --account=rrg-csubakan
+
 # Check specific job logs
 tail -f logs/experiment_mistral/salmonn-mistakes-*-cont-<JOB_ID>.err
 ```
