@@ -19,6 +19,8 @@ analysis_env/
 af3-test-env/
 *_env/
 *-env/
+qwen_env/
+mistral_env/
 
 
 # Data

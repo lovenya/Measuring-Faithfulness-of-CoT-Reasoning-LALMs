@@ -88,7 +88,10 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object, object]:
     model.eval()
 
     logging.info("Loading WhisperFeatureExtractor...")
-    processor = WhisperFeatureExtractor.from_pretrained(framework_config.SALMONN_COMPONENT_PATHS['whisper'])
+    processor = WhisperFeatureExtractor.from_pretrained(
+        framework_config.SALMONN_COMPONENT_PATHS['whisper'],
+        local_files_only=True
+    )
     
     # We correctly extract the tokenizer from the loaded model to return it separately.
     tokenizer = model.llama_tokenizer
