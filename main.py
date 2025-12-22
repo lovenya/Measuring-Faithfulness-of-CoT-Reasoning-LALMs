@@ -97,6 +97,13 @@ def main():
     config.USE_EXTERNAL_PERTURBATIONS = args.use_external_perturbations
     config.PERTURBATION_FILE = args.perturbation_file
     
+    # If running in parallel with --part, update the perturbation file path to use the part file
+    # e.g., file_combined.jsonl -> file_combined.part_N.jsonl
+    if args.part is not None and config.PERTURBATION_FILE:
+        base_path, ext = os.path.splitext(config.PERTURBATION_FILE)
+        config.PERTURBATION_FILE = f"{base_path}.part_{args.part}{ext}"
+        logging.info(f"[PARALLEL] Using part file: {config.PERTURBATION_FILE}")
+    
     # Filler type setting (for filler text experiments)
     config.FILLER_TYPE = args.filler_type
 
