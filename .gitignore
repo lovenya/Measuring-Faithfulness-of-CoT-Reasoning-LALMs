@@ -3,14 +3,11 @@ audio-flamingo-weights/
 qwen2-audio-weights/
 # this folder has the weights for all SALMONN's components
 model_components/ 
-
-
 # source code - can be directly cloned from source
 # audio-flamingo-code/
 # to be removed from gitignore, just a backup, in case new submodule of source code doesn't work
 salmonn-source-code-fixed/
 audio-flamingo-code-backup/
-
 # Envs
 audio-faithful/
 tts-env/
@@ -20,75 +17,60 @@ audio-flamingo-env/
 salmonn_env/
 analysis_env/
 af3-test-env/
+*_env/
+*-env/
+
 
 # Data
 data/**/audio/
 data/**/hf_cache/
 data/**/**/audio/
 data/**/**/hf_cache/
-
 # Data (input/intermediate) - ASR + AAC
 data/**/asr
 data/**/**/asr
 data/**/captioning
 data/**/**/captioning
-
 # Data (input/intermediate) - TTS
 spoken_reasoning/audio
-
 # .pyc files
 *.pyc
 __pycache__/
 */__pycache__/
 */*/__pycache__/
-
 # Cluster specific stuff
 logs/
 submission_scripts/
-
 nltk_data/
-
-
 # Output files
 results/
 plots/
 final_plots
-
 old_comparitive_plots/
 old_unused_results/
-
 flamingo_result/
 qwen_results/
-
 # saving old - final work before modifying/updating scripts
 final_old_plots/
 final_stored_results/
-
 # removing for repo readability
 data_processing/add_noise_to_dataset.py
 data_processing/convert_csv_to_jsonl.py
 data_processing/enrich_mmar_dataset.py
 data_processing/create_silent_audio.py
-
 experiments/robustness_to_noise.py
-
 analysis/extra_scripts
 analysis/final_plots
-
 final_plots/delta_slope_vs_accuracy
 final_plots/flamingo
 final_plots/slope_vs_accuracy
-
 misc-old-scripts/
-
 .gitattributes
 helper.txt
 salmonn_helper.txt
 aflamingo3_helper.txt
-
 # to be used later when af3 will be added
 # core/audio_flamingo_utils.py
 requirements_txts/requirements_af3.txt
-
 # vs-code
 .vscode/
