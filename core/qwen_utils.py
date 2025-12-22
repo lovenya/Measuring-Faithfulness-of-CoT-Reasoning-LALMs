@@ -11,7 +11,18 @@ import config
 def load_model_and_tokenizer(model_path: str):
     """
     Loads the specified Qwen2-Audio model and processor.
+    
+    If QWEN_LOCAL_MODEL_PATH environment variable is set (for SSD optimization),
+    it will load from that path instead of the provided model_path.
     """
+    import os
+    
+    # Check for local SSD path (set by optimized submission scripts)
+    local_path = os.environ.get('QWEN_LOCAL_MODEL_PATH')
+    if local_path and os.path.exists(local_path):
+        print(f"[OPTIMIZATION] Using local SSD model path: {local_path}")
+        model_path = local_path
+    
     print(f"Loading processor from {model_path}...")
     processor = AutoProcessor.from_pretrained(
         model_path, 
