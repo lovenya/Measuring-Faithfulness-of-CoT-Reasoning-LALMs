@@ -170,7 +170,15 @@ def main():
 
     # --- 5. Dynamic Experiment Loading ---
     try:
-        experiment_module = importlib.import_module(f"experiments.{args.experiment}")
+        # When using external perturbations, load the _combined version of the experiment
+        # which expects pre-combined files from scripts/combine_baseline_with_perturbations.py
+        if config.USE_EXTERNAL_PERTURBATIONS and args.experiment in ['adding_mistakes', 'paraphrasing']:
+            experiment_module_name = f"experiments.{args.experiment}_combined"
+            logging.info(f"Using COMBINED experiment module: {experiment_module_name}")
+        else:
+            experiment_module_name = f"experiments.{args.experiment}"
+        
+        experiment_module = importlib.import_module(experiment_module_name)
         EXPERIMENT_TYPE = getattr(experiment_module, 'EXPERIMENT_TYPE')
     except (ImportError, AttributeError):
         logging.exception(f"Could not load experiment '{args.experiment}'.")
