@@ -24,13 +24,31 @@ MODEL_PATHS = {
     "mistral_small_3": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/mistral-small-3",
 }
 
-SALMONN_COMPONENT_PATHS = {
-    "source_code": "./salmonn-source-code",
-    "whisper": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/whisper-large-v2",
-    "beats": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
-    "vicuna": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/vicuna-13b-v1.1",
-    "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth"
-}
+# Check if local SSD model directory is available (set by submission script)
+import os
+_LOCAL_MODEL_DIR = os.environ.get('SALMONN_LOCAL_MODEL_DIR', None)
+
+if _LOCAL_MODEL_DIR and os.path.exists(_LOCAL_MODEL_DIR):
+    # Use local NVMe SSD paths for faster loading
+    SALMONN_COMPONENT_PATHS = {
+        "source_code": "./salmonn-source-code",
+        "whisper": os.path.join(_LOCAL_MODEL_DIR, "whisper-large-v2"),
+        "beats": os.path.join(_LOCAL_MODEL_DIR, "beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt"),
+        "vicuna": os.path.join(_LOCAL_MODEL_DIR, "vicuna-13b-v1.1"),
+        "salmonn_checkpoint": os.path.join(_LOCAL_MODEL_DIR, "salmonn-13b-checkpoint/salmonn_v1.pth"),
+        "bert_base": os.path.join(_LOCAL_MODEL_DIR, "bert-base-uncased"),
+    }
+    print(f"[CONFIG] Using LOCAL SSD model paths from: {_LOCAL_MODEL_DIR}")
+else:
+    # Default: use network /scratch paths
+    SALMONN_COMPONENT_PATHS = {
+        "source_code": "./salmonn-source-code",
+        "whisper": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/whisper-large-v2",
+        "beats": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
+        "vicuna": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/vicuna-13b-v1.1",
+        "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
+        "bert_base": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/bert-base-uncased",
+    }
 
 # The main directory where all experimental results will be saved.
 RESULTS_DIR = "./results"
