@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/usr/bin/env python3
 # test_mistral_inference.py
 
@@ -6,6 +7,15 @@ Standalone test script to verify Mistral Small 3 is working correctly using vLLM
 
 This script:
 1. Loads Mistral Small 3 using vLLM
+=======
+# test_mistral_inference.py
+
+"""
+Standalone test script to verify Mistral Small 3 is working correctly.
+
+This script:
+1. Loads Mistral Small 3 using native HuggingFace Transformers
+>>>>>>> 7917316929f71a0ea4e2725be52fee4dfb0006ec
 2. Runs a sample mistake generation
 3. Runs a sample paraphrasing
 4. Prints outputs and timing information
@@ -20,7 +30,11 @@ import logging
 import sys
 
 # Add project root to path
+<<<<<<< HEAD
 sys.path.insert(0, '/project/def-csubakan-ab/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs')
+=======
+sys.path.insert(0, '/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs')
+>>>>>>> 7917316929f71a0ea4e2725be52fee4dfb0006ec
 
 from core.mistral_utils import (
     load_mistral_model,
@@ -37,7 +51,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+<<<<<<< HEAD
 def test_basic_inference(model):
+=======
+def test_basic_inference(model, tokenizer):
+>>>>>>> 7917316929f71a0ea4e2725be52fee4dfb0006ec
     """Test basic chat inference."""
     print("\n" + "="*60)
     print("TEST 1: Basic Inference")
@@ -48,7 +66,11 @@ def test_basic_inference(model):
     ]
     
     start_time = time.time()
+<<<<<<< HEAD
     response = run_mistral_inference(model, messages, max_new_tokens=50)
+=======
+    response = run_mistral_inference(model, tokenizer, messages, max_new_tokens=50)
+>>>>>>> 7917316929f71a0ea4e2725be52fee4dfb0006ec
     elapsed = time.time() - start_time
     
     print(f"Prompt: {messages[0]['content']}")
@@ -58,7 +80,11 @@ def test_basic_inference(model):
     return response is not None and len(response) > 0
 
 
+<<<<<<< HEAD
 def test_mistake_generation(model):
+=======
+def test_mistake_generation(model, tokenizer):
+>>>>>>> 7917316929f71a0ea4e2725be52fee4dfb0006ec
     """Test mistake generation for CoT reasoning."""
     print("\n" + "="*60)
     print("TEST 2: Mistake Generation")
@@ -72,7 +98,11 @@ def test_mistake_generation(model):
     print(f"Original sentence: {original_sentence}")
     
     start_time = time.time()
+<<<<<<< HEAD
     mistaken = generate_mistake(model, question, choices, original_sentence)
+=======
+    mistaken = generate_mistake(model, tokenizer, question, choices, original_sentence)
+>>>>>>> 7917316929f71a0ea4e2725be52fee4dfb0006ec
     elapsed = time.time() - start_time
     
     print(f"Mistaken sentence: {mistaken}")
@@ -81,7 +111,11 @@ def test_mistake_generation(model):
     return mistaken is not None and len(mistaken) > 0
 
 
+<<<<<<< HEAD
 def test_paraphrasing(model):
+=======
+def test_paraphrasing(model, tokenizer):
+>>>>>>> 7917316929f71a0ea4e2725be52fee4dfb0006ec
     """Test paraphrasing capability."""
     print("\n" + "="*60)
     print("TEST 3: Paraphrasing")
@@ -92,7 +126,11 @@ def test_paraphrasing(model):
     print(f"Original text: {text}")
     
     start_time = time.time()
+<<<<<<< HEAD
     paraphrased = paraphrase_text(model, text)
+=======
+    paraphrased = paraphrase_text(model, tokenizer, text)
+>>>>>>> 7917316929f71a0ea4e2725be52fee4dfb0006ec
     elapsed = time.time() - start_time
     
     print(f"Paraphrased text: {paraphrased}")
@@ -102,11 +140,16 @@ def test_paraphrasing(model):
 
 
 def main():
+<<<<<<< HEAD
     parser = argparse.ArgumentParser(description="Test Mistral Small 3 inference with vLLM")
+=======
+    parser = argparse.ArgumentParser(description="Test Mistral Small 3 inference")
+>>>>>>> 7917316929f71a0ea4e2725be52fee4dfb0006ec
     parser.add_argument(
         "--model-path",
         type=str,
         default=None,
+<<<<<<< HEAD
         help="Path to local model weights. If not provided, downloads from HuggingFace."
     )
     args = parser.parse_args()
@@ -127,6 +170,28 @@ def main():
     results['basic'] = test_basic_inference(model)
     results['mistake'] = test_mistake_generation(model)
     results['paraphrase'] = test_paraphrasing(model)
+=======
+        help="Path to local model weights. If not provided, uses HuggingFace model ID."
+    )
+    args = parser.parse_args()
+    
+    print("="*60, flush=True)
+    print("MISTRAL SMALL 3 INFERENCE TEST (Native Transformers)", flush=True)
+    print("="*60, flush=True)
+    
+    # Load model
+    print("\nLoading Mistral Small 3 with HuggingFace Transformers...", flush=True)
+    start_time = time.time()
+    model, tokenizer = load_mistral_model(model_path=args.model_path)
+    load_time = time.time() - start_time
+    print(f"Model loaded in {load_time:.2f}s", flush=True)
+    
+    # Run tests
+    results = {}
+    results['basic'] = test_basic_inference(model, tokenizer)
+    results['mistake'] = test_mistake_generation(model, tokenizer)
+    results['paraphrase'] = test_paraphrasing(model, tokenizer)
+>>>>>>> 7917316929f71a0ea4e2725be52fee4dfb0006ec
     
     # Summary
     print("\n" + "="*60)
