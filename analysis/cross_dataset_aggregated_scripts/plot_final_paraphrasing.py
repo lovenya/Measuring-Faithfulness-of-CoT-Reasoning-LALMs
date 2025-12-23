@@ -33,7 +33,7 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool):
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, is_restricted: bool = True, perturbation_source: str = 'self'):
     """
     Orchestrates the data loading, processing, and plotting for the Paraphrasing experiment.
 
@@ -46,6 +46,8 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
         save_stats (bool): Flag to save a detailed statistical summary to a file.
         save_pdf (bool): Flag to save a PDF copy of the plot.
         show_ci (bool): Flag to show the 95% confidence interval on the plot.
+        is_restricted (bool): If True, use restricted dataset versions (1-6 step CoTs).
+        perturbation_source (str): Source of perturbations ('self' or 'mistral').
     """
     
     experiment_name = "paraphrasing"
@@ -55,12 +57,19 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     all_dfs = []
     try:
         baseline_dir = os.path.join(results_dir, model_name, 'baseline')
-        dataset_names = sorted(list(set([f.replace(f'baseline_{model_name}_', '').replace('-restricted.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('-restricted.jsonl')])))
-        print(f"Found restricted datasets to process: {dataset_names}")
+        suffix = '-restricted.jsonl' if is_restricted else '.jsonl'
+        dataset_names = sorted(list(set([
+            f.replace(f'baseline_{model_name}_', '').replace('-restricted.jsonl', '').replace('.jsonl', '')
+            for f in os.listdir(baseline_dir) 
+            if f.endswith(suffix) and (not f.endswith('-restricted.jsonl') or is_restricted)
+        ])))
+        dataset_type = "restricted" if is_restricted else "full"
+        perturbation_type = f" [{perturbation_source.upper()} perturbation]" if perturbation_source != 'self' else ""
+        print(f"Found {dataset_type} datasets to process{perturbation_type}: {dataset_names}")
 
         for dataset in dataset_names:
             try:
-                df = load_results(model_name, results_dir, experiment_name, dataset, is_restricted=True)
+                df = load_results(model_name, results_dir, experiment_name, dataset, is_restricted=is_restricted, perturbation_source=perturbation_source)
                 # "Meaningful Manipulation" Filter: Paraphrasing requires at least one sentence.
                 df = df[df['total_sentences_in_chain'] > 0].copy()
                 if not df.empty:
@@ -98,7 +107,11 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     # --- Prepare Output Path ---
     output_dir = os.path.join(plots_dir, model_name, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
-    base_filename = f"cross_dataset_{experiment_name}_{model_name}-restricted"
+    base_filename = f"cross_dataset_{experiment_name}_{model_name}"
+    if is_restricted:
+        base_filename += "-restricted"
+    if perturbation_source != 'self':
+        base_filename += f"-{perturbation_source}"
     
     # --- Statistical Analysis & Optional Output ---
     if print_line_data or save_stats:
@@ -160,12 +173,13 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
                      linestyle='-',
                      linewidth=2,
                      markersize=20,
-                     ci=95 if show_ci else None,
+                     errorbar=('ci', 95) if show_ci else None,
                      ax=ax,
                      legend=False)
         
     # Update plot titles and labels for this specific experiment
-    ax.set_title(f'Paraphrasing, {model_name.upper()}', fontsize=fontsize)
+    title_suffix = " [Mistral]" if perturbation_source == 'mistral' else ""
+    ax.set_title(f'Paraphrasing{title_suffix}, {model_name.upper()}', fontsize=fontsize)
     ax.set_xlabel('Percentage % of Sentences Paraphrased', fontsize=fontsize)
     ax.set_ylabel('Consistency (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
@@ -212,6 +226,10 @@ if __name__ == "__main__":
     parser.add_argument('--save-stats', action='store_true', help="Save a detailed statistical summary to a .txt file.")
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
     parser.add_argument('--show-ci', action='store_true', help="Show the 95% confidence interval as a shaded region.")
+    parser.add_argument('--restricted', action='store_true', default=True, help="Use restricted dataset versions (1-6 step CoTs). Default: True.")
+    parser.add_argument('--no-restricted', action='store_true', help="Use full dataset versions instead of restricted.")
+    parser.add_argument('--perturbation-source', type=str, default='self', choices=['self', 'mistral'], help="Source of perturbations ('self' or 'mistral').")
     args = parser.parse_args()
     
-    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci)
+    is_restricted = not args.no_restricted
+    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, is_restricted, args.perturbation_source)

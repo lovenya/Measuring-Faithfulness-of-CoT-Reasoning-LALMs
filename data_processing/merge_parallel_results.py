@@ -16,7 +16,7 @@ import os
 import argparse
 import glob
 
-def merge_part_files(model: str, experiment: str, dataset: str, results_dir: str, restricted: bool):
+def merge_part_files(model: str, experiment: str, dataset: str, results_dir: str, restricted: bool, perturbation_source: str = 'self'):
     """
     Finds all .part_*.jsonl files for a given experiment run, concatenates them,
     and saves them to a final, consolidated .jsonl file.
@@ -26,6 +26,8 @@ def merge_part_files(model: str, experiment: str, dataset: str, results_dir: str
     print(f"  - Experiment: {experiment.upper()}")
     print(f"  - Dataset: {dataset.upper()}")
     print(f"  - Run Mode: {'RESTRICTED' if restricted else 'FULL DATASET'}")
+    if perturbation_source != 'self':
+        print(f"  - Perturbation Source: {perturbation_source.upper()}")
 
     # --- 1. Define the Search Directory and Pattern ---
     # We construct the path to the directory where the part files are located.
@@ -33,10 +35,12 @@ def merge_part_files(model: str, experiment: str, dataset: str, results_dir: str
     search_dir = os.path.join(results_dir, model, experiment)
     
     # We construct the base filename to search for.
-    # e.g., 'adding_mistakes_salmonn_mmar-restricted'
+    # e.g., 'adding_mistakes_salmonn_mmar-restricted' or 'adding_mistakes_salmonn_mmar-restricted-mistral'
     base_filename = f"{experiment}_{model}_{dataset}"
     if restricted:
         base_filename += "-restricted"
+    if perturbation_source == 'mistral':
+        base_filename += "-mistral"
         
     # We create a glob pattern to find all files that match our base name
     # and have the '.part_*.jsonl' suffix.
@@ -89,6 +93,7 @@ if __name__ == "__main__":
     parser.add_argument('--dataset', type=str, required=True, help="The dataset alias (e.g., 'mmar').")
     parser.add_argument('--results_dir', type=str, default='./results', help="Path to the main results directory.")
     parser.add_argument('--restricted', action='store_true', help="Specify if the run was on the '-restricted' subset.")
+    parser.add_argument('--perturbation-source', type=str, default='self', choices=['self', 'mistral'], help="Source of perturbations ('self' or 'mistral').")
     args = parser.parse_args()
 
-    merge_part_files(args.model, args.experiment, args.dataset, args.results_dir, args.restricted)
+    merge_part_files(args.model, args.experiment, args.dataset, args.results_dir, args.restricted, getattr(args, 'perturbation_source', 'self'))
