@@ -4,12 +4,13 @@ import os
 import json
 import pandas as pd
 
-def load_results(model_name: str, results_dir: str, experiment_name: str, dataset_name: str, is_restricted: bool, filler_type: str = 'dots') -> pd.DataFrame:
+def load_results(model_name: str, results_dir: str, experiment_name: str, dataset_name: str, is_restricted: bool, filler_type: str = 'dots', perturbation_source: str = 'self') -> pd.DataFrame:
     """
     Loads experiment results from a model-specific JSONL file into a Pandas DataFrame.
 
     This function is the single source of truth for constructing file paths. It now
-    correctly handles the distinction between 'full' and 'restricted' datasets.
+    correctly handles the distinction between 'full' and 'restricted' datasets,
+    filler types, and perturbation sources.
 
     Args:
         model_name (str): The name of the model (e.g., 'qwen', 'salmonn').
@@ -18,6 +19,7 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
         dataset_name (str): The short name of the dataset (e.g., 'mmar').
         is_restricted (bool): If True, loads the '-restricted.jsonl' version of the file.
         filler_type (str): Type of filler used (e.g., 'dots', 'lorem'). Defaults to 'dots'.
+        perturbation_source (str): Source of perturbations ('self' or 'mistral'). Defaults to 'self'.
 
     Raises:
         FileNotFoundError: If the specified results file does not exist.
@@ -28,8 +30,8 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
     # Construct the model-specific path, e.g., 'results/qwen/baseline/'
     experiment_path = os.path.join(results_dir, model_name, experiment_name)
     
-    # --- THE CRITICAL CHANGE: Conditional Filename Construction ---
-    # Based on the 'is_restricted' flag, we construct the correct filename suffix.
+    # --- FILENAME CONSTRUCTION ---
+    # Build filename with appropriate suffixes based on flags
     if is_restricted:
         # e.g., 'baseline_qwen_mmar-restricted'
         base_name = f"{experiment_name}_{model_name}_{dataset_name}-restricted"
@@ -41,8 +43,12 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
     if filler_type == 'lorem':
         base_name += "-lorem"
     
+    # Append suffix for Mistral perturbation source
+    if perturbation_source == 'mistral':
+        base_name += "-mistral"
+    
     filename = f"{base_name}.jsonl"
-    # --- END OF CHANGE ---
+    # --- END OF FILENAME CONSTRUCTION ---
     
     full_path = os.path.join(experiment_path, filename)
 
