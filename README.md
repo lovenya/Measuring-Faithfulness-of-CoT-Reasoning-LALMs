@@ -1,6 +1,15 @@
 # Measuring Faithfulness in Chain-of-Thought Reasoning for Large Audio-Language Models
 
-📃 [Arxiv link - Investigating Faithfulness in Large Audio Language Models](https://arxiv.org/abs/2509.22363v2)
+🌐 **[Our website - results/plots for copmarison](https://poonehmousavi.github.io/faithfulness/)**  
+📃 **[Arxiv link - Investigating Faithfulness in Large Audio Language Models](https://arxiv.org/abs/2509.22363v2)**  
+
+
+[UPDATE]: Website now includes results for **`Audio Flamingo 3 - thinking`** as well, with **`SALMONN 7B`** underway.  
+We also carry out the 'adding mistakes' and 'paraphrasing' experiments - using an **`external LLM - Mistral`**, to avoid any bias from the models while generating perturbations (results included in the website).  
+For filler tokens exepriment - we carry out replacement by replacing tokens of CoT with '...' to simulate test time compute while destroying semantics, but in order to avoid any deviation in results due to '...' being **out-of-distribution** for the models, we also carry out the **random partial filler** tokens experiment by replacing tokens of CoT with **_syntactic but meaningless_** words like - `lorem ipsum` etc. It can be carried out by `--filler-type lorem`.  
+In all of these varaiations, we observe the same results. We'll keep adding interesting variations on the website :)  
+
+
 
 This repository contains the complete framework and results for a series of behavioral experiments designed to measure the reasoning faithfulness of Large Audio-Language Models (LALMs). We investigate the conditions under which a model's generated explanation (its Chain-of-Thought) can be trusted as a true reflection of its decision-making process. Our framework is modular, model-agnostic, and designed for reproducibility in HPC enviroments (online login nodes, offline compute nodes - we're not using any API for inference, downloading all the weights)
 
