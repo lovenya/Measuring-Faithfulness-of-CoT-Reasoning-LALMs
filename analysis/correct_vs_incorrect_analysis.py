@@ -9,6 +9,7 @@ Generates separate consistency plots and summary tables for:
 For Qwen and SALMONN models, all 4 experiments, all 5 datasets, restricted mode.
 """
 
+import argparse
 import os
 import sys
 import json
@@ -177,7 +178,7 @@ def calculate_slope(curve):
     return slope
 
 
-def generate_plot(super_df, model_name, experiment_name, split_name, output_dir):
+def generate_plot(super_df, model_name, experiment_name, split_name, output_dir, show_ci=False, y_zoom=None):
     """Generate and save a consistency plot."""
     exp_config = EXPERIMENTS[experiment_name]
     
@@ -203,8 +204,7 @@ def generate_plot(super_df, model_name, experiment_name, split_name, output_dir)
                      linewidth=2,
                      markersize=12,
                      ax=ax,
-                     legend=True,
-                     errorbar=None)
+                     errorbar=('ci', 95) if show_ci else None)
     
     title = f'{experiment_name.replace("_", " ").title()}, {model_name.upper()}\n(Baseline {split_name.title()})'
     ax.set_title(title, fontsize=fontsize)
@@ -212,7 +212,10 @@ def generate_plot(super_df, model_name, experiment_name, split_name, output_dir)
     ax.set_ylabel('Consistency (%)', fontsize=fontsize-4)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-8))
     
-    ax.set_ylim(0, 105)
+    if y_zoom:
+        ax.set_ylim(y_zoom[0], y_zoom[1])
+    else:
+        ax.set_ylim(0, 105)
     ax.set_xlim(-5, 105)
     ax.legend(fontsize=fontsize-8, loc='best')
     ax.grid(True)
@@ -227,13 +230,16 @@ def generate_plot(super_df, model_name, experiment_name, split_name, output_dir)
     print(f"  Saved plot: {plot_path}")
 
 
-def analyze_all():
-    """Run analysis for all combinations."""
+def analyze_all(filter_model=None, filter_experiment=None):
+    """Run analysis for all (or filtered) combinations."""
     results = {}
     
-    for model in MODELS:
+    models_to_process = [filter_model] if filter_model else MODELS
+    experiments_to_process = [filter_experiment] if filter_experiment else EXPERIMENTS.keys()
+    
+    for model in models_to_process:
         results[model] = {}
-        for experiment in EXPERIMENTS:
+        for experiment in experiments_to_process:
             results[model][experiment] = {}
             for dataset in DATASETS:
                 print(f"Processing: {model} / {experiment} / {dataset}")
@@ -271,12 +277,15 @@ def analyze_all():
     return results
 
 
-def generate_all_plots(results):
-    """Generate plots for all model/experiment/split combinations."""
+def generate_all_plots(results, show_ci=False, y_zoom=None, filter_model=None, filter_experiment=None):
+    """Generate plots for all (or filtered) model/experiment/split combinations."""
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     
-    for model in MODELS:
-        for experiment in EXPERIMENTS:
+    models_to_process = [filter_model] if filter_model else MODELS
+    experiments_to_process = [filter_experiment] if filter_experiment else EXPERIMENTS.keys()
+    
+    for model in models_to_process:
+        for experiment in experiments_to_process:
             for split_name in ['correct', 'incorrect']:
                 print(f"Generating plot: {model}/{experiment}/{split_name}")
                 
@@ -291,7 +300,22 @@ def generate_all_plots(results):
                 
                 if all_dfs:
                     super_df = pd.concat(all_dfs, ignore_index=True)
-                    generate_plot(super_df, model, experiment, split_name, OUTPUT_DIR)
+                    
+                    # Add synthetic anchor points for specific experiments
+                    if experiment == 'adding_mistakes':
+                        # 100% of chain without mistake = 100% consistent (baseline)
+                        anchor_df = super_df.drop_duplicates(subset=['id', 'chain_id', 'dataset']).copy()
+                        anchor_df['x_binned'] = 100
+                        anchor_df['is_consistent_with_baseline'] = True
+                        super_df = pd.concat([super_df, anchor_df], ignore_index=True)
+                    elif experiment == 'paraphrasing':
+                        # 0% paraphrased = 100% consistent (baseline)
+                        anchor_df = super_df.drop_duplicates(subset=['id', 'chain_id', 'dataset']).copy()
+                        anchor_df['x_binned'] = 0
+                        anchor_df['is_consistent_with_baseline'] = True
+                        super_df = pd.concat([super_df, anchor_df], ignore_index=True)
+                    
+                    generate_plot(super_df, model, experiment, split_name, OUTPUT_DIR, show_ci=show_ci, y_zoom=y_zoom)
 
 
 def format_summary_table(results):
@@ -302,13 +326,14 @@ def format_summary_table(results):
     lines.append("=" * 140)
     lines.append("")
     
-    for model in MODELS:
+    # Iterate over only the models/experiments in results (respects filtering)
+    for model in results.keys():
         lines.append("")
         lines.append("#" * 140)
         lines.append(f"# MODEL: {model.upper()}")
         lines.append("#" * 140)
         
-        for experiment in EXPERIMENTS:
+        for experiment in results[model].keys():
             lines.append("")
             lines.append("-" * 120)
             lines.append(f"Experiment: {experiment}")
@@ -410,4 +435,38 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Correct vs Incorrect Baseline Analysis with CI support.")
+    parser.add_argument('--model', type=str, default=None, choices=['qwen', 'salmonn'], help="Run for specific model only.")
+    parser.add_argument('--experiment', type=str, default=None, choices=['adding_mistakes', 'early_answering', 'paraphrasing', 'random_partial_filler_text'], help="Run for specific experiment only.")
+    parser.add_argument('--show-ci', action='store_true', help="Show 95% confidence interval in plots.")
+    parser.add_argument('--y-zoom', nargs=2, type=float, default=None, help="Custom Y-axis range (e.g., --y-zoom 40 101).")
+    args = parser.parse_args()
+    
+    print("Correct vs Incorrect Baseline Analysis")
+    print(f"Results directory: {RESULTS_DIR}")
+    print(f"Output directory: {OUTPUT_DIR}")
+    if args.show_ci:
+        print("Confidence intervals: ENABLED")
+    if args.y_zoom:
+        print(f"Y-axis zoom: {args.y_zoom[0]} - {args.y_zoom[1]}")
+    if args.model:
+        print(f"Filtering to model: {args.model}")
+    if args.experiment:
+        print(f"Filtering to experiment: {args.experiment}")
+    print()
+    
+    # Run analysis
+    results = analyze_all(filter_model=args.model, filter_experiment=args.experiment)
+    
+    # Generate plots with CI and y-zoom options
+    generate_all_plots(results, show_ci=args.show_ci, y_zoom=args.y_zoom, filter_model=args.model, filter_experiment=args.experiment)
+    
+    # Generate summary table
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    summary = format_summary_table(results)
+    summary_path = os.path.join(OUTPUT_DIR, 'correct_vs_incorrect_summary.txt')
+    with open(summary_path, 'w') as f:
+        f.write(summary)
+    print(f"\nSummary saved to: {summary_path}")
+    
+    print("\nDone!")
