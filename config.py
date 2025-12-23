@@ -18,6 +18,7 @@ MODEL_PATHS = {
 
     # --- SALMONN (Multi-Component) ---
     "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
+    "salmonn_7b_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-7b-checkpoint/salmonn_7b_v0.pth",
 
     # --- Mistral Small 3 (External Perturbation Model) ---
     # Used for generating mistakes and paraphrasing to avoid in-distribution bias
@@ -38,6 +39,15 @@ if _LOCAL_MODEL_DIR and os.path.exists(_LOCAL_MODEL_DIR):
         "salmonn_checkpoint": os.path.join(_LOCAL_MODEL_DIR, "salmonn-13b-checkpoint/salmonn_v1.pth"),
         "bert_base": os.path.join(_LOCAL_MODEL_DIR, "bert-base-uncased"),
     }
+    
+    SALMONN_7B_COMPONENT_PATHS = {
+        "source_code": "./salmonn-source-code",
+        "whisper": os.path.join(_LOCAL_MODEL_DIR, "whisper-large-v2"),
+        "beats": os.path.join(_LOCAL_MODEL_DIR, "beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt"),
+        "vicuna": os.path.join(_LOCAL_MODEL_DIR, "vicuna-7b-v1.5"),
+        "salmonn_checkpoint": os.path.join(_LOCAL_MODEL_DIR, "salmonn-7b-checkpoint/salmonn_7b_v0.pth"),
+        "bert_base": os.path.join(_LOCAL_MODEL_DIR, "bert-base-uncased"),
+    }
     print(f"[CONFIG] Using LOCAL SSD model paths from: {_LOCAL_MODEL_DIR}")
 else:
     # Default: use network /scratch paths
@@ -47,6 +57,15 @@ else:
         "beats": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
         "vicuna": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/vicuna-13b-v1.1",
         "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
+        "bert_base": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/bert-base-uncased",
+    }
+
+    SALMONN_7B_COMPONENT_PATHS = {
+        "source_code": "./salmonn-source-code",
+        "whisper": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/whisper-large-v2",
+        "beats": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
+        "vicuna": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/vicuna-7b-v1.5",
+        "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-7b-checkpoint/salmonn_7b_v0.pth",
         "bert_base": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/bert-base-uncased",
     }
 
@@ -65,7 +84,8 @@ MODEL_ALIASES = {
     "flamingo": "flamingo_weights",
     # This line tells main.py: "when the user types 'salmonn', the key you
     # need to look for in MODEL_PATHS is 'salmonn_checkpoint'".
-    "salmonn": "salmonn_checkpoint"
+    "salmonn": "salmonn_checkpoint",
+    "salmonn_7b": "salmonn_7b_checkpoint",
 }
 
 
