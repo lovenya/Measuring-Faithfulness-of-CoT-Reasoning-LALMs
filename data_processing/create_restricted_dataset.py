@@ -33,7 +33,7 @@ else:
     exit(1)
 
 
-def create_restricted_files(model: str, dataset: str, results_dir: str, num_chains: int | None):
+def create_restricted_files(model: str, dataset: str, results_dir: str, num_chains: int | None, skip_no_reasoning: bool = False):
     """
     Reads full foundational results and writes new '-restricted.jsonl' versions
     based on the specified number of chains and sentence lengths.
@@ -41,6 +41,8 @@ def create_restricted_files(model: str, dataset: str, results_dir: str, num_chai
     print(f"\n--- Creating Restricted Dataset for Model: {model.upper()}, Dataset: {dataset.upper()} ---")
     if num_chains:
         print(f"  - Restricting to the first {num_chains} chains per question.")
+    if skip_no_reasoning:
+        print(f"  - Skipping no_reasoning file (baseline-only mode).")
 
     # --- 1. Define Input and Output Paths ---
     # This logic correctly constructs the paths to the full results files.
@@ -53,10 +55,14 @@ def create_restricted_files(model: str, dataset: str, results_dir: str, num_chai
     no_reasoning_output_path = no_reasoning_input_path.replace('.jsonl', '-restricted.jsonl')
 
     # Check if the required input files exist.
-    for path in [baseline_input_path, no_reasoning_input_path]:
-        if not os.path.exists(path):
-            print(f"  - FATAL: Required input file not found at '{path}'. Cannot proceed.")
-            return
+    if not os.path.exists(baseline_input_path):
+        print(f"  - FATAL: Required input file not found at '{baseline_input_path}'. Cannot proceed.")
+        return
+    
+    if not skip_no_reasoning and not os.path.exists(no_reasoning_input_path):
+        print(f"  - FATAL: Required input file not found at '{no_reasoning_input_path}'.")
+        print(f"    Use --skip-no-reasoning to create restricted baseline without no_reasoning file.")
+        return
 
     # --- 2. Stage 1: Filter by Number of Chains ---
     print(f"Reading full baseline data from: {baseline_input_path}")
@@ -102,20 +108,23 @@ def create_restricted_files(model: str, dataset: str, results_dir: str, num_chai
     print(f"  - Wrote {len(restricted_baseline_chains)} valid chains to: {baseline_output_path}")
 
     # --- 4. Filter the No-Reasoning File based on the final set of valid IDs ---
-    print(f"Reading full no-reasoning data from: {no_reasoning_input_path}")
-    restricted_no_reasoning_chains = []
-    with open(no_reasoning_input_path, 'r') as f_in:
-        for line in f_in:
-            data = json.loads(line)
-            # We only keep data for questions that are present in our final restricted baseline file.
-            # We also respect the num_chains limit for this file.
-            if data['id'] in valid_question_ids and (not num_chains or data['chain_id'] < num_chains):
-                restricted_no_reasoning_chains.append(data)
+    if skip_no_reasoning:
+        print(f"  - Skipping no-reasoning filtering (--skip-no-reasoning enabled).")
+    else:
+        print(f"Reading full no-reasoning data from: {no_reasoning_input_path}")
+        restricted_no_reasoning_chains = []
+        with open(no_reasoning_input_path, 'r') as f_in:
+            for line in f_in:
+                data = json.loads(line)
+                # We only keep data for questions that are present in our final restricted baseline file.
+                # We also respect the num_chains limit for this file.
+                if data['id'] in valid_question_ids and (not num_chains or data['chain_id'] < num_chains):
+                    restricted_no_reasoning_chains.append(data)
 
-    with open(no_reasoning_output_path, 'w') as f_out:
-        for chain in restricted_no_reasoning_chains:
-            f_out.write(json.dumps(chain, ensure_ascii=False) + "\n")
-    print(f"  - Wrote {len(restricted_no_reasoning_chains)} corresponding no-reasoning chains to: {no_reasoning_output_path}")
+        with open(no_reasoning_output_path, 'w') as f_out:
+            for chain in restricted_no_reasoning_chains:
+                f_out.write(json.dumps(chain, ensure_ascii=False) + "\n")
+        print(f"  - Wrote {len(restricted_no_reasoning_chains)} corresponding no-reasoning chains to: {no_reasoning_output_path}")
     print("--- Restricted dataset creation complete. ---")
 
 
@@ -128,12 +137,16 @@ if __name__ == "__main__":
     parser.add_argument('--dataset', type=str, required=True, help="The dataset alias (e.g., 'mmar', or 'all').")
     parser.add_argument('--results_dir', type=str, default='./results', help="Path to the main results directory.")
     
-    # --- NEW: --num-chains Argument ---
     parser.add_argument(
         '--num-chains', 
         type=int, 
         default=None, 
         help="If specified, restrict the dataset to the first N chains for each question."
+    )
+    parser.add_argument(
+        '--skip-no-reasoning',
+        action='store_true',
+        help="Skip no_reasoning file filtering. Use when only baseline is needed for dependent experiments."
     )
     
     args = parser.parse_args()
@@ -148,8 +161,8 @@ if __name__ == "__main__":
             ])))
             print(f"Found {len(dataset_names)} datasets for model '{args.model}': {dataset_names}")
             for dataset_name in dataset_names:
-                create_restricted_files(args.model, dataset_name, args.results_dir, args.num_chains)
+                create_restricted_files(args.model, dataset_name, args.results_dir, args.num_chains, args.skip_no_reasoning)
         except FileNotFoundError:
             print(f"Could not find baseline directory for model '{args.model}' at '{model_baseline_dir}'.")
     else:
-        create_restricted_files(args.model, args.dataset, args.results_dir, args.num_chains)
+        create_restricted_files(args.model, args.dataset, args.results_dir, args.num_chains, args.skip_no_reasoning)
