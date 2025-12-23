@@ -167,7 +167,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
                      linestyle='-',
                      linewidth=2,
                      markersize=20,
-                     ci=95 if show_ci else None,
+                     errorbar=('ci', 95) if show_ci else None,
                      ax=ax,
                      legend=False)
         
