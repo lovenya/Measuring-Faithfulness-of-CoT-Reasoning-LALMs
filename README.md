@@ -1,10 +1,8 @@
 # Measuring Faithfulness in Chain-of-Thought Reasoning for Large Audio-Language Models
 
-
 ## 🌐 [Our website - results/plots for comparison](https://poonehmousavi.github.io/faithfulness/)
 
-📃 **[Arxiv link - Investigating Faithfulness in Large Audio Language Models](https://arxiv.org/abs/2509.22363v2)**  
-
+📃 **[Arxiv link - Investigating Faithfulness in Large Audio Language Models](https://arxiv.org/abs/2509.22363v2)**
 
 [UPDATE]: Website now includes results for **`Audio Flamingo 3 - thinking`** as well, with **`SALMONN 7B`** underway.  
 We also carry out the 'adding mistakes' and 'paraphrasing' experiments - using an **`external LLM - Mistral`**, to avoid any bias from the models while generating perturbations (results included in the website).  
@@ -17,10 +15,13 @@ This repository contains the complete framework and results for a series of beha
 
 ## Key Findings & Visualizations
 
-All the plots included in the paper, as well as the plots that were not - providing further detailed analysis have been included in the following Google Drive link.  
-It has also been updated with the Audio Flamingo 3 plots.
+We have included the website link for the results and plots.
 
-**[Google Drive Link](https://drive.google.com/drive/folders/1yVnsEdglHMpJl-DETh8sOCZKNtjtnJDG?usp=sharing)**
+[Our website - results/plots for comparison](https://poonehmousavi.github.io/faithfulness/)
+
+<!-- All the plots included in the paper, as well as the plots that were not - providing further detailed analysis have been included in the following website. -->
+
+<!-- **[Google Drive Link](https://drive.google.com/drive/folders/1yVnsEdglHMpJl-DETh8sOCZKNtjtnJDG?usp=sharing)** -->
 
 ## The Experimental Framework: A Quick Tour
 
