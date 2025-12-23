@@ -69,18 +69,29 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object, object]:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logging.info(f"Target device for model loading: {device.upper()}")
     
+    # Determine which component set to use based on the checkpoint filename
+    if "7b" in os.path.basename(model_path).lower():
+        logging.info("Detected SALMONN-7B model.")
+        component_paths = framework_config.SALMONN_7B_COMPONENT_PATHS
+    else:
+        logging.info("Detected SALMONN-13B model (Default).")
+        component_paths = framework_config.SALMONN_COMPONENT_PATHS
+
     # We use the model's own YAML config as a template, which is more robust
     # than creating the configuration from scratch.
-    config_path = os.path.join(framework_config.SALMONN_COMPONENT_PATHS['source_code'], 'configs/decode_config.yaml')
+    config_path = os.path.join(component_paths['source_code'], 'configs/decode_config.yaml')
     # We create a mock argparse object to satisfy the SALMONN Config class constructor.
     mock_args = type('Args', (), {'cfg_path': config_path, 'options': None})()
     cfg = SalmonnConfig(mock_args)
 
     # We then override the placeholder paths in the YAML with our actual local paths.
-    cfg.config.model.llama_path = framework_config.SALMONN_COMPONENT_PATHS['vicuna']
-    cfg.config.model.whisper_path = framework_config.SALMONN_COMPONENT_PATHS['whisper']
-    cfg.config.model.beats_path = framework_config.SALMONN_COMPONENT_PATHS['beats']
-    cfg.config.model.ckpt = framework_config.SALMONN_COMPONENT_PATHS['salmonn_checkpoint']
+    cfg.config.model.llama_path = component_paths['vicuna']
+    cfg.config.model.whisper_path = component_paths['whisper']
+    cfg.config.model.beats_path = component_paths['beats']
+    cfg.config.model.ckpt = component_paths['salmonn_checkpoint']
+    
+    # Explicitly force the checkpoint path from the argument to be sure
+    cfg.config.model.ckpt = model_path
 
     logging.info("Instantiating SALMONN model from config...")
     model = SALMONN.from_config(cfg.config.model)
@@ -89,7 +100,7 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object, object]:
 
     logging.info("Loading WhisperFeatureExtractor...")
     processor = WhisperFeatureExtractor.from_pretrained(
-        framework_config.SALMONN_COMPONENT_PATHS['whisper'],
+        component_paths['whisper'],
         local_files_only=True
     )
     

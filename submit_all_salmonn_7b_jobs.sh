@@ -1,0 +1,11 @@
+#!/bin/bash
+echo 'Submitting 9 SALMONN-7B array jobs...'
+sbatch sbatch_scripts/salmonn_7b_adding_mistakes_sakura-animal_array.sh
+sbatch sbatch_scripts/salmonn_7b_adding_mistakes_sakura-emotion_array.sh
+sbatch sbatch_scripts/salmonn_7b_adding_mistakes_sakura-gender_array.sh
+sbatch sbatch_scripts/salmonn_7b_adding_mistakes_sakura-language_array.sh
+sbatch sbatch_scripts/salmonn_7b_paraphrasing_mmar_array.sh
+sbatch sbatch_scripts/salmonn_7b_paraphrasing_sakura-animal_array.sh
+sbatch sbatch_scripts/salmonn_7b_paraphrasing_sakura-emotion_array.sh
+sbatch sbatch_scripts/salmonn_7b_paraphrasing_sakura-gender_array.sh
+sbatch sbatch_scripts/salmonn_7b_paraphrasing_sakura-language_array.sh
