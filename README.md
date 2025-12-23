@@ -6,8 +6,6 @@
 📃 **[Arxiv link - Investigating Faithfulness in Large Audio Language Models](https://arxiv.org/abs/2509.22363v2)**  
 
 
-📃 **[Arxiv link - Investigating Faithfulness in Large Audio Language Models](https://arxiv.org/abs/2509.22363v2)**
-
 [UPDATE]: Website now includes results for **`Audio Flamingo 3 - thinking`** as well, with **`SALMONN 7B`** underway.  
 We also carry out the 'adding mistakes' and 'paraphrasing' experiments - using an **`external LLM - Mistral`**, to avoid any bias from the models while generating perturbations (results included in the website).  
 For filler tokens exepriment - we carry out replacement by replacing tokens of CoT with '...' to simulate test time compute while destroying semantics, but in order to avoid any deviation in results due to '...' being **out-of-distribution** for the models, we also carry out the **random partial filler** tokens experiment by replacing tokens of CoT with **_syntactic but meaningless_** words like - `lorem ipsum` etc. It can be carried out by `--filler-type lorem`.  
