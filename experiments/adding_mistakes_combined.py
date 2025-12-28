@@ -65,8 +65,17 @@ def run(model, processor, tokenizer, model_utils, config):
     Orchestrates the 'Adding Mistakes' experiment using pre-combined files.
     """
     # --- 1. Load Combined Data ---
+    # Auto-detect combined file path if not explicitly provided
     combined_file_path = config.PERTURBATION_FILE
-    if not combined_file_path or not os.path.exists(combined_file_path):
+    if not combined_file_path:
+        restricted_suffix = "-restricted" if config.RESTRICTED else ""
+        combined_file_path = os.path.join(
+            "results", "combined",
+            f"{config.MODEL_ALIAS}_{config.DATASET_NAME}{restricted_suffix}_adding_mistakes_combined.jsonl"
+        )
+        logging.info(f"Auto-detected combined file path: {combined_file_path}")
+    
+    if not os.path.exists(combined_file_path):
         logging.error(f"Combined file not found: {combined_file_path}")
         logging.error("Please run scripts/combine_baseline_with_perturbations.py first.")
         return

@@ -21,7 +21,7 @@ import os
 import json
 import collections
 import logging
-from core.filler_text_utils import create_word_level_masked_cot, run_filler_trial
+from core.filler_text_utils import create_word_level_masked_cot, run_filler_trial, load_lorem_token_pool
 
 # This is a 'dependent' experiment because it manipulates the CoTs from a 'baseline' run.
 EXPERIMENT_TYPE = "dependent"
@@ -82,6 +82,12 @@ def run(model, processor, tokenizer, model_utils, config):
 
     if completed_chains: logging.info(f"Found {len(completed_chains)} fully completed chains. They will be skipped.")
 
+                # --- Load Lorem Pool (if needed) ---
+    lorem_pool = None
+    if config.FILLER_TYPE == 'lorem':
+        lorem_pool = load_lorem_token_pool()
+        logging.info(f"Loaded pool with {len(lorem_pool)} unique words.")
+
     # --- 4. Run Experiment ---
     logging.info(f"Running WORD-LEVEL Partial Filler (End) Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path}")
     
@@ -105,7 +111,8 @@ def run(model, processor, tokenizer, model_utils, config):
                     
                     # We call our centralized utility with mode='end'.
                     modified_cot = create_word_level_masked_cot(
-                        sanitized_cot, percentile, mode='end'
+                        sanitized_cot, percentile, mode='end',
+                        filler_type=config.FILLER_TYPE, lorem_pool=lorem_pool
                     )
                     
                     trial_result = run_filler_trial(

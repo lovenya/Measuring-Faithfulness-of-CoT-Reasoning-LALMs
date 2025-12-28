@@ -79,7 +79,7 @@ else:
     sys.exit(1)
 
 # Constants
-MODELS = ["qwen", "salmonn"]
+MODELS = ["qwen", "salmonn", "salmonn_7b", "salmonn_13b"]
 DATASETS = ["mmar", "sakura-animal", "sakura-emotion", "sakura-gender", "sakura-language"]
 EXPERIMENTS = ["adding_mistakes", "paraphrasing"]
 

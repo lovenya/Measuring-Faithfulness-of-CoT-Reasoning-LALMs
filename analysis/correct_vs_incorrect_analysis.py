@@ -24,7 +24,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils import load_results
 
 # Configuration
-MODELS = ['qwen', 'salmonn']
+MODELS = ['qwen', 'salmonn', 'flamingo', 'salmonn_7b']
 DATASETS = ['mmar', 'sakura-animal', 'sakura-emotion', 'sakura-gender', 'sakura-language']
 EXPERIMENTS = {
     'adding_mistakes': {
@@ -436,7 +436,7 @@ def main():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Correct vs Incorrect Baseline Analysis with CI support.")
-    parser.add_argument('--model', type=str, default=None, choices=['qwen', 'salmonn'], help="Run for specific model only.")
+    parser.add_argument('--model', type=str, default=None, choices=['qwen', 'salmonn', 'flamingo', 'salmonn_7b'], help="Run for specific model only.")
     parser.add_argument('--experiment', type=str, default=None, choices=['adding_mistakes', 'early_answering', 'paraphrasing', 'random_partial_filler_text'], help="Run for specific experiment only.")
     parser.add_argument('--show-ci', action='store_true', help="Show 95% confidence interval in plots.")
     parser.add_argument('--y-zoom', nargs=2, type=float, default=None, help="Custom Y-axis range (e.g., --y-zoom 40 101).")
