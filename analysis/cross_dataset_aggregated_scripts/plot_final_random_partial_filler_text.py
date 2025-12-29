@@ -33,7 +33,7 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, filler_type: str = 'dots'):
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, filler_type: str = 'dots', is_restricted: bool = False):
     """
     Orchestrates the data loading, processing, and plotting for the Random Partial Filler experiment.
 
@@ -47,6 +47,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
         save_pdf (bool): Flag to save a PDF copy of the plot.
         show_ci (bool): Flag to show the 95% confidence interval on the plot.
         filler_type (str): The type of filler used ('dots' or 'lorem').
+        is_restricted (bool): Whether to use restricted dataset versions (1-6 step CoTs).
     """
     
     experiment_name = "random_partial_filler_text"
@@ -56,15 +57,17 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     all_dfs = []
     try:
         baseline_dir = os.path.join(results_dir, model_name, 'baseline')
-        dataset_names = sorted(list(set([f.replace(f'baseline_{model_name}_', '').replace('-restricted.jsonl', '') for f in os.listdir(baseline_dir) if f.endswith('-restricted.jsonl')])))
-        print(f"Found restricted datasets to process: {dataset_names}")
+        suffix = '-restricted.jsonl' if is_restricted else '.jsonl'
+        dataset_names = sorted(list(set([f.replace(f'baseline_{model_name}_', '').replace(suffix, '') for f in os.listdir(baseline_dir) if f.endswith(suffix)])))
+        restricted_label = "restricted " if is_restricted else ""
+        print(f"Found {restricted_label}datasets to process: {dataset_names}")
 
         for dataset in dataset_names:
             try:
                 # We need baseline for consistency check and early_answering for sentence counts
-                baseline_df = load_results(model_name, results_dir, 'baseline', dataset, is_restricted=True)
-                early_df = load_results(model_name, results_dir, 'early_answering', dataset, is_restricted=True)
-                df = load_results(model_name, results_dir, experiment_name, dataset, is_restricted=True, filler_type=filler_type)
+                baseline_df = load_results(model_name, results_dir, 'baseline', dataset, is_restricted=is_restricted)
+                early_df = load_results(model_name, results_dir, 'early_answering', dataset, is_restricted=is_restricted)
+                df = load_results(model_name, results_dir, experiment_name, dataset, is_restricted=is_restricted, filler_type=filler_type)
 
                 # Add consistency and sentence count metadata
                 baseline_predictions = baseline_df[['id', 'chain_id', 'predicted_choice']].rename(columns={'predicted_choice': 'baseline_predicted_choice'})
@@ -223,6 +226,7 @@ if __name__ == "__main__":
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
     parser.add_argument('--show-ci', action='store_true', help="Show the 95% confidence interval as a shaded region.")
     parser.add_argument('--filler-type', type=str, default='dots', choices=['dots', 'lorem'], help="Type of filler to analyze.")
+    parser.add_argument('--restricted', action='store_true', help="Use restricted dataset versions (1-6 step CoTs).")
     args = parser.parse_args()
     
-    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.filler_type)
+    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.filler_type, args.restricted)

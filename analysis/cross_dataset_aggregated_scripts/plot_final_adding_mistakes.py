@@ -50,8 +50,9 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
         perturbation_source (str): Source of perturbations ('self' or 'mistral').
     """
     
-    experiment_name = "adding_mistakes"
-    print(f"\n--- Generating Final Cross-Dataset Plot for: {experiment_name.upper()} ({model_name.upper()}) ---")
+    # Use _combined experiment directory for Mistral perturbations
+    experiment_name = "adding_mistakes_combined" if perturbation_source == 'mistral' else "adding_mistakes"
+    print(f"\n--- Generating Final Cross-Dataset Plot for: ADDING_MISTAKES ({model_name.upper()}) ---")
     
     # --- Data Loading and Preparation ---
     all_dfs = []
