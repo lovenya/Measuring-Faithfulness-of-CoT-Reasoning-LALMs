@@ -81,6 +81,22 @@ def main():
         choices=['dots', 'lorem'],
         help="Type of filler for filler text experiments: 'dots' uses '...' (default), 'lorem' uses Lorem Ipsum tokens."
     )
+    
+    # --- Arguments for Audio Masking Experiments ---
+    parser.add_argument(
+        '--mask-type',
+        type=str,
+        default='silence',
+        choices=['silence', 'noise'],
+        help="Type of masking for audio masking experiments: 'silence' or 'noise'."
+    )
+    parser.add_argument(
+        '--mask-mode',
+        type=str,
+        default='random',
+        choices=['random', 'start', 'end'],
+        help="Position mode for audio masking: 'random', 'start', or 'end'."
+    )
 
     args = parser.parse_args()
 
@@ -106,6 +122,10 @@ def main():
     
     # Filler type setting (for filler text experiments)
     config.FILLER_TYPE = args.filler_type
+    
+    # Audio masking settings (for audio_masking experiment)
+    config.MASK_TYPE = args.mask_type
+    config.MASK_MODE = args.mask_mode
 
     # --- 2. Centralized Path Management (Now Chunk-Aware) ---
     experiment_name = args.experiment
@@ -269,6 +289,36 @@ def main():
         config.NO_REASONING_RESULTS_PATH = get_dependency_path('no_reasoning')
         
         experiment_module.run(model, processor, tokenizer, model_utils, config)
+
+    elif EXPERIMENT_TYPE == "independent":
+        # Independent experiments need baseline results for consistency comparison
+        # but operate on their own data (e.g., masked audio datasets)
+        logging.info("Running an INDEPENDENT experiment...")
+        
+        # Get baseline path for consistency comparison
+        def get_dependency_path(exp_name):
+            base_dir = os.path.join(config.RESULTS_DIR, model_alias, exp_name)
+            filename = f"{exp_name}_{model_alias}_{args.dataset}"
+            if config.RESTRICTED:
+                filename += "-restricted"
+            if args.part is not None:
+                filename += f".part_{args.part}"
+            filename += ".jsonl"
+            return os.path.join(base_dir, filename)
+        
+        config.BASELINE_RESULTS_PATH = get_dependency_path('baseline')
+        
+        # Load original dataset samples
+        try:
+            dataset_path = config.DATASET_MAPPING[args.dataset]
+            data_samples = load_dataset(dataset_path)
+            if config.NUM_SAMPLES_TO_RUN > 0:
+                data_samples = data_samples[:config.NUM_SAMPLES_TO_RUN]
+            logging.info(f"Processing {len(data_samples)} samples from '{dataset_path}'.")
+            experiment_module.run(model, processor, tokenizer, model_utils, data_samples, config)
+        except (KeyError, FileNotFoundError):
+            logging.exception("Could not load dataset.")
+            sys.exit(1)
 
     else:
         logging.info(f"FATAL: Unknown experiment type '{EXPERIMENT_TYPE}'.")
