@@ -176,16 +176,33 @@ def main():
     logging.info("-" * 35)
 
     # --- 5. Dynamic Experiment Loading ---
+    # Experiments are now organized into subfolders: baseline/, cot/, audio_interventions/
+    # We try each subfolder in order until we find the experiment module.
+    EXPERIMENT_SUBFOLDERS = ['baseline', 'cot', 'audio_interventions']
+    
     try:
+        experiment_module = None
+        exp_name = args.experiment
+        
         # When using external perturbations, load the _combined version of the experiment
         # which expects pre-combined files from scripts/combine_baseline_with_perturbations.py
-        if config.USE_EXTERNAL_PERTURBATIONS and args.experiment in ['adding_mistakes', 'paraphrasing']:
-            experiment_module_name = f"experiments.{args.experiment}_combined"
-            logging.info(f"Using COMBINED experiment module: {experiment_module_name}")
-        else:
-            experiment_module_name = f"experiments.{args.experiment}"
+        if config.USE_EXTERNAL_PERTURBATIONS and exp_name in ['adding_mistakes', 'paraphrasing']:
+            exp_name = f"{exp_name}_combined"
+            logging.info(f"Using COMBINED experiment module: {exp_name}")
         
-        experiment_module = importlib.import_module(experiment_module_name)
+        # Try each subfolder in order
+        for subfolder in EXPERIMENT_SUBFOLDERS:
+            try:
+                experiment_module_name = f"experiments.{subfolder}.{exp_name}"
+                experiment_module = importlib.import_module(experiment_module_name)
+                logging.info(f"Loaded experiment from: experiments/{subfolder}/{exp_name}.py")
+                break
+            except ImportError:
+                continue
+        
+        if experiment_module is None:
+            raise ImportError(f"Could not find experiment '{exp_name}' in any subfolder: {EXPERIMENT_SUBFOLDERS}")
+        
         EXPERIMENT_TYPE = getattr(experiment_module, 'EXPERIMENT_TYPE')
     except (ImportError, AttributeError):
         logging.exception(f"Could not load experiment '{args.experiment}'.")
