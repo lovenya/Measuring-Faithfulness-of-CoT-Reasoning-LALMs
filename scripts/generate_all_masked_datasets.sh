@@ -16,11 +16,13 @@ set -e
 # Defaults - can be overridden
 LEVELS="10 20 30 40 50 60 70 80 90 100"
 SEED=42
+WORKERS=${1:-8}  # Default to 8 workers, or pass as argument
 
 echo "=============================================="
 echo "Generating Masked Audio Datasets"
 echo "Levels: $LEVELS"
 echo "Seed: $SEED"
+echo "Workers: $WORKERS"
 echo "=============================================="
 
 # Function to generate masked dataset
@@ -39,6 +41,7 @@ generate_masked() {
         --mode "$MODE" \
         --levels $LEVELS \
         --seed $SEED \
+        --workers $WORKERS \
         --verbose
 }
 
