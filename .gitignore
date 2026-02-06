@@ -77,7 +77,7 @@ requirements_txts/requirements_af3.txt
 # vs-code
 .vscode/
 # Temporary/local files
-.agent/
+# .agent/
 sbatch_scripts/
 docs/
 rebuttal_analysis/
