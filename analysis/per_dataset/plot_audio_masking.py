@@ -19,9 +19,8 @@ import matplotlib.pyplot as plt
 import argparse
 import json
 
-# Add parent directory for utils import
+# Add parent directory for utils import (if needed in future)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils import load_audio_masking_results
 
 # Line styles for different mask modes when --mask-mode all
 MODE_STYLES = {
@@ -133,13 +132,24 @@ def plot_all_modes(
             if df.empty:
                 continue
             
+            # Consistency curve (solid lines)
             consistency_curve = df.groupby('mask_percent')['is_consistent_with_baseline'].mean() * 100
             consistency_curve.sort_index(inplace=True)
             
             ax.plot(consistency_curve.index, consistency_curve.values,
                     marker=style["marker"], linestyle=style["linestyle"],
-                    color=style["color"], label=style["label"],
+                    color=style["color"], label=f'{style["label"]} (Consistency)',
                     linewidth=2, markersize=8)
+            
+            # Accuracy curve (dashed lines, same color but lighter)
+            if 'is_correct' in df.columns:
+                accuracy_curve = df.groupby('mask_percent')['is_correct'].mean() * 100
+                accuracy_curve.sort_index(inplace=True)
+                
+                ax.plot(accuracy_curve.index, accuracy_curve.values,
+                        marker=style["marker"], linestyle='--',
+                        color=style["color"], label=f'{style["label"]} (Accuracy)',
+                        linewidth=1.5, markersize=6, alpha=0.6)
             
             total_samples = max(total_samples, len(df['id'].unique()))
         except FileNotFoundError:

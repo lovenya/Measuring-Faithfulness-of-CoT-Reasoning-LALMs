@@ -79,8 +79,10 @@ def mask_audio_with_noise(audio: np.ndarray, start_sample: int, end_sample: int,
 
 def get_mask_range(audio_length: int, percent: float, mode: str, seed: int, item_id: str) -> tuple:
     """
-    Calculate start and end sample indices for masking.
+    Calculate start and end sample indices for masking (for contiguous modes).
     Uses item_id + seed to generate reproducible random positions per sample.
+    
+    For 'scattered' mode, use get_scattered_mask_ranges() instead.
     """
     mask_length = int(audio_length * percent / 100)
     
@@ -101,6 +103,83 @@ def get_mask_range(audio_length: int, percent: float, mode: str, seed: int, item
         return (start, start + mask_length)
     else:
         raise ValueError(f"Unknown mode: {mode}")
+
+
+def get_scattered_mask_ranges(audio_length: int, percent: float, seed: int, item_id: str, 
+                               min_segment_ms: int = 50, max_segment_ms: int = 500, 
+                               sample_rate: int = 16000) -> list:
+    """
+    Generate multiple scattered mask ranges distributed throughout the audio.
+    
+    Instead of one contiguous block, this creates many small segments randomly
+    placed throughout the audio, totaling to the requested percentage.
+    
+    Args:
+        audio_length: Total audio length in samples
+        percent: Percentage of audio to mask (0-100)
+        seed: Random seed for reproducibility
+        item_id: Unique identifier for this audio sample
+        min_segment_ms: Minimum segment length in milliseconds
+        max_segment_ms: Maximum segment length in milliseconds
+        sample_rate: Audio sample rate (for ms to samples conversion)
+    
+    Returns:
+        List of (start, end) tuples representing segments to mask
+    """
+    total_mask_samples = int(audio_length * percent / 100)
+    
+    if total_mask_samples == 0:
+        return []
+    
+    # Convert ms to samples
+    min_segment_samples = int(min_segment_ms * sample_rate / 1000)
+    max_segment_samples = int(max_segment_ms * sample_rate / 1000)
+    
+    # Ensure we don't have segments larger than total mask
+    max_segment_samples = min(max_segment_samples, total_mask_samples)
+    min_segment_samples = min(min_segment_samples, max_segment_samples)
+    
+    rng = random.Random(f"{seed}_{item_id}_{percent}_scattered")
+    
+    segments = []
+    remaining_mask = total_mask_samples
+    
+    # Keep track of which regions are already masked to avoid overlap
+    masked_regions = []
+    
+    max_attempts = 1000  # Prevent infinite loop
+    attempts = 0
+    
+    while remaining_mask > min_segment_samples and attempts < max_attempts:
+        attempts += 1
+        
+        # Random segment length
+        seg_len = min(rng.randint(min_segment_samples, max_segment_samples), remaining_mask)
+        
+        # Random start position
+        max_start = audio_length - seg_len
+        if max_start <= 0:
+            break
+            
+        start = rng.randint(0, max_start)
+        end = start + seg_len
+        
+        # Check for overlap with existing segments
+        overlaps = False
+        for existing_start, existing_end in masked_regions:
+            if not (end <= existing_start or start >= existing_end):
+                overlaps = True
+                break
+        
+        if not overlaps:
+            segments.append((start, end))
+            masked_regions.append((start, end))
+            remaining_mask -= seg_len
+    
+    # Sort segments by start position for cleaner processing
+    segments.sort(key=lambda x: x[0])
+    
+    return segments
 
 
 def process_single_sample(item: dict, level: int, mask_type: str, mode: str, 
@@ -136,30 +215,68 @@ def process_single_sample(item: dict, level: int, mask_type: str, mode: str,
         audio, sample_rate = sf.read(original_audio_path, dtype='float32')
         audio_length = len(audio) if audio.ndim == 1 else audio.shape[0]
         
-        # Get mask range (reproducible per sample)
-        start, end = get_mask_range(audio_length, level, mode, seed, item_id)
+        # Handle 'scattered' mode differently - multiple segments
+        if mode == 'scattered':
+            mask_ranges = get_scattered_mask_ranges(audio_length, level, seed, item_id, sample_rate=sample_rate)
+            masked_audio = audio.copy()
+            
+            for start, end in mask_ranges:
+                if mask_type == 'silence':
+                    if masked_audio.ndim == 2:
+                        masked_audio[start:end, :] = 0.0
+                    else:
+                        masked_audio[start:end] = 0.0
+                elif mask_type == 'noise':
+                    # For noise, calculate RMS from non-masked regions
+                    if masked_audio.ndim == 2:
+                        for ch in range(masked_audio.shape[1]):
+                            rms = calculate_rms(audio[:, ch]) if len(audio) > 0 else 0.1
+                            noise = np.random.normal(0, rms, end - start)
+                            masked_audio[start:end, ch] = noise
+                    else:
+                        rms = calculate_rms(audio) if len(audio) > 0 else 0.1
+                        noise = np.random.normal(0, rms, end - start)
+                        masked_audio[start:end] = noise
+            
+            # Save masked audio
+            sf.write(masked_audio_path, masked_audio, sample_rate)
+            
+            # Create new JSONL entry
+            new_item = item.copy()
+            new_item['audio_path'] = str(masked_audio_path)
+            new_item['original_audio_path'] = str(original_audio_path)
+            new_item['mask_type'] = mask_type
+            new_item['mask_mode'] = mode
+            new_item['mask_percent'] = level
+            new_item['mask_segments'] = mask_ranges  # Store all segments
+            new_item['num_segments'] = len(mask_ranges)
+            return new_item
         
-        # Apply masking
-        if mask_type == 'silence':
-            masked_audio = mask_audio_with_silence(audio, start, end)
-        elif mask_type == 'noise':
-            masked_audio = mask_audio_with_noise(audio, start, end, snr_db)
         else:
-            raise ValueError(f"Unknown mask type: {mask_type}")
-        
-        # Save masked audio
-        sf.write(masked_audio_path, masked_audio, sample_rate)
-        
-        # Create new JSONL entry
-        new_item = item.copy()
-        new_item['audio_path'] = str(masked_audio_path)
-        new_item['original_audio_path'] = str(original_audio_path)
-        new_item['mask_type'] = mask_type
-        new_item['mask_mode'] = mode
-        new_item['mask_percent'] = level
-        new_item['mask_start_sample'] = start
-        new_item['mask_end_sample'] = end
-        return new_item
+            # Original logic for start/end/random modes (contiguous)
+            start, end = get_mask_range(audio_length, level, mode, seed, item_id)
+            
+            # Apply masking
+            if mask_type == 'silence':
+                masked_audio = mask_audio_with_silence(audio, start, end)
+            elif mask_type == 'noise':
+                masked_audio = mask_audio_with_noise(audio, start, end, snr_db)
+            else:
+                raise ValueError(f"Unknown mask type: {mask_type}")
+            
+            # Save masked audio
+            sf.write(masked_audio_path, masked_audio, sample_rate)
+            
+            # Create new JSONL entry
+            new_item = item.copy()
+            new_item['audio_path'] = str(masked_audio_path)
+            new_item['original_audio_path'] = str(original_audio_path)
+            new_item['mask_type'] = mask_type
+            new_item['mask_mode'] = mode
+            new_item['mask_percent'] = level
+            new_item['mask_start_sample'] = start
+            new_item['mask_end_sample'] = end
+            return new_item
         
     except Exception as e:
         print(f"  ERROR processing {original_audio_path}: {e}")
@@ -299,8 +416,12 @@ def main():
         help="Path to the output directory for masked datasets.")
     parser.add_argument('--mask-type', type=str, required=True, choices=['silence', 'noise'],
         help="Type of masking: 'silence' or 'noise'.")
-    parser.add_argument('--mode', type=str, required=True, choices=['random', 'start', 'end'],
-        help="Position mode for masking.")
+    parser.add_argument('--mode', type=str, required=True, choices=['random', 'start', 'end', 'scattered'],
+        help="Position mode for masking:\\n"
+             "  'start' - mask from beginning\\n"
+             "  'end' - mask from end\\n"
+             "  'random' - single contiguous block at random position\\n"
+             "  'scattered' - multiple small segments (50-500ms) distributed randomly")
     parser.add_argument('--levels', nargs='+', type=int, default=[10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
         help="Percentile levels to generate (default: 10 20 30 ... 100).")
     parser.add_argument('--num-samples', type=int, default=None,
