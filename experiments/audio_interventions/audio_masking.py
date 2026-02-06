@@ -127,13 +127,21 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
         return
     
     # Get the masked dataset directory from config
-    # Expected structure: data/{dataset}_masked/{mask_type}_{mask_mode}/{level}/
+    # MMAR: data/mmar_masked/{mask_type}_{mask_mode}/{level}/
+    # Sakura: data/sakura/{subdataset}_masked/{mask_type}_{mask_mode}/{level}/
     dataset_name = config.DATASET_NAME
-    base_data_dir = Path(f"data/{dataset_name}_masked/{mask_type}_{mask_mode}")
+    
+    # Handle sakura datasets which have a different path structure
+    # Dataset name is "sakura-animal" but path is "data/sakura/animal_masked/"
+    if dataset_name.startswith("sakura-"):
+        subdataset = dataset_name.replace("sakura-", "")
+        base_data_dir = Path(f"data/sakura/{subdataset}_masked/{mask_type}_{mask_mode}")
+    else:
+        base_data_dir = Path(f"data/{dataset_name}_masked/{mask_type}_{mask_mode}")
     
     if not base_data_dir.exists():
         logging.error(f"Masked dataset directory not found: {base_data_dir}")
-        logging.error(f"Please run: python data_processing/mask_audio_dataset.py --source data/{dataset_name} --output data/{dataset_name}_masked --mask-type {mask_type} --mode {mask_mode}")
+        logging.error(f"Please generate masked datasets first using data_processing/mask_audio_dataset.py")
         return
     
     # --- Restartability Logic ---
