@@ -3,7 +3,7 @@
 # 
 # Generates all Qwen audio masking sbatch scripts with:
 # - Hierarchical folder structure: qwen/audio_masking/{mask_type}/{mode}/
-# - Resource monitoring every 20 minutes
+# - Human-readable resource monitoring every 20 minutes
 # - Corresponding log folder structure
 
 set -e
@@ -29,11 +29,9 @@ for MASK_TYPE in $MASK_TYPES; do
             SCRIPT_NAME="run_qwen_${DATASET_SAFE}.sh"
             JOB_NAME="qwen-${MASK_TYPE:0:3}-${MODE:0:3}-${DATASET}"
             
-            cat > "${SCRIPT_DIR}/${SCRIPT_NAME}" << 'SCRIPT_HEADER'
+            cat > "${SCRIPT_DIR}/${SCRIPT_NAME}" << EOF
 #!/bin/bash
 #==================================================================
-SCRIPT_HEADER
-            cat >> "${SCRIPT_DIR}/${SCRIPT_NAME}" << EOF
 # SBATCH Script for Qwen audio_masking (${MASK_TYPE} + ${MODE}) on ${DATASET}
 #==================================================================
 #SBATCH --time=15:00:00
@@ -69,21 +67,30 @@ cd /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
 #==================================================================
 while sleep 1200; do
   echo ""
-  echo "╔══════════════════════════════════════════════════════════╗"
-  echo "║  RESOURCE USAGE at \$(date +%Y-%m-%d\ %H:%M:%S)"
-  echo "╠══════════════════════════════════════════════════════════╣"
-  echo "║ RAM Usage:"
-  free -h | awk 'NR==2 {printf "║   Total: %s | Used: %s | Free: %s\\n", \$2, \$3, \$4}'
+  echo "╔══════════════════════════════════════════════════════════════════╗"
+  echo "║              RESOURCE USAGE at \$(date +%Y-%m-%d\ %H:%M:%S)              ║"
+  echo "╠══════════════════════════════════════════════════════════════════╣"
+  echo "║ MEMORY (RAM):"
+  free -h | awk 'NR==2 {printf "║   Total: %s | Used: %s | Available: %s\\n", \$2, \$3, \$7}'
   echo "║"
-  echo "║ CPU Cores Allocated: \${SLURM_CPUS_PER_TASK:-N/A}"
-  echo "║ CPU Utilization:"
-  top -b -n1 | head -3 | tail -1 | awk '{printf "║   %s\\n", \$0}'
+  echo "║ CPU:"
+  echo "║   Cores Allocated: \${SLURM_CPUS_PER_TASK:-N/A}"
+  CPU_USAGE=\$(ps -u \$USER -o %cpu= | awk '{s+=\$1} END {printf "%.1f", s}')
+  echo "║   Total CPU Usage: \${CPU_USAGE}% (across all your processes)"
   echo "║"
-  echo "║ GPU Status:"
-  nvidia-smi --query-gpu=name,utilization.gpu,utilization.memory,memory.used,memory.total,temperature.gpu --format=csv,noheader 2>/dev/null | while read line; do
-    echo "║   \$line"
-  done || echo "║   No GPU available"
-  echo "╚══════════════════════════════════════════════════════════╝"
+  echo "║ GPU:"
+  GPU_INFO=\$(nvidia-smi --query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits 2>/dev/null)
+  if [ -n "\$GPU_INFO" ]; then
+    echo "\$GPU_INFO" | while IFS=',' read -r NAME UTIL MEM_USED MEM_TOTAL TEMP; do
+      echo "║   Model: \$NAME"
+      echo "║   GPU Utilization: \${UTIL}% (how busy the GPU cores are)"
+      echo "║   Memory Used: \${MEM_USED} MiB / \${MEM_TOTAL} MiB"
+      echo "║   Temperature: \${TEMP}°C"
+    done
+  else
+    echo "║   No GPU available"
+  fi
+  echo "╚══════════════════════════════════════════════════════════════════╝"
   echo ""
 done &
 MONITOR_PID=\$!
