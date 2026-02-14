@@ -24,30 +24,45 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Line styles for different mask modes when --mask-mode all
 MODE_STYLES = {
-    "random": {"label": "Random", "color": "#e41a1c", "linestyle": "-", "marker": "o"},
-    "start":  {"label": "From Start", "color": "#377eb8", "linestyle": "--", "marker": "s"},
-    "end":    {"label": "From End", "color": "#4daf4a", "linestyle": ":", "marker": "^"},
+    "scattered": {"label": "Scattered", "color": "#e41a1c", "linestyle": "-", "marker": "o"},
+    "start":     {"label": "From Start", "color": "#377eb8", "linestyle": "--", "marker": "s"},
+    "end":       {"label": "From End", "color": "#4daf4a", "linestyle": ":", "marker": "^"},
 }
 
 
 def load_audio_masking_results(model_name: str, results_dir: str, dataset_name: str, mask_type: str, mask_mode: str) -> pd.DataFrame:
-    """Load audio masking results JSONL file."""
-    # Audio masking results are stored as: audio_masking_{model}_{dataset}.jsonl
-    # And contain mask_type and mask_mode fields we filter on
-    filename = f"audio_masking_{model_name}_{dataset_name}.jsonl"
-    filepath = os.path.join(results_dir, model_name, 'audio_masking', filename)
+    """Load audio masking results JSONL file from hierarchical directory structure."""
+    # Hierarchical path: results/{model}/audio_masking/{mask_type}/{mask_mode}/
+    filename = f"audio_masking_{model_name}_{dataset_name}_{mask_type}_{mask_mode}.jsonl"
+    filepath = os.path.join(results_dir, model_name, 'audio_masking', mask_type, mask_mode, filename)
     
+    # Fallback: try flat structure (old combined file) for backwards compatibility
     if not os.path.exists(filepath):
-        raise FileNotFoundError(f"Results not found: {filepath}")
+        flat_filepath = os.path.join(results_dir, model_name, 'audio_masking', filename)
+        if os.path.exists(flat_filepath):
+            filepath = flat_filepath
+        else:
+            # Try old combined file with filtering
+            old_filename = f"audio_masking_{model_name}_{dataset_name}.jsonl"
+            old_filepath = os.path.join(results_dir, model_name, 'audio_masking', old_filename)
+            if os.path.exists(old_filepath):
+                data = []
+                with open(old_filepath, 'r') as f:
+                    for line in f:
+                        try:
+                            entry = json.loads(line)
+                            if entry.get('mask_type') == mask_type and entry.get('mask_mode') == mask_mode:
+                                data.append(entry)
+                        except json.JSONDecodeError:
+                            continue
+                return pd.DataFrame(data)
+            raise FileNotFoundError(f"Results not found: {filepath}")
     
     data = []
     with open(filepath, 'r') as f:
         for line in f:
             try:
-                entry = json.loads(line)
-                # Filter by mask_type and mask_mode
-                if entry.get('mask_type') == mask_type and entry.get('mask_mode') == mask_mode:
-                    data.append(entry)
+                data.append(json.loads(line))
             except json.JSONDecodeError:
                 continue
     

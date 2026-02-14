@@ -81,8 +81,3 @@ requirements_txts/requirements_af3.txt
 sbatch_scripts/
 docs/
 rebuttal_analysis/
-
-# Test files
-test_*.py
-submit_all_*.sh
-EXPERIMENT_STATUS.md

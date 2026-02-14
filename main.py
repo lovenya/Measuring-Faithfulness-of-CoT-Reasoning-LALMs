@@ -94,8 +94,8 @@ def main():
         '--mask-mode',
         type=str,
         default='random',
-        choices=['random', 'start', 'end'],
-        help="Position mode for audio masking: 'random', 'start', or 'end'."
+        choices=['random', 'start', 'end', 'scattered'],
+        help="Position mode for audio masking: 'random' (single block), 'start', 'end', or 'scattered' (multiple distributed segments)."
     )
 
     args = parser.parse_args()
@@ -131,7 +131,12 @@ def main():
     experiment_name = args.experiment
     model_alias = config.MODEL_ALIAS
     
-    output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name)
+    # For audio_masking, use hierarchical subdirs matching data/logs/submission_scripts structure
+    if experiment_name == 'audio_masking':
+        output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
+                                  config.MASK_TYPE, config.MASK_MODE)
+    else:
+        output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
 
     # We start with the base filename.
@@ -146,6 +151,10 @@ def main():
     # Add suffix for lorem filler type (to distinguish from dots filler results)
     if config.FILLER_TYPE == 'lorem':
         base_filename += "-lorem"
+    
+    # Add suffix for audio masking experiments (to create separate files per mask_type/mask_mode)
+    if experiment_name == 'audio_masking':
+        base_filename += f"_{config.MASK_TYPE}_{config.MASK_MODE}"
     
     # If this is a parallel run, we add the part number to the output filename.
     # e.g., 'adding_mistakes_salmonn_mmar-restricted.part_7.jsonl'

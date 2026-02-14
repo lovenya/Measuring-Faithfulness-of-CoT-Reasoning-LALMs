@@ -1,10 +1,11 @@
 #!/bin/bash
-# generate_qwen_audio_masking_scripts_v2.sh
+# generate_qwen_audio_masking_scripts.sh
 # 
 # Generates all Qwen audio masking sbatch scripts with:
 # - Hierarchical folder structure: qwen/audio_masking/{mask_type}/{mode}/
+# - Per-dataset time allocations
+# - 3 CPU cores (GPU-bound workload)
 # - Human-readable resource monitoring every 20 minutes
-# - Corresponding log folder structure
 
 set -e
 
@@ -12,8 +13,49 @@ BASE_DIR="submission_scripts/qwen/audio_masking"
 LOG_BASE="logs/qwen/audio_masking"
 
 MASK_TYPES="silence noise"
-MODES="random start end"
+MODES="scattered start end"
 DATASETS="mmar sakura-animal sakura-emotion sakura-gender sakura-language"
+
+# Per-dataset time allocations (hours)
+# Format: get_time <mask_type> <mode> <dataset>
+get_time() {
+    local TYPE=$1
+    local MODE=$2
+    local DATASET=$3
+    
+    case "${TYPE}_${MODE}_${DATASET}" in
+        # noise + end
+        noise_end_mmar)             echo "15:00:00" ;;
+        noise_end_sakura-animal)    echo "30:00:00" ;;
+        noise_end_sakura-emotion)   echo "30:00:00" ;;
+        noise_end_sakura-gender)    echo "40:00:00" ;;
+        noise_end_sakura-language)  echo "40:00:00" ;;
+        # noise + scattered
+        noise_scattered_*)          echo "25:00:00" ;;
+        # noise + start
+        noise_start_mmar)           echo "10:00:00" ;;
+        noise_start_sakura-animal)  echo "30:00:00" ;;
+        noise_start_sakura-emotion) echo "30:00:00" ;;
+        noise_start_sakura-gender)  echo "08:00:00" ;;
+        noise_start_sakura-language) echo "20:00:00" ;;
+        # silence + end
+        silence_end_mmar)           echo "10:00:00" ;;
+        silence_end_sakura-animal)  echo "20:00:00" ;;
+        silence_end_sakura-emotion) echo "20:00:00" ;;
+        silence_end_sakura-gender)  echo "12:00:00" ;;
+        silence_end_sakura-language) echo "20:00:00" ;;
+        # silence + scattered
+        silence_scattered_*)        echo "25:00:00" ;;
+        # silence + start
+        silence_start_mmar)         echo "10:00:00" ;;
+        silence_start_sakura-animal) echo "20:00:00" ;;
+        silence_start_sakura-emotion) echo "20:00:00" ;;
+        silence_start_sakura-gender) echo "12:00:00" ;;
+        silence_start_sakura-language) echo "20:00:00" ;;
+        # fallback
+        *)                          echo "25:00:00" ;;
+    esac
+}
 
 echo "Generating Qwen audio masking scripts with hierarchical structure..."
 
@@ -28,15 +70,16 @@ for MASK_TYPE in $MASK_TYPES; do
             DATASET_SAFE="${DATASET//-/_}"  # sakura-animal -> sakura_animal
             SCRIPT_NAME="run_qwen_${DATASET_SAFE}.sh"
             JOB_NAME="qwen-${MASK_TYPE:0:3}-${MODE:0:3}-${DATASET}"
+            TIME_LIMIT=$(get_time "$MASK_TYPE" "$MODE" "$DATASET")
             
-            cat > "${SCRIPT_DIR}/${SCRIPT_NAME}" << EOF
+            cat > "${SCRIPT_DIR}/${SCRIPT_NAME}" <<EOF
 #!/bin/bash
 #==================================================================
 # SBATCH Script for Qwen audio_masking (${MASK_TYPE} + ${MODE}) on ${DATASET}
 #==================================================================
-#SBATCH --time=15:00:00
+#SBATCH --time=${TIME_LIMIT}
 #SBATCH --gpus=nvidia_h100_80gb_hbm3_3g.40gb:1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=3
 #SBATCH --mem=64G
 #SBATCH --account=rrg-ravanelm
 #SBATCH --job-name=${JOB_NAME}
@@ -111,7 +154,7 @@ echo "--> Total Job Runtime: \${HOURS}h \${MINS}m \${SECS}s"
 
 echo "## Job Finished: \$(date) ##"
 EOF
-            echo "Created: ${SCRIPT_DIR}/${SCRIPT_NAME}"
+            echo "Created: ${SCRIPT_DIR}/${SCRIPT_NAME} (${TIME_LIMIT})"
         done
     done
 done
@@ -119,8 +162,8 @@ done
 echo ""
 echo "=============================================="
 echo "Generated scripts with structure:"
-echo "  submission_scripts/qwen/audio_masking/{silence,noise}/{random,start,end}/"
-echo "  logs/qwen/audio_masking/{silence,noise}/{random,start,end}/"
+echo "  submission_scripts/qwen/audio_masking/{silence,noise}/{scattered,start,end}/"
+echo "  logs/qwen/audio_masking/{silence,noise}/{scattered,start,end}/"
 echo ""
 echo "Total scripts: $(find ${BASE_DIR} -name '*.sh' | wc -l)"
 echo "=============================================="
