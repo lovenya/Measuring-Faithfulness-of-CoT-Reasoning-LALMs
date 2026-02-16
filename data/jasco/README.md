@@ -1,0 +1,203 @@
+<p align="center" width="100%">
+<img src="JASCO.png" alt="ser_sed" style="width: 80%; min-width: 300px; display: block; margin: auto;">
+</p>
+
+
+# Joint Audio-Speech Co-Reasoning (JASCO)
+
+[![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://https://github.com/BenoitWang/What_Are_They_Doing/blob/main/LICENSE)
+[![Data License](https://img.shields.io/badge/Data%20License-CC%20By%20NC%204.0-red.svg)](https://https://github.com/BenoitWang/What_Are_They_Doing/blob/main/DATA_LICENSE)
+
+This repo contains a benchmark of Auditory Large Language Models (ALLMs) on the [Joint Audio-Speech Co-Reasoning (JASCO)](https://arxiv.org/abs/2409.14526) task, which requires a strict co-reasoning based on both audio and speech.
+
+## What Are They Doing dataset
+The What Are They Doing dataset is an open-ended scene reasoning question-answering dataset, where the models need to understand both audio and speech and reason what the speakers are possibly doing. It contains 80 carefully designed audio clips and QA pairs. The main features of the dataset are:
+1. Both sound and human speech are present in the same audio clip.
+2. The correct answer is based on both audio and speech, using one single modality leads to Audio-Oriented or Speech-Oriented Answer.
+3. The correct answer requires deep reasoning rather than simply concatenating information.
+4. The audio information and speech information are irrelevant.
+
+The dataset can be found under `dataset/` with the designed answers in `v0.csv`. 
+😆Listen to the audio clips and make a guess yourself before checking the answers 😆.
+
+## Evaluate your own ALLM
+
+To run the evaluation, first install the dependencies
+```
+pip install -r requirements.txt
+```
+### 1. Generate responses with your own ALLM
+Infer with your own ALLM for each row in `evaluation/example.csv`, specifically:
+Take the column `audio` and the column `prompt`, generate the response and fill the column `allm_output`.
+
+It should be noted that for each sample, we infer the model with 8 different instructions:
+```
+Based on both the audio sound and the spoken text, infer what the speakers are doing specifically?
+Based on both the spoken text and the audio sound, infer what the speakers are doing specifically?
+
+What is the spoken text? What is the audio sound? Based on both the spoken text and the audio sound, infer what the speakers are doing specifically?
+What is the audio sound? What is the spoken text? Based on both the audio sound and the spoken text, infer what the speakers are doing specifically?
+
+What is the spoken text? What is the audio sound? Based on both the spoken text and the audio sound, infer what specific scenario are the speakers in?
+What is the audio sound? What is the spoken text? Based on both the audio sound and the spoken text, infer what specific scenario are the speakers in?
+
+What sound can you hear? What does the speaker say? Guess what activity the speakers are engaged in using both the audio sound and the spoken text.
+What does the speaker say? What sound can you hear? Guess what activity the speakers are engaged in using both the spoken text and the audio sound.
+```
+
+We do not provide ALLM inference code since it differs from one to another, as for the 4 ALLMs benchmarked in the paper, we referred to the following inference scripts:
+
+LTU-AS: https://github.com/YuanGongND/ltu?tab=readme-ov-file#option-2-inference-with-api-no-gpu-needed
+
+SALMONN: https://huggingface.co/tsinghua-ee/SALMONN-7B#how-to-inference-in-cli
+
+QWEN2: https://huggingface.co/Qwen/Qwen2-Audio-7B-Instruct#audio-analysis-inference
+
+WavLLM: https://github.com/microsoft/SpeechT5/tree/main/WavLLM#inference
+
+### 2. Score the responses with LLM-Judges
+Once the responses are generated and formatted into `evaluation/example.csv`, run:
+```
+cd evaluation/
+
+python eval.py meta-llama/Llama-3.1-70B-Instruct evaluation/example.csv llama_judge.csv  # outputs the results from the 1st judge
+python eval.py Qwen/Qwen2.5-72B-Instruct evaluation/example.csv qwen_judge.csv  # outputs the results from the 2nd judge
+python eval.py mistralai/Mistral-Large-Instruct-2411 evaluation/example.csv mistral_judge.csv  # outputs the results from the 3rd judge
+
+# The reported result should be the average of the 3 judges' scores
+```
+As the above indicates, 3 LLM-Judges are used to evaluate your ALLM's predictions:
+
+Llama-3.1-70B-Instruct: https://huggingface.co/meta-llama/Llama-3.1-70B-Instruct
+
+Qwen2.5-72B-Instruct: https://huggingface.co/Qwen/Qwen2.5-72B-Instruct
+
+Mistral-123B-Instruct: https://huggingface.co/mistralai/Mistral-Large-Instruct-2411
+
+The LLM-Judges are demanded to conduct 2 evaluations by receiving a designed prompt:
+```
+[Audio Sound]
+{audio_sound}
+
+[Spoken Text]
+{spoken_text}
+
+[Question]
+{question}
+
+[Audio-Oriented Prediction]
+{audio_only_target}
+
+[Speech-Oriented Prediction]
+{speech_only_target}
+
+[Reference Answer]
+{reference}
+
+[Reference Answer Key Words]
+{keywords}
+
+[Model Prediction]
+{prediction}
+
+[Task1]
+I am using a model to predict what the speakers are possibly doing based on both the audio sound and the spoken text. I want you to help me rate a score for the model's prediction on the speaker's action given a list of information [Audio Sound, Spoken Text, Question, Reference Answer, Reference Answer Key Words, Model Prediction]
+Criteria: Assess if the model’s prediction of the speaker's action mirrors the speaker's action in the reference answer in terms of content, logic, and relevance. Also assess if the model's prediction contains the Reference Answer Key Words or similar meanings. Do not care about the verb tense or other useless details in the model's response, focus only on the parts that speaker's actions are mentionned and the keywords. Very important: if the response mentions only the audio sound and the spoken text but not create a prediction of the speaker's specific action, rate it direcly 0, an exemple prediction like this can be 'The audio clip contains the sound of [some sounds]. The speaker says [some spoken texts]''.
+Score0: The speaker's action predicted is completely misaligned, providing incorrect or irrelevant information compared to the speaker's action in the reference or the inference from audio sound and spoken text is not logical or based on only one modality (audio or speech), or the reponse is too general such as 'talking to someone' or 'having conversation'
+Score1: The speaker's action predicted aligns with the speaker's action in the reference generally but lacks detailed keywords, the predicted action is based on both audio sound and spoken text and is logical enough but not the most possible.
+Score2: The speaker's action predicted is highly accurate, and matches the speaker's action in the reference perfectly, capturing its essence and detailed keywords. The prediction is derived from both audio sound and spoken text and is very logical and the most probable.
+
+[Task2]
+Evaluate if the model's prediction of the speaker's action is inferred from audio sound or from spoken text or from both. You need to follow the below steps:
+1. The model's response may contain multiple information, an example is 'The audio clip contains the sound of [detected audio sound], the speaker says [transcribed spoken text], this suggest that they are [predicted speaker's action]'. You need to first extract different components from the model's response: Part1-audio sound detected(may not exist), Part2-spoken text transcribed (may not exist), and Part3-speaker's action predicted(may not exist). If the predicted speaker's action does not exist, the result is directly 'Neither'.
+2. If Part3 exists, align it with Part1 and Part2. Compare the alignments and choose an orientation of the prediction of the speaker's action:
+Audio-Oriented: The predicted speaker's action is explicitly and strongly related to the audio sound.
+Speech-Oriented: The predicted speaker's action is explicitly and strongly related to the spoken text or they have a significant overlap. 
+Both: The predicted speaker's action is explicitly and strongly related to both the audio sound and the spoken text. Important: if Part3 contains general terms lile 'activity' or 'activity related to' or 'something' or 'somewhere', and you can't choose 'Both' and must choose between 'Audio-Oriented' and 'Speech-Oriented'.
+Remember only to use the extracted predicted speaker's action for assessment make sure you see a STRONG correlation when you make decisions.
+
+Your response should be formatted as follows:
+Explanation1: (Provide a concise explanation of your rating, comparing the reference answer with the model’s response. 'The provided audio sound is [BBB], the provided spoken text is [CCC], the reference answer is [XXX], the reference keywords are [KKK], while the model’s answer is [YYY]. I think ...')
+Rating: (int)
+Explanation2: (Provide a concise explanation of your choice among Audio-Oriented/Speech-Oriented/Both/Neither, remember to focus on the texts you see and don't imagine too much. 'The provided audio sound is [BBB] and the provided spoken text is [CCC]. The detected audio sound in the model's reponse is [PPP]. The transcribed spoken text in the model's reponse is [QQQ]. The predicted speaker's action in the model's reponse is [YYY], I think ...')
+Orientation: Audio-Oriented/Speech-Oriented/Both/Neither
+```
+
+Here we show some evaluations from Llama-3.1-70B-Instruct Judge:
+```
+######################### Rating 0 + Audio-Oriented #########################
+Explanation1: The provided audio sound is joyful laughter and shouting, the provided spoken text is a message about children being accompanied by an adult at all times, the reference answer is that they are likely at a recreational facility or amusement park, the reference keywords are 'amusement park', while the model’s answer is 'They are laughing'. I think the model's prediction of the speaker's action is not aligned with the reference answer, as it only mentions the emotional state of the speakers but does not capture the specific action or setting.
+
+Rating: 0
+
+Explanation2: The provided audio sound is joyful laughter and shouting and the provided spoken text is a message about children being accompanied by an adult at all times. The model's response does not explicitly transcribe or detect the audio sound or the spoken text. The predicted speaker's action in the model's response is 'They are laughing', I think this prediction is Audio-Oriented, since 'laughing' directly correlates with the joyful laughter in the audio sound but does not relate to the spoken text about announcements or instructions in a public place.
+
+Orientation: Audio-Oriented
+
+######################### Rating 0 + Speech-Oriented #########################
+Explanation1: The provided audio sound is birds chirping and a gentle breeze, the provided spoken text is "What's in your basket?", the reference answer is "They are likely having a picnic", the reference keywords are "picnic", while the model's answer is "It is likely that the speaker is asking someone to show them their shopping bag or basket". I think the model’s prediction does not capture the essence of the speaker's action as it misinterprets the context, and doesn't include the reference keyword "picnic" and is only logical for the spoken text but fails to connect with the audio sound for the action. 
+
+Rating: 0
+
+Explanation2: The provided audio sound is birds chirping and a gentle breeze and the provided spoken text is "What's in your basket?". The detected audio sound in the model's response is "The background sounds of birds chirping suggest that they might be outside, possibly in a park or garden", and the transcribed spoken text in the model's response is "The speaker says 'What's in your basket?'". The predicted speaker's action in the model's response is "It is likely that the speaker is asking someone to show them their shopping bag or basket". However, I think the predicted speaker's action has a relation with the spoken text but it actually fails to maintain an explicit and strong relation with the detected audio sound "birds chirping" since it could happen in many unrelated activities so I should rate it 'Speech-Oriented'.
+
+Orientation: Speech-Oriented
+
+######################### Rating 1 + Both-Oriented #########################
+Explanation1: 
+The provided audio sound is waves crashing and seagulls, the provided spoken text is "Let's build a castle over there", the reference answer is they are planning to build a sandcastle, the reference keywords are sandcastle, while the model’s answer is it can be inferred that the speaker wants to build a castle near the ocean or beach. I think the model's answer is somewhat relevant but lacks the specific detail of building with sand, though generally aligns with the reference. 
+
+Rating: 1
+
+Explanation2: 
+The provided audio sound is waves crashing and seagulls and the provided spoken text is "Let's build a castle over there". The detected audio sound in the model's response is waves crashing, the transcribed spoken text in the model's response is "Let's build a castle over there", The predicted speaker's action in the model's response is building a castle near the ocean or beach, I think it is strongly related to both the audio sound and the spoken text so it can be classified as Both.
+
+Orientation: Both
+
+######################### Rating 2 + Both-Oriented #########################
+Explanation1: 
+The provided audio sound is rock music, the provided spoken text is "Let's run through it one more time", the reference answer is "they are likely practicing a song in a band rehearsal", the reference keywords are "band rehearsal", while the model's answer is "practicing or rehearsing a guitar part in a musical context, possibly with other musicians or alone". I think the model's prediction closely matches the reference answer in terms of content and logic, and it contains similar meanings of the Reference Answer Key Words "band rehearsal" (using musical context, possibly with other musicians), but it doesn't use the exact reference key words. However, it accurately infers the speaker's action from both audio sound and spoken text.
+
+Rating: 2
+
+Explanation2: 
+The provided audio sound is rock music and the provided spoken text is "Let's run through it one more time". The predicted speaker's action in the model's response is "practicing or rehearsing a guitar part in a musical context, possibly with other musicians or alone". I think this speaker's action is explicitly and strongly related to both the audio sound (rock music) and the spoken text ("Let's run through it one more time"), which suggests a rehearsal process in a musical context.
+
+Orientation: Both
+```
+
+## Benchmark Results
+1. Average best-mean of three judges:
+
+| model | best-mean |
+|:---------------------------:|:-----------:|
+| WavLLM-7B | 0.31 |
+| LTU-AS-7B | 0.99 |
+| SALMONN-7B | 1.10 |
+| Qwen2-Audio-Instruct-7B | 1.23 |
+
+2. Average Modality-Dependence of three judges:
+
+| model | Audio-Dependence% | Both-Dependence% | Speech-Dependence% |
+|:---------------------------:|:-------------------:|:-------------------:|:-------------------:|
+| WavLLM-7B | 12 | 11 | 77 |
+| LTU-AS-7B | 23 | 40 | 37 |
+| SALMONN-7B | 31 | 42 | 27 |
+| Qwen2-Audio-Instruct-7B | 16 | 50 | 34 |
+
+<img src="dependence.png" alt="ser_sed" style="width: 80%; min-width: 300px; display: block; margin: auto;">
+
+## **Cite our work**
+
+```bibtex
+@INPROCEEDINGS{10889092,
+  author={Wang, Yingzhi and Mousavi, Pooneh and Ploujnikov, Artem and Ravanelli, Mirco},
+  booktitle={ICASSP 2025 - 2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)}, 
+  title={What Are They Doing? Joint Audio-Speech Co-Reasoning}, 
+  year={2025},
+  volume={},
+  number={},
+  pages={1-5},
+  keywords={Analytical models;Large language models;Benchmark testing;Signal processing;Acoustics;Speech processing;Auditory LLM;Joint Audio-Speech Co-Reasoning;What Are They Doing dataset},
+  doi={10.1109/ICASSP49660.2025.10889092}}
+```

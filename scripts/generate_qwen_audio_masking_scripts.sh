@@ -25,7 +25,7 @@ get_time() {
     
     case "${TYPE}_${MODE}_${DATASET}" in
         # noise + end
-        noise_end_mmar)             echo "15:00:00" ;;
+        noise_end_mmar)             echo "03:00:00" ;;
         noise_end_sakura-animal)    echo "30:00:00" ;;
         noise_end_sakura-emotion)   echo "30:00:00" ;;
         noise_end_sakura-gender)    echo "40:00:00" ;;
@@ -36,22 +36,18 @@ get_time() {
         noise_start_mmar)           echo "10:00:00" ;;
         noise_start_sakura-animal)  echo "30:00:00" ;;
         noise_start_sakura-emotion) echo "30:00:00" ;;
-        noise_start_sakura-gender)  echo "08:00:00" ;;
-        noise_start_sakura-language) echo "20:00:00" ;;
-        # silence + end
-        silence_end_mmar)           echo "10:00:00" ;;
-        silence_end_sakura-animal)  echo "20:00:00" ;;
-        silence_end_sakura-emotion) echo "20:00:00" ;;
-        silence_end_sakura-gender)  echo "12:00:00" ;;
-        silence_end_sakura-language) echo "20:00:00" ;;
+        noise_start_sakura-gender)  echo "15:00:00" ;;
+        noise_start_sakura-language) echo "15:00:00" ;;
+        # silence + end (all 12h)
+        silence_end_*)              echo "12:00:00" ;;
         # silence + scattered
         silence_scattered_*)        echo "25:00:00" ;;
         # silence + start
-        silence_start_mmar)         echo "10:00:00" ;;
+        silence_start_mmar)         echo "12:00:00" ;;
         silence_start_sakura-animal) echo "20:00:00" ;;
-        silence_start_sakura-emotion) echo "20:00:00" ;;
-        silence_start_sakura-gender) echo "12:00:00" ;;
-        silence_start_sakura-language) echo "20:00:00" ;;
+        silence_start_sakura-emotion) echo "18:00:00" ;;
+        silence_start_sakura-gender) echo "15:00:00" ;;
+        silence_start_sakura-language) echo "15:00:00" ;;
         # fallback
         *)                          echo "25:00:00" ;;
     esac

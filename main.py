@@ -97,6 +97,14 @@ def main():
         choices=['random', 'start', 'end', 'scattered'],
         help="Position mode for audio masking: 'random' (single block), 'start', 'end', or 'scattered' (multiple distributed segments)."
     )
+    # --- Arguments for JASCO Masking Experiment ---
+    parser.add_argument(
+        '--jasco-variant',
+        type=str,
+        default='full',
+        choices=['full', 'audio_only', 'speech_only'],
+        help="Audio variant for JASCO masking: 'full', 'audio_only', or 'speech_only'."
+    )
 
     args = parser.parse_args()
 
@@ -126,15 +134,21 @@ def main():
     # Audio masking settings (for audio_masking experiment)
     config.MASK_TYPE = args.mask_type
     config.MASK_MODE = args.mask_mode
+    
+    # JASCO masking settings
+    config.JASCO_VARIANT = args.jasco_variant
 
     # --- 2. Centralized Path Management (Now Chunk-Aware) ---
     experiment_name = args.experiment
     model_alias = config.MODEL_ALIAS
     
-    # For audio_masking, use hierarchical subdirs matching data/logs/submission_scripts structure
+    # For audio_masking and jasco_masking, use hierarchical subdirs
     if experiment_name == 'audio_masking':
         output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
                                   config.MASK_TYPE, config.MASK_MODE)
+    elif experiment_name == 'jasco_masking':
+        output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
+                                  config.JASCO_VARIANT)
     else:
         output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
@@ -155,6 +169,10 @@ def main():
     # Add suffix for audio masking experiments (to create separate files per mask_type/mask_mode)
     if experiment_name == 'audio_masking':
         base_filename += f"_{config.MASK_TYPE}_{config.MASK_MODE}"
+    
+    # Add suffix for JASCO masking experiments (to create separate files per variant)
+    if experiment_name == 'jasco_masking':
+        base_filename += f"_{config.JASCO_VARIANT}"
     
     # If this is a parallel run, we add the part number to the output filename.
     # e.g., 'adding_mistakes_salmonn_mmar-restricted.part_7.jsonl'

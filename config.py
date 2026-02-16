@@ -102,6 +102,8 @@ DATASET_MAPPING = {
     "sakura-emotion-noisy": "data/sakura_noisy/emotion/emotion_noisy_standardized.jsonl",
     "sakura-gender-noisy": "data/sakura_noisy/gender/gender_noisy_standardized.jsonl",
     "sakura-language-noisy": "data/sakura_noisy/language/language_noisy_standardized.jsonl",
+
+    "jasco": "data/jasco/jasco_standardized.jsonl",
 }
 
 MMAR_DATASET_PATH = "data/mmar"

@@ -35,6 +35,14 @@ data/**/captioning
 data/**/**/captioning
 # Data (input/intermediate) - TTS
 spoken_reasoning/audio
+
+
+data/adversarial_aug_data/
+adverserial_sythetic_data/
+
+
+
+
 # .pyc files
 *.pyc
 __pycache__/
@@ -81,3 +89,9 @@ requirements_txts/requirements_af3.txt
 sbatch_scripts/
 docs/
 rebuttal_analysis/
+
+
+
+
+advadversarial_aug_data.tar.gz
+adverserial_sythetic_data.tar.gz
