@@ -105,6 +105,12 @@ def main():
         choices=['full', 'audio_only', 'speech_only'],
         help="Audio variant for JASCO masking: 'full', 'audio_only', or 'speech_only'."
     )
+    parser.add_argument(
+        '--use-cot',
+        action='store_true',
+        default=False,
+        help="Enable CoT prompting for JASCO experiment (default: direct prompting)."
+    )
 
     args = parser.parse_args()
 
@@ -137,6 +143,7 @@ def main():
     
     # JASCO masking settings
     config.JASCO_VARIANT = args.jasco_variant
+    config.USE_COT = args.use_cot
 
     # --- 2. Centralized Path Management (Now Chunk-Aware) ---
     experiment_name = args.experiment
@@ -172,7 +179,8 @@ def main():
     
     # Add suffix for JASCO masking experiments (to create separate files per variant)
     if experiment_name == 'jasco_masking':
-        base_filename += f"_{config.JASCO_VARIANT}"
+        cot_suffix = '_cot' if config.USE_COT else ''
+        base_filename += f"_{config.JASCO_VARIANT}{cot_suffix}"
     
     # If this is a parallel run, we add the part number to the output filename.
     # e.g., 'adding_mistakes_salmonn_mmar-restricted.part_7.jsonl'

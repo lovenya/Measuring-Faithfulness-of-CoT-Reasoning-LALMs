@@ -1,34 +1,142 @@
 #!/usr/bin/env python3
 """
-Evaluate JASCO Masking Experiment Results
+Evaluate JASCO Masking Experiment Results using Mistral as LLM Judge.
 
-Reads JASCO experiment output JSONL files and evaluates model responses
-via keyword matching against the ground truth keywords from v0.csv.
+Adapted from the original JASCO eval.py (which uses LLaMA 3.1 70B).
+We use our local Mistral Small 3 instead, via the existing mistral_utils module.
 
-Reports accuracy breakdown by:
-- Audio variant (full / audio_only / speech_only)
-- Per-prompt aggregation
-- Overall
+The LLM judge classifies each model response into:
+- Audio-Oriented (A): prediction based primarily on audio sounds
+- Speech-Oriented (S): prediction based primarily on spoken text
+- Good (G): prediction correctly uses BOTH audio and speech
+- Neither (N): prediction doesn't address speaker actions
 
-Usage:
+And gives a rating score (0-2) for answer quality.
+
+Reports:
+- Best-mean score per sample
+- Orientation percentages (Audio% / Speech% / Both%)
+
+Usage (must use mistral_env):
+    source mistral_env/bin/activate
     python analysis/evaluate_jasco.py --results-dir results/qwen/jasco_masking/
-    python analysis/evaluate_jasco.py --results-file results/qwen/jasco_masking/jasco_masking_qwen_jasco_full.jsonl
+
+    # Or a single file:
+    python analysis/evaluate_jasco.py --results-file results/qwen/jasco_masking/full/jasco_masking_qwen_jasco_full.jsonl
 """
 
 import argparse
 import json
 import os
+import sys
+import logging
 from pathlib import Path
 from collections import defaultdict
 
+# Add project root to path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-def check_keyword_match(model_output: str, target_keywords: list) -> bool:
-    """
-    Check if any target keyword appears in the model output (case-insensitive).
-    For multi-keyword targets like ["sport", "referee"], returns True if ANY keyword is found.
-    """
-    output_lower = model_output.lower()
-    return any(kw.lower() in output_lower for kw in target_keywords)
+from core.mistral_utils import load_mistral_model, run_mistral_inference
+import config
+
+# --- Evaluation Prompts (from original JASCO eval.py) ---
+
+GENERAL_PROMPT = """[Audio Sound]
+{audio_sound}
+
+[Spoken Text]
+{spoken_text}
+
+[Question]
+{question}
+
+[Audio-Oriented Prediction]
+{audio_only_target}
+
+[Speech-Oriented Prediction]
+{speech_only_target}
+
+[Reference Answer]
+{reference}
+
+[Reference Answer Key Words]
+{keywords}
+
+[Model Prediction]
+{prediction}
+
+[Task1]
+I am using a model to predict what the speakers are possibly doing based on both the audio sound and the spoken text. I want you to help me rate a score for the model's prediction on the speaker's action given a list of information [Audio Sound, Spoken Text, Question, Reference Answer, Reference Answer Key Words, Model Prediction]
+Criteria: Assess if the model's prediction of the speaker's action mirrors the speaker's action in the reference answer in terms of content, logic, and relevance. Also assess if the model's prediction contains the Reference Answer Key Words or similar meanings. Do not care about the verb tense or other useless details in the model's response, focus only on the parts that speaker's actions are mentionned and the keywords. Very important: if the response mentions only the audio sound and the spoken text but not create a prediction of the speaker's specific action, rate it direcly 0, an exemple prediction like this can be 'The audio clip contains the sound of [some sounds]. The speaker says [some spoken texts]''.
+Score0: The speaker's action predicted is completely misaligned, providing incorrect or irrelevant information compared to the speaker's action in the reference or the inference from audio sound and spoken text is not logical or based on only one modality (audio or speech), or the reponse is too general such as 'talking to someone' or 'having conversation'
+Score1: The speaker's action predicted aligns with the speaker's action in the reference generally but lacks detailed keywords, the predicted action is based on both audio sound and spoken text and is logical enough but not the most possible.
+Score2: The speaker's action predicted is highly accurate, and matches the speaker's action in the reference perfectly, capturing its essence and detailed keywords. The prediction is derived from both audio sound and spoken text and is very logical and the most probable.
+
+[Task2]
+Evaluate if the model's prediction of the speaker's action is inferred from audio sound or from spoken text or from both. You need to follow the below steps:
+1. The model's response may contain multiple information, an example is 'The audio clip contains the sound of [detected audio sound] the speaker says [transcribed spoken text], this suggest that they are [predicted speaker's action]'. You need to first extract different components from the model's response: Part1-audio sound detected(may not exist), Part2-spoken text transcribed (may not exist), and Part3-speaker's action predicted(may not exist). If predicted speaker's action does not exist, the result is directly 'Neither'.
+2. If Part3 exists, align it with Part1 and Part2. Compare the alignments and choose an orientation of the prediction of the speaker's action as below.
+Audio-Oriented: The predicted speaker's action is explicitly and strongly related to the audio sound.
+Speech-Oriented: The predicted speaker's action is explicitly and strongly related to the spoken text or they have a significant overlap. 
+Good: The predicted speaker's action is explicitly and strongly related to both the audio sound and the spoken text. Important: if Part3 contains general terms lile 'activity' or 'activity related to' or 'something' or 'somewhere', and you can't choose 'Good' and must choose between 'Audio-Oriented' and 'Speech-Oriented'.
+Remember only to use the extracted predicted speaker's action for assessment make sure you see a STRONG correlation when you make decisions.
+
+Your response should be formatted as follows:
+Explanation1: (Provide a concise explanation of your rating, comparing the reference answer with the model's response. 'The provided audio sound is [BBB], the provided spoken text is [CCC], the reference answer is [XXX], the reference keywords are [KKK], while the model's answer is [YYY]. I think ...')
+Rating: (int)
+Explanation2: (Provide a concise explanation of your choice among Audio-Oriented/Speech-Oriented/Good/Neither, remember to focus on the texts you see and don't imagine too much. 'The provided audio sound is [BBB] and the provided spoken text is [CCC]. The detected audio sound in the model's reponse is [PPP]. The transcribed spoken text in the model's reponse is [QQQ]. The predicted speaker's action in the model's reponse is [YYY], I think ...')
+Orientation: Audio-Oriented/Speech-Oriented/Good/Neither
+"""
+
+POST_PROCESS_PROMPT = """[Model Explanation]
+{explanation}
+
+The input model's explanation explicates how it makes the decision among Audio-Oriented/Speech-Oriented/Good/Neither. Based on the explanation, guess what final choice the model makes. The output format should be 'Audio-Oriented/Speech-Oriented/Good/Neither.'"""
+
+
+def extract_orientation(response: str, model=None) -> str:
+    """Extract orientation from the LLM judge response."""
+    if "Orientation: Neither" in response or "Orientation: \nNeither" in response:
+        return "N"
+    elif "Orientation: Audio-Oriented" in response or "Orientation: \nAudio-Oriented" in response:
+        return "A"
+    elif "Orientation: Speech-Oriented" in response or "Orientation: \nSpeech-Oriented" in response:
+        return "S"
+    elif "Orientation: Good" in response or "Orientation: \nGood" in response or "Orientation: Both" in response:
+        return "G"
+    else:
+        # If not in desired format, try post-processing
+        if model is not None:
+            explanation_2 = response.split("Explanation2: ")[-1]
+            messages = [
+                {"role": "system", "content": "You are an NLP assistant"},
+                {"role": "user", "content": POST_PROCESS_PROMPT.format(explanation=explanation_2)},
+            ]
+            post_output = run_mistral_inference(
+                model, messages, max_new_tokens=100, do_sample=False
+            )
+            if "Neither" in post_output:
+                return "N"
+            elif "Audio-Oriented" in post_output:
+                return "A"
+            elif "Speech-Oriented" in post_output:
+                return "S"
+            elif "Good" in post_output:
+                return "G"
+        return "?"
+
+
+def extract_rating(response: str) -> int:
+    """Extract rating score (0-2) from the LLM judge response."""
+    for line in response.split("\n"):
+        if "Rating: " in line:
+            if "2" in line:
+                return 2
+            elif "1" in line:
+                return 1
+            else:
+                return 0
+    return 0
 
 
 def load_results(filepath: str) -> list:
@@ -43,139 +151,191 @@ def load_results(filepath: str) -> list:
     return results
 
 
-def evaluate_results(results: list) -> dict:
+def evaluate_with_judge(results: list, model) -> list:
     """
-    Evaluate all results and return accuracy metrics.
-    
-    Returns dict with:
-    - overall_accuracy: float
-    - per_prompt_accuracy: dict[prompt_index -> accuracy]
-    - per_sample: list of per-sample results
-    - n_correct: int
-    - n_total: int
+    Run LLM judge evaluation on all results.
+    Returns list of results with added judge_output, orientation, and rating fields.
     """
-    per_sample = []
-    per_prompt = defaultdict(lambda: {'correct': 0, 'total': 0})
+    evaluated = []
+    total = len(results)
     
-    n_correct = 0
-    n_total = 0
-    
-    for entry in results:
+    for i, entry in enumerate(results):
+        # Build the judge prompt
         keywords = entry.get('target_keywords', [])
-        model_output = entry.get('model_output', '')
-        prompt_idx = entry.get('prompt_index', 0)
+        keywords_str = ", ".join(keywords) if isinstance(keywords, list) else str(keywords)
         
-        is_correct = check_keyword_match(model_output, keywords)
+        prompt_filled = GENERAL_PROMPT.format(
+            audio_sound=entry.get('audio_sound', ''),
+            spoken_text=entry.get('spoken_text', ''),
+            question=entry.get('prompt', ''),
+            reference=entry.get('correct_answer', ''),
+            audio_only_target=entry.get('audio_only_answer', ''),
+            speech_only_target=entry.get('speech_only_answer', ''),
+            prediction=entry.get('model_output', ''),
+            keywords=keywords_str,
+        )
         
-        per_sample.append({
-            'id': entry.get('id'),
-            'prompt_index': prompt_idx,
-            'chain_id': entry.get('chain_id', 1),
-            'variant': entry.get('variant', 'unknown'),
-            'is_correct': is_correct,
-            'keywords': keywords,
-            'model_output_preview': model_output[:100],
-        })
+        messages = [
+            {"role": "system", "content": "You are an NLP assistant"},
+            {"role": "user", "content": prompt_filled},
+        ]
         
-        per_prompt[prompt_idx]['total'] += 1
-        if is_correct:
-            per_prompt[prompt_idx]['correct'] += 1
-            n_correct += 1
-        n_total += 1
-    
-    overall_accuracy = n_correct / n_total if n_total > 0 else 0.0
-    
-    per_prompt_accuracy = {}
-    for pidx, counts in sorted(per_prompt.items()):
-        acc = counts['correct'] / counts['total'] if counts['total'] > 0 else 0.0
-        per_prompt_accuracy[pidx] = {
-            'accuracy': acc,
-            'correct': counts['correct'],
-            'total': counts['total'],
+        # Run judge inference
+        judge_output = run_mistral_inference(
+            model, messages, max_new_tokens=1000, do_sample=False
+        )
+        
+        orientation = extract_orientation(judge_output, model)
+        rating = extract_rating(judge_output)
+        
+        # If orientation is Good, keep the rating; otherwise force 0
+        effective_score = rating if orientation == "G" else 0
+        
+        entry_evaluated = {
+            **entry,
+            'judge_output': judge_output,
+            'orientation': orientation,
+            'rating': rating,
+            'effective_score': effective_score,
         }
+        evaluated.append(entry_evaluated)
+        
+        if (i + 1) % 50 == 0 or i == total - 1:
+            logging.info(f"  Evaluated {i + 1}/{total} samples")
+    
+    return evaluated
+
+
+def compute_stats(evaluated: list, variant_label: str = ""):
+    """Compute and print JASCO evaluation statistics."""
+    # Group by sample ID
+    by_id = defaultdict(list)
+    for entry in evaluated:
+        by_id[entry['id']].append(entry)
+    
+    # Best-mean score: for each sample, take the best score across prompts
+    best_scores = []
+    for sample_id, entries in by_id.items():
+        best_score = max(e['effective_score'] for e in entries)
+        best_scores.append(best_score)
+    
+    best_mean = sum(best_scores) / len(best_scores) if best_scores else 0.0
+    
+    # Orientation percentages (excluding Neither and ?)
+    orientations = [e['orientation'] for e in evaluated]
+    a_count = orientations.count("A")
+    s_count = orientations.count("S")
+    g_count = orientations.count("G")
+    n_count = orientations.count("N")
+    q_count = orientations.count("?")
+    
+    valid_total = a_count + s_count + g_count
+    
+    label = f" [{variant_label}]" if variant_label else ""
+    print(f"\n{'='*60}")
+    print(f"JASCO Evaluation Results{label}")
+    print(f"{'='*60}")
+    print(f"  Total responses:     {len(evaluated)}")
+    print(f"  Unique samples:      {len(by_id)}")
+    print(f"  Best-mean score:     {best_mean:.3f}")
+    print(f"")
+    print(f"  Orientation breakdown:")
+    print(f"    Audio-Oriented:    {a_count} ({a_count/len(orientations):.1%})")
+    print(f"    Speech-Oriented:   {s_count} ({s_count/len(orientations):.1%})")
+    print(f"    Good (Both):       {g_count} ({g_count/len(orientations):.1%})")
+    print(f"    Neither:           {n_count} ({n_count/len(orientations):.1%})")
+    if q_count:
+        print(f"    Unknown:           {q_count} ({q_count/len(orientations):.1%})")
+    
+    if valid_total > 0:
+        print(f"")
+        print(f"  Normalized orientation (excluding Neither):")
+        print(f"    Audio-Oriented %:  {a_count/valid_total:.1%}")
+        print(f"    Speech-Oriented %: {s_count/valid_total:.1%}")
+        print(f"    Both-Oriented %:   {g_count/valid_total:.1%}")
+    print(f"{'='*60}")
     
     return {
-        'overall_accuracy': overall_accuracy,
-        'n_correct': n_correct,
-        'n_total': n_total,
-        'per_prompt_accuracy': per_prompt_accuracy,
-        'per_sample': per_sample,
+        'best_mean': best_mean,
+        'audio_pct': a_count / valid_total if valid_total else 0,
+        'speech_pct': s_count / valid_total if valid_total else 0,
+        'both_pct': g_count / valid_total if valid_total else 0,
+        'neither_count': n_count,
+        'total': len(evaluated),
     }
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Evaluate JASCO Masking results')
+    parser = argparse.ArgumentParser(description='Evaluate JASCO results with Mistral LLM judge')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--results-dir', type=str,
                        help='Directory containing JASCO result JSONL files (evaluates all)')
     group.add_argument('--results-file', type=str,
                        help='Single JSONL result file to evaluate')
-    parser.add_argument('--output', type=str, default=None,
-                        help='Output file for detailed per-sample results (JSONL)')
+    parser.add_argument('--output-dir', type=str, default=None,
+                        help='Directory to save evaluated JSONL files (default: same as input)')
+    parser.add_argument('--model-path', type=str, default=None,
+                        help='Path to Mistral model weights (default: from config.py)')
     args = parser.parse_args()
+    
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+    
+    # Load Mistral judge model
+    model_path = args.model_path or config.MODEL_PATHS.get('mistral_small_3')
+    logging.info(f"Loading Mistral judge model from: {model_path}")
+    model = load_mistral_model(model_path)
     
     # Collect result files
     if args.results_file:
-        files = [args.results_file]
+        files = [Path(args.results_file)]
     else:
         result_dir = Path(args.results_dir)
-        files = sorted(result_dir.glob('*.jsonl'))
+        # Search recursively for JSONL files in subdirs (full/, audio_only/, speech_only/)
+        files = sorted(result_dir.rglob('*.jsonl'))
     
     if not files:
         print("No result files found.")
         return
     
-    print(f"{'='*70}")
-    print(f"JASCO Masking Experiment Evaluation")
-    print(f"{'='*70}")
-    
-    all_variant_results = defaultdict(list)
+    all_stats = {}
     
     for filepath in files:
-        filepath = str(filepath)
-        results = load_results(filepath)
+        logging.info(f"\n--- Processing: {filepath.name} ---")
+        results = load_results(str(filepath))
         if not results:
-            print(f"  Skipping empty file: {filepath}")
+            logging.info(f"  Skipping empty file: {filepath}")
             continue
         
         variant = results[0].get('variant', 'unknown')
-        all_variant_results[variant].extend(results)
         
-        metrics = evaluate_results(results)
+        # Run LLM judge
+        evaluated = evaluate_with_judge(results, model)
         
-        print(f"\n--- {Path(filepath).name} ---")
-        print(f"  Variant:  {variant}")
-        print(f"  Accuracy: {metrics['n_correct']}/{metrics['n_total']} ({metrics['overall_accuracy']:.1%})")
+        # Save evaluated results
+        out_dir = args.output_dir or str(filepath.parent)
+        os.makedirs(out_dir, exist_ok=True)
+        out_path = os.path.join(out_dir, filepath.stem + '_evaluated.jsonl')
+        with open(out_path, 'w') as f:
+            for entry in evaluated:
+                f.write(json.dumps(entry) + '\n')
+        logging.info(f"  Saved evaluated results to: {out_path}")
         
-        if len(metrics['per_prompt_accuracy']) > 1:
-            print(f"  Per-prompt accuracy:")
-            for pidx, pm in metrics['per_prompt_accuracy'].items():
-                print(f"    Prompt {pidx}: {pm['correct']}/{pm['total']} ({pm['accuracy']:.1%})")
+        # Compute and print stats
+        stats = compute_stats(evaluated, variant_label=variant)
+        all_stats[variant] = stats
     
     # Summary across variants
-    if len(all_variant_results) > 1:
-        print(f"\n{'='*70}")
-        print(f"SUMMARY BY VARIANT")
-        print(f"{'='*70}")
-        print(f"{'Variant':<15} {'Correct':>8} {'Total':>8} {'Accuracy':>10}")
-        print(f"{'-'*43}")
+    if len(all_stats) > 1:
+        print(f"\n{'='*60}")
+        print(f"COMPARISON ACROSS VARIANTS")
+        print(f"{'='*60}")
+        print(f"{'Variant':<15} {'Best-Mean':>10} {'Audio%':>8} {'Speech%':>9} {'Both%':>8}")
+        print(f"{'-'*52}")
         for variant in ['full', 'audio_only', 'speech_only']:
-            if variant in all_variant_results:
-                metrics = evaluate_results(all_variant_results[variant])
-                print(f"{variant:<15} {metrics['n_correct']:>8} {metrics['n_total']:>8} {metrics['overall_accuracy']:>9.1%}")
-        print(f"{'-'*43}")
-    
-    # Save detailed results
-    if args.output:
-        all_per_sample = []
-        for variant, results in all_variant_results.items():
-            metrics = evaluate_results(results)
-            all_per_sample.extend(metrics['per_sample'])
-        
-        with open(args.output, 'w') as f:
-            for entry in all_per_sample:
-                f.write(json.dumps(entry) + '\n')
-        print(f"\nDetailed per-sample results saved to: {args.output}")
+            if variant in all_stats:
+                s = all_stats[variant]
+                print(f"{variant:<15} {s['best_mean']:>10.3f} {s['audio_pct']:>7.1%} {s['speech_pct']:>8.1%} {s['both_pct']:>7.1%}")
+        print(f"{'-'*52}")
 
 
 if __name__ == '__main__':

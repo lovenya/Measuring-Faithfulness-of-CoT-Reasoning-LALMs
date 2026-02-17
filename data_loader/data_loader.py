@@ -23,14 +23,31 @@ def load_dataset(jsonl_path: str) -> list:
             try:
                 data = json.loads(line.strip())
                 
-                # Extract required fields
-                sample = {
-                    'id': data['id'],
-                    'audio_path': data['audio_path'],
-                    'question': data['question'],
-                    'choices': data['choices'],
-                    'answer_key': data['answer_key']
-                }
+                # Check if this is a JASCO-style sample (open-ended with multiple prompts)
+                if 'prompts' in data:
+                    sample = {
+                        'id': data['id'],
+                        'audio_path': data.get('audio_path'),
+                        'prompts': data['prompts'],
+                        # JASCO specific fields
+                        'target_keywords': data.get('target_keywords', []),
+                        'correct_answer': data.get('correct_answer'),
+                        'audio_only_answer': data.get('audio_only_answer'),
+                        'speech_only_answer': data.get('speech_only_answer'),
+                        'audio_sound': data.get('audio_sound'),
+                        'spoken_text': data.get('spoken_text'),
+                        'audio_only_path': data.get('audio_only_path'),
+                        'speech_only_path': data.get('speech_only_path'),
+                    }
+                else:
+                    # Standard MCQ sample
+                    sample = {
+                        'id': data['id'],
+                        'audio_path': data['audio_path'],
+                        'question': data['question'],
+                        'choices': data['choices'],
+                        'answer_key': data['answer_key']
+                    }
                 
                 # Add optional fields if they exist
                 if 'answer' in data:

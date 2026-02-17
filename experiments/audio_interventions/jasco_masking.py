@@ -29,28 +29,65 @@ import logging
 EXPERIMENT_TYPE = "foundational"
 
 
-def run_trial(model, processor, tokenizer, model_utils, prompt: str, audio_path: str) -> dict:
+def run_trial(model, processor, tokenizer, model_utils, prompt: str, audio_path: str, use_cot: bool = False) -> dict:
     """
     Runs inference on a single JASCO sample.
     
-    Unlike MCQ experiments, JASCO is open-ended QA — the model generates
-    a free-form response which is later evaluated via keyword matching.
+    If use_cot=False (default): Direct prompting matching the original JASCO repo.
+    If use_cot=True: Two-turn CoT prompting (step-by-step reasoning then final answer).
     """
-    messages = [
-        {"role": "user", "content": f"audio\n\n{prompt}"},
-    ]
-    
-    # Generate response (open-ended, no CoT needed)
-    response = model_utils.run_inference(
-        model, processor, messages, audio_path,
-        max_new_tokens=256, do_sample=False, temperature=1.0, top_p=0.9
-    )
-    
-    return {
-        "prompt": prompt,
-        "audio_path": audio_path,
-        "model_output": response,
-    }
+    if use_cot:
+        # Turn 1: Generate CoT reasoning
+        cot_messages = [
+            {"role": "user", "content": f"audio\n\n{prompt}"},
+            {"role": "assistant", "content": "Let's think step by step:"},
+        ]
+        
+        generated_cot = model_utils.run_inference(
+            model, processor, cot_messages, audio_path,
+            max_new_tokens=768, do_sample=True, temperature=1.0, top_p=0.9
+        )
+        
+        # Sanitize the CoT
+        sanitized_cot = model_utils.sanitize_cot(generated_cot)
+        
+        # Turn 2: Get final answer based on reasoning
+        final_messages = [
+            {"role": "user", "content": f"audio\n\n{prompt}"},
+            {"role": "assistant", "content": sanitized_cot},
+            {"role": "user", "content": "Based on your reasoning above, provide a concise answer: what are the speakers doing specifically?"},
+        ]
+        
+        final_answer = model_utils.run_inference(
+            model, processor, final_messages, audio_path,
+            max_new_tokens=256, do_sample=False, temperature=1.0, top_p=0.9
+        )
+        
+        return {
+            "prompt": prompt,
+            "audio_path": audio_path,
+            "generated_cot": generated_cot,
+            "sanitized_cot": sanitized_cot,
+            "model_output": final_answer,
+        }
+    else:
+        # Direct prompting (matches original JASCO repo)
+        messages = [
+            {"role": "user", "content": f"audio\n\n{prompt}"},
+        ]
+        
+        response = model_utils.run_inference(
+            model, processor, messages, audio_path,
+            max_new_tokens=256, do_sample=False, temperature=1.0, top_p=0.9
+        )
+        
+        return {
+            "prompt": prompt,
+            "audio_path": audio_path,
+            "generated_cot": "",
+            "sanitized_cot": "",
+            "model_output": response,
+        }
 
 
 def run(model, processor, tokenizer, model_utils, data_samples, config):
@@ -68,6 +105,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     """
     output_path = config.OUTPUT_PATH
     variant = getattr(config, 'JASCO_VARIANT', 'full')
+    use_cot = getattr(config, 'USE_COT', False)
     num_chains = config.NUM_CHAINS_PER_QUESTION
     
     # Map variant name to the JSONL field
@@ -85,6 +123,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     logging.info(f"--- Running JASCO Masking Experiment ---")
     logging.info(f"  Model:   {config.MODEL_ALIAS.upper()}")
     logging.info(f"  Variant: {variant}")
+    logging.info(f"  CoT:     {use_cot}")
     logging.info(f"  Chains:  {num_chains}")
     logging.info(f"  Output:  {output_path}")
     
@@ -142,7 +181,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                     try:
                         trial_result = run_trial(
                             model, processor, tokenizer, model_utils,
-                            prompt, audio_path
+                            prompt, audio_path, use_cot=use_cot
                         )
                     except Exception as e:
                         logging.error(f"Error on sample {sample_id}, prompt {prompt_idx}, chain {chain_id}: {e}")
@@ -156,6 +195,8 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                         'variant': variant,
                         'audio_path': audio_path,
                         'prompt': prompt,
+                        'generated_cot': trial_result['generated_cot'],
+                        'sanitized_cot': trial_result['sanitized_cot'],
                         'model_output': trial_result['model_output'],
                         'target_keywords': sample.get('target_keywords', []),
                         'correct_answer': sample.get('correct_answer', ''),
