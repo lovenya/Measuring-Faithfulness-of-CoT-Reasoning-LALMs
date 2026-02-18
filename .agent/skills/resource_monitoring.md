@@ -33,8 +33,25 @@ while sleep 1200; do
   GPU_INFO=$(nvidia-smi --query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits 2>/dev/null)
   if [ -n "$GPU_INFO" ]; then
     echo "$GPU_INFO" | while IFS=',' read -r NAME UTIL MEM_USED MEM_TOTAL TEMP; do
+      # Trim whitespace
+      NAME=$(echo "$NAME" | xargs)
+      UTIL=$(echo "$UTIL" | xargs)
+      MEM_USED=$(echo "$MEM_USED" | xargs)
+      MEM_TOTAL=$(echo "$MEM_TOTAL" | xargs)
+      TEMP=$(echo "$TEMP" | xargs)
       echo "║   Model: $NAME"
-      echo "║   GPU Utilization: ${UTIL}% (how busy the GPU cores are)"
+      # Handle MIG mode where utilization returns [N/A]
+      if [ "$UTIL" = "[N/A]" ] || [ "$UTIL" = "N/A" ]; then
+        # Try MIG-specific query
+        MIG_UTIL=$(nvidia-smi --query-compute-apps=gpu_uuid,used_gpu_memory --format=csv,noheader,nounits 2>/dev/null | head -1)
+        if [ -n "$MIG_UTIL" ]; then
+          echo "║   GPU Utilization: MIG mode (per-GPU util unavailable)"
+        else
+          echo "║   GPU Utilization: N/A (MIG mode - no active compute apps)"
+        fi
+      else
+        echo "║   GPU Utilization: ${UTIL}% (how busy the GPU cores are)"
+      fi
       echo "║   Memory Used: ${MEM_USED} MiB / ${MEM_TOTAL} MiB"
       echo "║   Temperature: ${TEMP}°C"
     done

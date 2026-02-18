@@ -111,6 +111,21 @@ def main():
         default=False,
         help="Enable CoT prompting for JASCO experiment (default: direct prompting)."
     )
+    # --- Arguments for Adversarial Audio Experiments ---
+    parser.add_argument(
+        '--adversarial-aug',
+        type=str,
+        default=None,
+        choices=['concat', 'overlay'],
+        help="Augmentation mode for adversarial experiment: 'concat' or 'overlay'."
+    )
+    parser.add_argument(
+        '--adversarial-variant',
+        type=str,
+        default=None,
+        choices=['correct', 'wrong'],
+        help="Adversarial variant: 'correct' (correct choice injected) or 'wrong' (wrong choice injected)."
+    )
 
     args = parser.parse_args()
 
@@ -144,18 +159,25 @@ def main():
     # JASCO masking settings
     config.JASCO_VARIANT = args.jasco_variant
     config.USE_COT = args.use_cot
+    
+    # Adversarial audio settings
+    config.ADVERSARIAL_AUG = args.adversarial_aug
+    config.ADVERSARIAL_VARIANT = args.adversarial_variant
 
     # --- 2. Centralized Path Management (Now Chunk-Aware) ---
     experiment_name = args.experiment
     model_alias = config.MODEL_ALIAS
     
-    # For audio_masking and jasco_masking, use hierarchical subdirs
+    # For audio_masking, jasco_masking, and adversarial, use hierarchical subdirs
     if experiment_name == 'audio_masking':
         output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
                                   config.MASK_TYPE, config.MASK_MODE)
     elif experiment_name == 'jasco_masking':
         output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
                                   config.JASCO_VARIANT)
+    elif experiment_name == 'adversarial' and config.ADVERSARIAL_AUG:
+        output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
+                                  config.ADVERSARIAL_AUG)
     else:
         output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
@@ -181,6 +203,10 @@ def main():
     if experiment_name == 'jasco_masking':
         cot_suffix = '_cot' if config.USE_COT else ''
         base_filename += f"_{config.JASCO_VARIANT}{cot_suffix}"
+    
+    # Add suffix for adversarial experiments (aug mode + variant)
+    if config.ADVERSARIAL_AUG and config.ADVERSARIAL_VARIANT:
+        base_filename += f"_{config.ADVERSARIAL_AUG}_{config.ADVERSARIAL_VARIANT}"
     
     # If this is a parallel run, we add the part number to the output filename.
     # e.g., 'adding_mistakes_salmonn_mmar-restricted.part_7.jsonl'
@@ -296,7 +322,18 @@ def main():
         # Foundational experiments are not parallelized at this level, so their logic is unchanged.
         logging.info("Running a FOUNDATIONAL experiment...")
         try:
-            dataset_path = config.DATASET_MAPPING[args.dataset]
+            # For adversarial experiments, override dataset path to load adversarial JSONL
+            if config.ADVERSARIAL_AUG and config.ADVERSARIAL_VARIANT:
+                track = args.dataset.split('-')[1]  # e.g., 'sakura-animal' -> 'animal'
+                dataset_path = os.path.join(
+                    'data', 'adversarial_aug_data',
+                    f"{track}_{config.ADVERSARIAL_AUG}",
+                    f"adversarial_{track}_{config.ADVERSARIAL_AUG}_{config.ADVERSARIAL_VARIANT}.jsonl"
+                )
+                logging.info(f"[ADVERSARIAL] Using adversarial dataset: {dataset_path}")
+            else:
+                dataset_path = config.DATASET_MAPPING[args.dataset]
+            
             data_samples = load_dataset(dataset_path)
             if config.NUM_SAMPLES_TO_RUN > 0:
                 data_samples = data_samples[:config.NUM_SAMPLES_TO_RUN]
