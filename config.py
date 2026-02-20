@@ -115,6 +115,8 @@ NUM_CHAINS_PER_QUESTION = 1
 SNR_LEVELS_TO_TEST = [20, 10, 5, 0, -5, -10]
 FILLER_TYPE = "dots"  # Options: "dots", "lorem"
 
+# Seed used for scattered silence masking in JASCO preprocessing for reproducibility
+JASCO_GLOBAL_SEED = 42
 
 # --- Global Variables (Managed by main.py) ---
 MODEL_ALIAS = "default"
