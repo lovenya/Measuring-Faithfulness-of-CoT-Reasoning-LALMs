@@ -35,7 +35,7 @@ module load StdEnv/2023 cuda rust gcc arrow
 // turbo
 
 ```bash
-source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/qwen_env/bin/activate
+source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/qwen_new_env/bin/activate
 ```
 
 ### For SALMONN / SALMONN_7B:

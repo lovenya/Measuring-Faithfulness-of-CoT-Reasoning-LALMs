@@ -27,9 +27,9 @@ TEMPLATE = '''#!/bin/bash
 #==================================================================
 # SBATCH Script for adversarial experiment: {track} / {aug} / {variant}
 #==================================================================
-#SBATCH --time=04:00:00
+#SBATCH --time=02:30:00
 #SBATCH --gpus=nvidia_h100_80gb_hbm3_3g.40gb:1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=3
 #SBATCH --mem=64G
 #SBATCH --account={account}
 #SBATCH --job-name=adv-{track_short}-{aug_short}-{variant_short}
