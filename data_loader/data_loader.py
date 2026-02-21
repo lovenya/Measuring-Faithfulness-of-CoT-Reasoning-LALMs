@@ -28,6 +28,7 @@ def load_dataset(jsonl_path: str) -> list:
                     sample = {
                         'id': data['id'],
                         'audio_path': data.get('audio_path'),
+                        'audio_paths': data.get('audio_paths', {}),
                         'prompts': data['prompts'],
                         # JASCO specific fields
                         'target_keywords': data.get('target_keywords', []),

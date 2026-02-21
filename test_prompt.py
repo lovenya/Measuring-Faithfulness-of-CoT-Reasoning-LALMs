@@ -45,7 +45,7 @@ def test_prompt():
                     f"Choices:\n{choices}\n\n"
                     f"Think and reason step by step and at the end of your response, "
                     f"provide your final answer as a single letter in parentheses, e.g. (X)\n"
-                    f"Output your response with <REASONING> </REASONING>, <CONCLUSION> </CONCLUSION>, and <LETTER_OF_CHOICE> </LETTER_OF_CHOICE> tags."
+                    f"Output your response with <REASONING>, <CONCLUSION>, and <LETTER_OF_CHOICE> tags."
                 )
             }
         ]

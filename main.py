@@ -97,20 +97,7 @@ def main():
         choices=['random', 'start', 'end', 'scattered'],
         help="Position mode for audio masking: 'random' (single block), 'start', 'end', or 'scattered' (multiple distributed segments)."
     )
-    # --- Arguments for JASCO Masking Experiment ---
-    parser.add_argument(
-        '--jasco-variant',
-        type=str,
-        default='full',
-        choices=['full', 'audio_only', 'speech_only'],
-        help="Audio variant for JASCO masking: 'full', 'audio_only', or 'speech_only'."
-    )
-    parser.add_argument(
-        '--use-cot',
-        action='store_true',
-        default=False,
-        help="Enable CoT prompting for JASCO experiment (default: direct prompting)."
-    )
+
     # --- Arguments for Adversarial Audio Experiments ---
     parser.add_argument(
         '--adversarial-aug',
@@ -156,9 +143,7 @@ def main():
     config.MASK_TYPE = args.mask_type
     config.MASK_MODE = args.mask_mode
     
-    # JASCO masking settings
-    config.JASCO_VARIANT = args.jasco_variant
-    config.USE_COT = args.use_cot
+
     
     # Adversarial audio settings
     config.ADVERSARIAL_AUG = args.adversarial_aug
@@ -172,9 +157,6 @@ def main():
     if experiment_name == 'audio_masking':
         output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
                                   config.MASK_TYPE, config.MASK_MODE)
-    elif experiment_name == 'jasco_masking':
-        output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
-                                  config.JASCO_VARIANT)
     elif experiment_name == 'adversarial' and config.ADVERSARIAL_AUG:
         output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
                                   config.ADVERSARIAL_AUG)
@@ -198,11 +180,6 @@ def main():
     # Add suffix for audio masking experiments (to create separate files per mask_type/mask_mode)
     if experiment_name == 'audio_masking':
         base_filename += f"_{config.MASK_TYPE}_{config.MASK_MODE}"
-    
-    # Add suffix for JASCO masking experiments (to create separate files per variant)
-    if experiment_name == 'jasco_masking':
-        cot_suffix = '_cot' if config.USE_COT else ''
-        base_filename += f"_{config.JASCO_VARIANT}{cot_suffix}"
     
     # Add suffix for adversarial experiments (aug mode + variant)
     if config.ADVERSARIAL_AUG and config.ADVERSARIAL_VARIANT:
