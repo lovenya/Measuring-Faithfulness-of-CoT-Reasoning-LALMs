@@ -11,7 +11,7 @@ Request an interactive compute node with H100 GPU for running experiments.
 ## Step 1: Request the node
 
 ```bash
-salloc --time=02:00:00 --gpus=nvidia_h100_80gb_hbm3_3g.40gb:1 --cpus-per-task= --mem=64G --account=rrg-ravanelm
+salloc --time=02:00:00 --gpus=nvidia_h100_80gb_hbm3_3g.40gb:1 --cpus-per-task=4 --mem=64G --account=rrg-ravanelm
 ```
 
 > **Note**: This will allocate a node for 2 hours. Adjust `--time` as needed for longer experiments.

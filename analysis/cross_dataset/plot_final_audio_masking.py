@@ -29,16 +29,19 @@ DATASET_STYLES = {
 }
 
 MODE_LINESTYLES = {
-    "random": "-",
+    "scattered": "-",
     "start": "--",
     "end": ":",
 }
 
 
-def load_audio_masking_results(model_name: str, results_dir: str, dataset_name: str) -> pd.DataFrame:
-    """Load all audio masking results for a dataset (all mask_type/mask_mode combinations)."""
-    filename = f"audio_masking_{model_name}_{dataset_name}.jsonl"
-    filepath = os.path.join(results_dir, model_name, 'audio_masking', filename)
+def load_audio_masking_results(model_name: str, results_dir: str, dataset_name: str, mask_type: str, mask_mode: str) -> pd.DataFrame:
+    """Load audio masking results from hierarchical directory structure.
+    
+    Path: results/{model}/audio_masking/{mask_type}/{mask_mode}/audio_masking_{model}_{dataset}_{mask_type}_{mask_mode}.jsonl
+    """
+    filename = f"audio_masking_{model_name}_{dataset_name}_{mask_type}_{mask_mode}.jsonl"
+    filepath = os.path.join(results_dir, model_name, 'audio_masking', mask_type, mask_mode, filename)
     
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"Results not found: {filepath}")
@@ -77,9 +80,7 @@ def create_cross_dataset_plot(
     
     for dataset_name, style in DATASET_STYLES.items():
         try:
-            df = load_audio_masking_results(model_name, results_dir, dataset_name)
-            # Filter to specific mask_type and mask_mode
-            df = df[(df['mask_type'] == mask_type) & (df['mask_mode'] == mask_mode)]
+            df = load_audio_masking_results(model_name, results_dir, dataset_name, mask_type, mask_mode)
             
             if df.empty:
                 print(f"  - No data for {dataset_name}. Skipping.")
@@ -164,7 +165,7 @@ def create_analysis(
     """Main orchestrator supporting 'all' for both mask_type and mask_mode."""
     
     mask_types = ['silence', 'noise'] if mask_type == 'all' else [mask_type]
-    mask_modes = ['random', 'start', 'end'] if mask_mode == 'all' else [mask_mode]
+    mask_modes = ['scattered', 'start', 'end'] if mask_mode == 'all' else [mask_mode]
     
     for mt in mask_types:
         for mm in mask_modes:
@@ -178,7 +179,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate cross-dataset Audio Masking plots.")
     parser.add_argument('--model', type=str, required=True, help="Model name (qwen, salmonn, flamingo)")
     parser.add_argument('--mask-type', type=str, required=True, choices=['silence', 'noise', 'all'])
-    parser.add_argument('--mask-mode', type=str, required=True, choices=['random', 'start', 'end', 'all'])
+    parser.add_argument('--mask-mode', type=str, required=True, choices=['scattered', 'start', 'end', 'all'])
     parser.add_argument('--results_dir', type=str, default='./results')
     parser.add_argument('--plots_dir', type=str, default='plots/cross_dataset_plots')
     parser.add_argument('--y-zoom', nargs=2, type=float, default=None, help="Custom Y-axis range")

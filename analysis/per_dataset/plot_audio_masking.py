@@ -94,7 +94,7 @@ def plot_single_graph(
     plt.style.use('seaborn-v0_8-whitegrid')
     fig, ax = plt.subplots(figsize=(13, 8))
     
-    style = MODE_STYLES.get(mask_mode, MODE_STYLES["random"])
+    style = MODE_STYLES.get(mask_mode, MODE_STYLES["scattered"])
     ax.plot(consistency_curve.index, consistency_curve.values, 
             marker=style["marker"], linestyle=style["linestyle"], 
             color=style["color"], label=f'Consistency ({mask_mode})')
@@ -228,7 +228,7 @@ if __name__ == "__main__":
     parser.add_argument('--model', type=str, required=True, help="Model name (qwen, salmonn, flamingo)")
     parser.add_argument('--dataset', type=str, required=True, help="Dataset name or 'all'")
     parser.add_argument('--mask-type', type=str, required=True, choices=['silence', 'noise', 'all'])
-    parser.add_argument('--mask-mode', type=str, required=True, choices=['random', 'start', 'end', 'all'])
+    parser.add_argument('--mask-mode', type=str, required=True, choices=['scattered', 'start', 'end', 'all'])
     parser.add_argument('--results_dir', type=str, default='./results')
     parser.add_argument('--plots_dir', type=str, default='./plots')
     parser.add_argument('--save-pdf', action='store_true')
