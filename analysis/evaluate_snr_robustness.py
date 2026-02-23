@@ -3,12 +3,13 @@
 SNR Robustness Evaluation Script
 
 Analyzes results from the SNR robustness experiment, computing accuracy
-and consistency metrics at each SNR level. Optionally saves to CSV.
+and consistency metrics at each SNR level. Supports hop_type filtering
+for Sakura datasets and optional CSV output.
 
 Usage:
     python analysis/evaluate_snr_robustness.py --model qwen
-    python analysis/evaluate_snr_robustness.py --model qwen --datasets mmar sakura-animal
-    python analysis/evaluate_snr_robustness.py --model qwen --output-csv results/qwen/snr_summary.csv
+    python analysis/evaluate_snr_robustness.py --model qwen --hop-type all
+    python analysis/evaluate_snr_robustness.py --model qwen --datasets mmar sakura-animal --hop-type single
 """
 
 import os
@@ -45,6 +46,26 @@ def load_results(results_dir: str, model: str, dataset: str) -> list[dict]:
     return entries
 
 
+def get_hop_type(entry: dict) -> str | None:
+    """Get hop_type from the entry, falling back to inferring from sample ID."""
+    hop = entry.get('hop_type')
+    if hop:
+        return hop
+    sample_id = entry.get('id', '')
+    if sample_id.endswith('_single'):
+        return 'single'
+    elif sample_id.endswith('_multi'):
+        return 'multi'
+    return None
+
+
+def filter_by_hop_type(entries: list, hop_type: str) -> list:
+    """Filter entries by hop_type. Returns all if hop_type is 'merged'."""
+    if hop_type == 'merged':
+        return entries
+    return [e for e in entries if get_hop_type(e) == hop_type]
+
+
 def compute_metrics(entries: list[dict]) -> dict:
     """
     Compute accuracy and consistency per SNR level.
@@ -78,29 +99,21 @@ def compute_metrics(entries: list[dict]) -> dict:
     return metrics
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Evaluate SNR robustness experiment results.",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    parser.add_argument('--model', type=str, required=True,
-                        help="Model alias (e.g., 'qwen', 'salmonn').")
-    parser.add_argument('--datasets', nargs='+', default=ALL_DATASETS,
-                        help="Datasets to evaluate (default: all).")
-    parser.add_argument('--results-dir', type=str, default='results',
-                        help="Base results directory.")
-    parser.add_argument('--output-csv', type=str, default=None,
-                        help="Optional: save summary to CSV.")
-    args = parser.parse_args()
-
+def run_analysis(args, hop_type_label: str, hop_filter: str) -> list[dict]:
+    """Run analysis for a given hop_type filter. Returns rows for CSV."""
     print(f"\n{'='*70}")
-    print(f"SNR Robustness Analysis — {args.model.upper()}")
+    print(f"SNR Robustness Analysis — {args.model.upper()} — Hop: {hop_type_label.upper()}")
     print(f"{'='*70}")
 
-    all_rows = []  # For CSV output
+    all_rows = []
 
     for dataset in args.datasets:
         entries = load_results(args.results_dir, args.model, dataset)
+        
+        # Only filter by hop_type for Sakura datasets
+        if dataset.startswith('sakura-') and hop_filter != 'merged':
+            entries = filter_by_hop_type(entries, hop_filter)
+        
         if not entries:
             print(f"\n--- {dataset.upper()} ---")
             print(f"  No results found.")
@@ -120,6 +133,7 @@ def main():
                       f"{m['consistent']}/{m['total']:>5} {m['consistency']:>9.1f}%")
                 
                 all_rows.append({
+                    'hop_type': hop_type_label,
                     'model': args.model,
                     'dataset': dataset,
                     'snr_db': snr,
@@ -129,6 +143,42 @@ def main():
                     'consistent': m['consistent'],
                     'consistency': round(m['consistency'], 2),
                 })
+
+    return all_rows
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Evaluate SNR robustness experiment results.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.add_argument('--model', type=str, required=True,
+                        help="Model alias (e.g., 'qwen', 'salmonn').")
+    parser.add_argument('--datasets', nargs='+', default=ALL_DATASETS,
+                        help="Datasets to evaluate (default: all).")
+    parser.add_argument('--results-dir', type=str, default='results',
+                        help="Base results directory.")
+    parser.add_argument('--hop-type', type=str, default='merged',
+                        choices=['merged', 'single', 'multi', 'all'],
+                        help="Hop type filter for Sakura datasets.\n"
+                             "  merged = all data together (default)\n"
+                             "  single = single-hop only\n"
+                             "  multi  = multi-hop only\n"
+                             "  all    = run both single and multi separately")
+    parser.add_argument('--output-csv', type=str, default=None,
+                        help="Optional: save summary to CSV.")
+    args = parser.parse_args()
+
+    # Determine which hop types to run
+    if args.hop_type == 'all':
+        hop_runs = [('single', 'single'), ('multi', 'multi')]
+    else:
+        hop_runs = [(args.hop_type, args.hop_type)]
+
+    all_rows = []
+    for hop_label, hop_filter in hop_runs:
+        rows = run_analysis(args, hop_label, hop_filter)
+        all_rows.extend(rows)
 
     # Save CSV if requested
     if args.output_csv and all_rows:

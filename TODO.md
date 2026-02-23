@@ -23,7 +23,19 @@
 - [ ] Run JASCO for SALMONN 13B, SALMONN 7B, Flamingo (Stage 1 + Stage 2)
 - [ ] Create JASCO plotting/analysis script
 
-## 3. Parallelization Pipeline Improvements
+## 3. Hop Type Segregation for Sakura Analysis
+
+- [ ] Add `--hop-type` CLI arg to all Sakura-relevant analysis scripts
+  - Options: `merged` (default, current behavior), `single`, `multi`, `all` (runs both separately)
+  - Scripts to update:
+    - [x] `analysis/evaluate_adversarial.py`
+    - [x] `analysis/evaluate_snr_robustness.py`
+    - [ ] `analysis/per_dataset/plot_adversarial.py`
+    - [ ] `analysis/per_dataset/plot_audio_masking.py`
+    - [ ] `analysis/cross_dataset/plot_adversarial.py`
+    - [ ] `analysis/cross_dataset/plot_final_audio_masking.py`
+
+## 4. Parallelization Pipeline Improvements
 
 - [ ] Create `data_processing/verify_parallel_completeness.py`
   - Check entry counts per chunk vs expected (e.g., 11 entries/sample for audio_masking)

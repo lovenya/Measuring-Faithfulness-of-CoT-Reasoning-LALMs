@@ -35,6 +35,27 @@ MODE_LINESTYLES = {
 }
 
 
+def get_hop_type(entry: dict) -> str | None:
+    """Get hop_type from entry, falling back to inferring from sample ID."""
+    hop = entry.get('hop_type')
+    if hop:
+        return hop
+    sample_id = entry.get('id', '')
+    if sample_id.endswith('_single'):
+        return 'single'
+    elif sample_id.endswith('_multi'):
+        return 'multi'
+    return None
+
+
+def filter_df_by_hop_type(df: pd.DataFrame, hop_type: str) -> pd.DataFrame:
+    """Filter DataFrame by hop_type. Returns all if hop_type is 'merged'."""
+    if hop_type == 'merged' or df.empty:
+        return df
+    mask = df.apply(lambda row: get_hop_type(row.to_dict()) == hop_type, axis=1)
+    return df[mask].reset_index(drop=True)
+
+
 def load_audio_masking_results(model_name: str, results_dir: str, dataset_name: str, mask_type: str, mask_mode: str) -> pd.DataFrame:
     """Load audio masking results from hierarchical directory structure.
     
@@ -67,10 +88,12 @@ def create_cross_dataset_plot(
     save_pdf: bool = False,
     show_ci: bool = False,
     print_line_data: bool = False,
+    hop_type: str = 'merged',
 ):
     """Generate a cross-dataset plot for a specific mask_type and mask_mode."""
     
-    print(f"\n--- Cross-Dataset Plot: {model_name.upper()} / {mask_type} / {mask_mode} ---")
+    hop_label = f" (hop={hop_type})" if hop_type != 'merged' else ''
+    print(f"\n--- Cross-Dataset Plot: {model_name.upper()} / {mask_type} / {mask_mode}{hop_label} ---")
     
     fontsize = 32
     plt.style.use('seaborn-v0_8-whitegrid')
@@ -87,6 +110,12 @@ def create_cross_dataset_plot(
                 continue
             
             df['dataset'] = dataset_name
+            # Filter by hop_type for Sakura datasets
+            if dataset_name.startswith('sakura-'):
+                df = filter_df_by_hop_type(df, hop_type)
+            if df.empty:
+                print(f"  - No data for {dataset_name} after hop_type filter. Skipping.")
+                continue
             df['consistency_pct'] = df['is_consistent_with_baseline'].astype(int) * 100
             all_dfs.append(df)
             
@@ -161,30 +190,46 @@ def create_analysis(
     save_pdf: bool = False,
     show_ci: bool = False,
     print_line_data: bool = False,
+    hop_type: str = 'merged',
 ):
-    """Main orchestrator supporting 'all' for both mask_type and mask_mode."""
+    """Main orchestrator supporting 'all' for both mask_type, mask_mode, and hop_type."""
     
     mask_types = ['silence', 'noise'] if mask_type == 'all' else [mask_type]
     mask_modes = ['scattered', 'start', 'end'] if mask_mode == 'all' else [mask_mode]
     
-    for mt in mask_types:
-        for mm in mask_modes:
-            create_cross_dataset_plot(
-                model_name, mt, mm, results_dir, plots_dir,
-                y_zoom, save_pdf, show_ci, print_line_data
-            )
+    if hop_type == 'all':
+        hop_runs = ['single', 'multi']
+    else:
+        hop_runs = [hop_type]
+    
+    for ht in hop_runs:
+        if ht != 'merged':
+            effective_plots_dir = os.path.join(plots_dir, f"hop_{ht}")
+        else:
+            effective_plots_dir = plots_dir
+        
+        for mt in mask_types:
+            for mm in mask_modes:
+                create_cross_dataset_plot(
+                    model_name, mt, mm, results_dir, effective_plots_dir,
+                    y_zoom, save_pdf, show_ci, print_line_data, ht
+                )
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate cross-dataset Audio Masking plots.")
+    parser = argparse.ArgumentParser(description="Generate cross-dataset Audio Masking plots.",
+                                     formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--model', type=str, required=True, help="Model name (qwen, salmonn, flamingo)")
     parser.add_argument('--mask-type', type=str, required=True, choices=['silence', 'noise', 'all'])
     parser.add_argument('--mask-mode', type=str, required=True, choices=['scattered', 'start', 'end', 'all'])
+    parser.add_argument('--hop-type', type=str, default='merged',
+                        choices=['merged', 'single', 'multi', 'all'],
+                        help="Hop type filter for Sakura (merged|single|multi|all)")
     parser.add_argument('--results_dir', type=str, default='./results')
     parser.add_argument('--plots_dir', type=str, default='plots/cross_dataset_plots')
     parser.add_argument('--y-zoom', nargs=2, type=float, default=None, help="Custom Y-axis range")
     parser.add_argument('--save-pdf', action='store_true')
-    parser.add_argument('--show-ci', action='store_true', help="Show 95% confidence interval")
+    parser.add_argument('--show-ci', action='store_true', help="Show 95%% confidence interval")
     parser.add_argument('--print-line-data', action='store_true', help="Print line coordinates to console")
     
     args = parser.parse_args()
@@ -192,5 +237,6 @@ if __name__ == "__main__":
     create_analysis(
         args.model, args.mask_type, args.mask_mode,
         args.results_dir, args.plots_dir,
-        args.y_zoom, args.save_pdf, args.show_ci, args.print_line_data
+        args.y_zoom, args.save_pdf, args.show_ci, args.print_line_data,
+        args.hop_type
     )

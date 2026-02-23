@@ -6,8 +6,14 @@ Computes accuracy and consistency (with baseline) for each combination of:
 - Track (animal, emotion, gender, language)
 - Augmentation mode (concat, overlay) 
 - Variant (correct, wrong)
+- Hop type (single, multi, merged, or all)
 
 Produces summary tables and optional CSV output.
+
+Usage:
+    python analysis/evaluate_adversarial.py --model qwen
+    python analysis/evaluate_adversarial.py --model salmonn --hop-type single
+    python analysis/evaluate_adversarial.py --model qwen --hop-type all
 """
 
 import os
@@ -35,6 +41,27 @@ def load_results(filepath: str) -> list:
     return results
 
 
+def get_hop_type(entry: dict) -> str | None:
+    """Get hop_type from the entry, falling back to inferring from sample ID."""
+    hop = entry.get('hop_type')
+    if hop:
+        return hop
+    # Infer from ID: sakura_animal_0_single -> single, sakura_animal_0_multi -> multi
+    sample_id = entry.get('id', '')
+    if sample_id.endswith('_single'):
+        return 'single'
+    elif sample_id.endswith('_multi'):
+        return 'multi'
+    return None
+
+
+def filter_by_hop_type(results: list, hop_type: str) -> list:
+    """Filter results by hop_type. Returns all if hop_type is 'merged'."""
+    if hop_type == 'merged':
+        return results
+    return [r for r in results if get_hop_type(r) == hop_type]
+
+
 def compute_metrics(results: list) -> dict:
     """Compute accuracy and consistency metrics for a set of results."""
     total = len(results)
@@ -57,29 +84,15 @@ def compute_metrics(results: list) -> dict:
     }
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Analyze adversarial experiment results.")
-    parser.add_argument('--results-dir', type=str, default='results/qwen/adversarial',
-                        help="Base results directory for adversarial experiments.")
-    parser.add_argument('--model', type=str, default='qwen',
-                        help="Model alias (used to construct filenames).")
-    parser.add_argument('--baseline-dir', type=str, default=None,
-                        help="Baseline results directory (default: results/{model}/baseline).")
-    parser.add_argument('--output-csv', type=str, default=None,
-                        help="Optional CSV output file for results.")
-    args = parser.parse_args()
-    
-    if args.baseline_dir is None:
-        args.baseline_dir = f"results/{args.model}/baseline"
-    
-    # Collect all results
+def run_analysis(args, hop_type_label: str, hop_filter: str):
+    """Run the full analysis for a given hop_type filter."""
     all_metrics = []
     
-    print("=" * 80)
-    print(f"Adversarial Experiment Analysis (Model: {args.model.upper()})")
-    print("=" * 80)
+    print(f"\n{'=' * 80}")
+    print(f"Adversarial Experiment Analysis — {args.model.upper()} — Hop: {hop_type_label.upper()}")
+    print(f"{'=' * 80}")
     
-    # Also compute baseline accuracy for comparison
+    # Baseline accuracy for comparison
     print(f"\n{'─' * 80}")
     print(f"{'BASELINE ACCURACY (for comparison)':^80}")
     print(f"{'─' * 80}")
@@ -89,7 +102,7 @@ def main():
     baseline_acc = {}
     for track in TRACKS:
         baseline_path = os.path.join(args.baseline_dir, f"baseline_{args.model}_sakura-{track}.jsonl")
-        baseline_results = load_results(baseline_path)
+        baseline_results = filter_by_hop_type(load_results(baseline_path), hop_filter)
         if baseline_results:
             bc = sum(1 for r in baseline_results if r.get('is_correct', False))
             bt = len(baseline_results)
@@ -112,12 +125,11 @@ def main():
                 filename = f"adversarial_{args.model}_sakura-{track}_{aug}_{variant}.jsonl"
                 filepath = os.path.join(args.results_dir, aug, filename)
                 
-                results = load_results(filepath)
+                results = filter_by_hop_type(load_results(filepath), hop_filter)
                 metrics = compute_metrics(results)
                 
                 if metrics['accuracy'] is not None:
                     acc_str = f"{metrics['accuracy']:.2%}"
-                    # Delta from baseline
                     if baseline_acc.get(track) is not None:
                         delta = metrics['accuracy'] - baseline_acc[track]
                         delta_str = f"{delta:+.2%}"
@@ -137,6 +149,7 @@ def main():
                 print(f"{track:<12} {variant:<10} {metrics['total']:>6} {acc_str:>8} {delta_str:>8} {consist_str:>10} {consist_pct:>10}")
                 
                 all_metrics.append({
+                    'hop_type': hop_type_label,
                     'track': track,
                     'aug_mode': aug,
                     'variant': variant,
@@ -163,12 +176,51 @@ def main():
             else:
                 print(f"{aug:<12} {variant:<10} {'N/A':>14} {'N/A':>16}")
     
+    return all_metrics
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Analyze adversarial experiment results.")
+    parser.add_argument('--model', type=str, default='qwen',
+                        help="Model alias (e.g., 'qwen', 'salmonn', 'salmonn_7b', 'flamingo').")
+    parser.add_argument('--results-dir', type=str, default=None,
+                        help="Base results directory (default: results/{model}/adversarial).")
+    parser.add_argument('--baseline-dir', type=str, default=None,
+                        help="Baseline results directory (default: results/{model}/baseline).")
+    parser.add_argument('--hop-type', type=str, default='merged',
+                        choices=['merged', 'single', 'multi', 'all'],
+                        help="Hop type filter for Sakura datasets.\n"
+                             "  merged = all data together (default, classic behavior)\n"
+                             "  single = single-hop only\n"
+                             "  multi  = multi-hop only\n"
+                             "  all    = run both single and multi separately")
+    parser.add_argument('--output-csv', type=str, default=None,
+                        help="Optional CSV output file for results.")
+    args = parser.parse_args()
+    
+    if args.results_dir is None:
+        args.results_dir = f"results/{args.model}/adversarial"
+    if args.baseline_dir is None:
+        args.baseline_dir = f"results/{args.model}/baseline"
+    
+    # Determine which hop types to run
+    if args.hop_type == 'all':
+        hop_runs = [('single', 'single'), ('multi', 'multi')]
+    else:
+        hop_runs = [(args.hop_type, args.hop_type)]
+    
+    all_metrics = []
+    for hop_label, hop_filter in hop_runs:
+        metrics = run_analysis(args, hop_label, hop_filter)
+        all_metrics.extend(metrics)
+    
     # Optional CSV output
-    if args.output_csv:
+    if args.output_csv and all_metrics:
         import csv
+        os.makedirs(os.path.dirname(args.output_csv) or '.', exist_ok=True)
+        fieldnames = ['hop_type', 'track', 'aug_mode', 'variant', 'total', 'correct', 'accuracy',
+                     'consistency_total', 'consistent', 'consistency', 'baseline_accuracy']
         with open(args.output_csv, 'w', newline='') as csvfile:
-            fieldnames = ['track', 'aug_mode', 'variant', 'total', 'correct', 'accuracy',
-                         'consistency_total', 'consistent', 'consistency', 'baseline_accuracy']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for m in all_metrics:

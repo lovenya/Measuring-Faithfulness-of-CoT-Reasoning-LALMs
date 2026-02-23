@@ -30,6 +30,27 @@ MODE_STYLES = {
 }
 
 
+def get_hop_type(entry: dict) -> str | None:
+    """Get hop_type from entry, falling back to inferring from sample ID."""
+    hop = entry.get('hop_type')
+    if hop:
+        return hop
+    sample_id = entry.get('id', '')
+    if sample_id.endswith('_single'):
+        return 'single'
+    elif sample_id.endswith('_multi'):
+        return 'multi'
+    return None
+
+
+def filter_by_hop_type(df: pd.DataFrame, hop_type: str) -> pd.DataFrame:
+    """Filter DataFrame by hop_type. Returns all if hop_type is 'merged'."""
+    if hop_type == 'merged' or df.empty:
+        return df
+    mask = df.apply(lambda row: get_hop_type(row.to_dict()) == hop_type, axis=1)
+    return df[mask].reset_index(drop=True)
+
+
 def load_audio_masking_results(model_name: str, results_dir: str, dataset_name: str, mask_type: str, mask_mode: str) -> pd.DataFrame:
     """Load audio masking results JSONL file from hierarchical directory structure."""
     # Hierarchical path: results/{model}/audio_masking/{mask_type}/{mask_mode}/
@@ -77,6 +98,7 @@ def plot_single_graph(
     mask_mode: str,
     plots_dir: str,
     save_as_pdf: bool = False,
+    hop_type: str = 'merged',
 ):
     """Generate and save a single audio masking plot."""
     
@@ -133,6 +155,7 @@ def plot_all_modes(
     results_dir: str,
     plots_dir: str,
     save_as_pdf: bool = False,
+    hop_type: str = 'merged',
 ):
     """Plot all mask modes on a single chart for comparison."""
     
@@ -144,6 +167,8 @@ def plot_all_modes(
     for mode, style in MODE_STYLES.items():
         try:
             df = load_audio_masking_results(model_name, results_dir, dataset_name, mask_type, mode)
+            if dataset_name.startswith('sakura-'):
+                df = filter_by_hop_type(df, hop_type)
             if df.empty:
                 continue
             
@@ -205,22 +230,39 @@ def create_analysis(
     results_dir: str,
     plots_dir: str,
     save_as_pdf: bool = False,
+    hop_type: str = 'merged',
 ):
     """Main analysis orchestrator."""
     
     mask_types = ['silence', 'noise'] if mask_type == 'all' else [mask_type]
     
-    for mt in mask_types:
-        print(f"\n--- Generating Audio Masking Plot: {model_name.upper()} / {dataset_name} / {mt} ---")
-        
-        if mask_mode == 'all':
-            plot_all_modes(model_name, dataset_name, mt, results_dir, plots_dir, save_as_pdf)
+    # Determine hop types to run
+    if hop_type == 'all':
+        hop_runs = ['single', 'multi']
+    else:
+        hop_runs = [hop_type]
+    
+    for ht in hop_runs:
+        # Append hop suffix to plots dir for separation
+        if ht != 'merged':
+            effective_plots_dir = os.path.join(plots_dir, f"hop_{ht}")
         else:
-            try:
-                df = load_audio_masking_results(model_name, results_dir, dataset_name, mt, mask_mode)
-                plot_single_graph(df, model_name, dataset_name, mt, mask_mode, plots_dir, save_as_pdf)
-            except FileNotFoundError as e:
-                print(f"  - {e}")
+            effective_plots_dir = plots_dir
+        
+        for mt in mask_types:
+            hop_label = f" / hop={ht}" if ht != 'merged' else ''
+            print(f"\n--- Generating Audio Masking Plot: {model_name.upper()} / {dataset_name} / {mt}{hop_label} ---")
+            
+            if mask_mode == 'all':
+                plot_all_modes(model_name, dataset_name, mt, results_dir, effective_plots_dir, save_as_pdf, ht)
+            else:
+                try:
+                    df = load_audio_masking_results(model_name, results_dir, dataset_name, mt, mask_mode)
+                    if dataset_name.startswith('sakura-'):
+                        df = filter_by_hop_type(df, ht)
+                    plot_single_graph(df, model_name, dataset_name, mt, mask_mode, effective_plots_dir, save_as_pdf, ht)
+                except FileNotFoundError as e:
+                    print(f"  - {e}")
 
 
 if __name__ == "__main__":
@@ -229,6 +271,13 @@ if __name__ == "__main__":
     parser.add_argument('--dataset', type=str, required=True, help="Dataset name or 'all'")
     parser.add_argument('--mask-type', type=str, required=True, choices=['silence', 'noise', 'all'])
     parser.add_argument('--mask-mode', type=str, required=True, choices=['scattered', 'start', 'end', 'all'])
+    parser.add_argument('--hop-type', type=str, default='merged',
+                        choices=['merged', 'single', 'multi', 'all'],
+                        help="Hop type filter for Sakura datasets.\n"
+                             "  merged = all data together (default)\n"
+                             "  single = single-hop only\n"
+                             "  multi  = multi-hop only\n"
+                             "  all    = run both single and multi separately")
     parser.add_argument('--results_dir', type=str, default='./results')
     parser.add_argument('--plots_dir', type=str, default='./plots')
     parser.add_argument('--save-pdf', action='store_true')
@@ -239,7 +288,7 @@ if __name__ == "__main__":
         datasets = ['mmar', 'sakura-animal', 'sakura-emotion', 'sakura-gender', 'sakura-language']
         for ds in datasets:
             create_analysis(args.model, ds, args.mask_type, args.mask_mode, 
-                           args.results_dir, args.plots_dir, args.save_pdf)
+                           args.results_dir, args.plots_dir, args.save_pdf, args.hop_type)
     else:
         create_analysis(args.model, args.dataset, args.mask_type, args.mask_mode,
-                       args.results_dir, args.plots_dir, args.save_pdf)
+                       args.results_dir, args.plots_dir, args.save_pdf, args.hop_type)

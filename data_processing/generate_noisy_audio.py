@@ -30,6 +30,8 @@ import numpy as np
 import soundfile as sf
 from pathlib import Path
 from tqdm import tqdm
+from multiprocessing import Pool
+import functools
 
 
 def calculate_rms(audio: np.ndarray) -> float:
@@ -69,14 +71,46 @@ def add_noise_at_snr(clean_audio: np.ndarray, snr_db: int) -> np.ndarray:
     return clean_audio + scaled_noise
 
 
-def process_single_dataset(source_dir: str, output_dir: str, snr_levels: list[int]):
+def _process_audio_snr_pair(args_tuple):
+    """
+    Top-level worker function (must be at module level to be picklable for Pool).
+    Generates one noisy audio file for a given (audio_path, snr_db, output_dir).
+    Returns (audio_path_str, snr_db, noisy_filepath_str) on success, or None on failure.
+    Skips if the output file already exists (restart-safe).
+    """
+    audio_path_str, snr_db, output_audio_dir_str = args_tuple
+    audio_path = Path(audio_path_str)
+    output_audio_dir = Path(output_audio_dir_str)
+
+    noisy_filename = f"{audio_path.stem}_snr_{snr_db}db.wav"
+    noisy_filepath = output_audio_dir / noisy_filename
+
+    # Already done — restart-safe
+    if noisy_filepath.exists():
+        return (audio_path_str, snr_db, str(noisy_filepath))
+
+    if not audio_path.exists():
+        return None
+
+    try:
+        clean_audio, sample_rate = sf.read(str(audio_path), dtype='float32')
+        noisy_audio = add_noise_at_snr(clean_audio, snr_db)
+        sf.write(str(noisy_filepath), noisy_audio, sample_rate)
+        return (audio_path_str, snr_db, str(noisy_filepath))
+    except Exception as e:
+        print(f"  WARNING: Failed {audio_path.name} @ {snr_db}dB: {e}")
+        return None
+
+
+def process_single_dataset(source_dir: str, output_dir: str, snr_levels: list[int], num_workers: int = 1):
     """
     Process a single dataset directory: generate noisy audio at all SNR levels.
     
     Args:
-        source_dir: Path to source dataset (e.g., data/mmar or data/sakura/animal)
-        output_dir: Path to output directory (e.g., data/mmar_noisy or data/sakura_noisy/animal)
-        snr_levels: List of SNR levels in dB (e.g., [20, 10, 5, 0, -5, -10])
+        source_dir:  Path to source dataset (e.g., data/mmar or data/sakura/animal)
+        output_dir:  Path to output directory
+        snr_levels:  List of SNR levels in dB
+        num_workers: Number of parallel worker processes (default: 1)
     """
     source_path = Path(source_dir)
     output_path = Path(output_dir)
@@ -93,6 +127,7 @@ def process_single_dataset(source_dir: str, output_dir: str, snr_levels: list[in
     print(f"  Source JSONL: {jsonl_file.name}")
     print(f"  Output dir:  {output_path}")
     print(f"  SNR levels:  {snr_levels} dB")
+    print(f"  Workers:     {num_workers}")
     print(f"{'='*60}")
 
     # Create output directories
@@ -104,40 +139,40 @@ def process_single_dataset(source_dir: str, output_dir: str, snr_levels: list[in
         original_entries = [json.loads(line) for line in f if line.strip()]
     print(f"  Loaded {len(original_entries)} entries")
 
-    # Find unique audio files (Sakura has 500 audios but 1000 entries due to hop types)
-    unique_audio_paths = {}
-    for entry in original_entries:
-        audio_path = entry['audio_path']
-        if audio_path not in unique_audio_paths:
-            unique_audio_paths[audio_path] = True
+    # Find unique audio files
+    unique_audio_paths = list(dict.fromkeys(
+        entry['audio_path'] for entry in original_entries
+    ))
     print(f"  Unique audio files: {len(unique_audio_paths)}")
 
-    # Generate noisy audio for each unique audio file
-    print(f"\n  Generating noisy audio...")
+    # Build all (audio_path, snr_db, output_dir) work items
+    work_items = [
+        (audio_path_str, snr_db, str(output_audio_dir))
+        for audio_path_str in unique_audio_paths
+        for snr_db in snr_levels
+    ]
+    total = len(work_items)
+    print(f"  Total work items:   {total} ({len(unique_audio_paths)} files × {len(snr_levels)} SNR levels)")
+
+    # Run in parallel or single-threaded
     generated_files = {}  # (original_path, snr) -> noisy_path
-    
-    for audio_path_str in tqdm(unique_audio_paths.keys(), desc="  Audio files", unit="file"):
-        audio_path = Path(audio_path_str)
-        
-        if not audio_path.exists():
-            print(f"  WARNING: Audio not found: {audio_path}. Skipping.")
-            continue
+    print(f"\n  Generating noisy audio...")
 
-        # Load audio once
-        clean_audio, sample_rate = sf.read(str(audio_path), dtype='float32')
+    if num_workers > 1:
+        with Pool(processes=num_workers) as pool:
+            for result in tqdm(
+                pool.imap(_process_audio_snr_pair, work_items, chunksize=4),
+                total=total, desc="  Noisy files", unit="file"
+            ):
+                if result:
+                    generated_files[(result[0], result[1])] = result[2]
+    else:
+        for item in tqdm(work_items, desc="  Noisy files", unit="file"):
+            result = _process_audio_snr_pair(item)
+            if result:
+                generated_files[(result[0], result[1])] = result[2]
 
-        for snr_db in snr_levels:
-            # Generate noisy version
-            noisy_audio = add_noise_at_snr(clean_audio, snr_db)
-
-            # Save with SNR-tagged filename
-            noisy_filename = f"{audio_path.stem}_snr_{snr_db}db.wav"
-            noisy_filepath = output_audio_dir / noisy_filename
-            sf.write(str(noisy_filepath), noisy_audio, sample_rate)
-
-            generated_files[(audio_path_str, snr_db)] = str(noisy_filepath)
-
-    # Build output JSONL — one entry per (original_entry, snr_level)
+    # Build output JSONL
     new_entries = []
     for entry in original_entries:
         for snr_db in snr_levels:
@@ -179,6 +214,9 @@ def main():
     parser.add_argument('--snr-levels', nargs='+', type=int,
                         default=[20, 10, 5, 0, -5, -10],
                         help="SNR levels in dB (default: 20 10 5 0 -5 -10)")
+    parser.add_argument('--num-workers', type=int, default=1,
+                        help="Number of parallel worker processes (default: 1).\n"
+                             "Set to match --cpus-per-task in your sbatch/salloc, e.g. 8.")
     args = parser.parse_args()
 
     source_path = Path(args.source)
@@ -191,9 +229,9 @@ def main():
         print(f"Detected Sakura mode: found {len(tracks)} tracks: {[t.name for t in tracks]}")
         for track_dir in tracks:
             output_track_dir = output_path / track_dir.name
-            process_single_dataset(str(track_dir), str(output_track_dir), args.snr_levels)
+            process_single_dataset(str(track_dir), str(output_track_dir), args.snr_levels, args.num_workers)
     else:
-        process_single_dataset(args.source, args.output, args.snr_levels)
+        process_single_dataset(args.source, args.output, args.snr_levels, args.num_workers)
 
     print(f"\n{'='*60}")
     print("All datasets processed successfully!")
