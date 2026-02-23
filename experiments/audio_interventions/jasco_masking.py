@@ -169,7 +169,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                         'spoken_text': sample.get('spoken_text', ''),
                     }
 
-                    f.write(json.dumps(result) + '\\n')
+                    f.write(json.dumps(result) + '\n')
                     f.flush()
                     new_count += 1
 
