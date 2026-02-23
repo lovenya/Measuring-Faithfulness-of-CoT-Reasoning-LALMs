@@ -20,8 +20,9 @@
 - [x] Rewrite `evaluate_jasco.py` (--model arg, last-line parsing, tqdm, --judge CLI)
 - [x] Run Stage 1 (Qwen) — 1,680 entries generated ✓
 - [x] Run Stage 2 evaluation (Mistral judge) — scored ✓
-- [ ] Run JASCO for SALMONN 13B, SALMONN 7B, Flamingo (Stage 1 + Stage 2)
-- [ ] Create JASCO plotting/analysis script
+- [x] Create JASCO plotting/analysis script
+- [x] Add timer to JASCO experiment
+- [ ] Check JASCO runs for SALMONN 13B, SALMONN 7B, Flamingo
 
 ## 3. Hop Type Segregation for Sakura Analysis
 
@@ -37,6 +38,7 @@
 
 ## 4. Parallelization Pipeline Improvements
 
+- [ ] Check if the parallelization is working right for Noisy Audio Generation
 - [ ] Create `data_processing/verify_parallel_completeness.py`
   - Check entry counts per chunk vs expected (e.g., 11 entries/sample for audio_masking)
   - Show per-chunk PASS/FAIL with expected vs actual

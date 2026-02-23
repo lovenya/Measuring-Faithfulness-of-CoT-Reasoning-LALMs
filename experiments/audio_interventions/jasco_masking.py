@@ -23,7 +23,9 @@ Usage:
 
 import os
 import json
+import time
 import logging
+from tqdm import tqdm
 
 # This is a 'foundational' experiment — it operates on its own data
 # and does not require baseline results for consistency comparison.
@@ -115,12 +117,13 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     total_expected = 0
     skipped_count = 0
     new_count = 0
+    start_time = time.time()
 
     logging.info(f"  Samples: {total_samples}")
 
     # --- Main Experiment Loop ---
     with open(output_path, 'a') as f:
-        for sample_idx, sample in enumerate(samples):
+        for sample_idx, sample in enumerate(tqdm(samples, desc="Audio Samples")):
             sample_id = sample['id']
             audio_paths = sample.get('audio_paths', {})
 
@@ -175,13 +178,19 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
 
             # Progress logging
             if (sample_idx + 1) % 5 == 0 or sample_idx == total_samples - 1:
+                elapsed = time.time() - start_time
+                avg_per_sample = elapsed / (sample_idx + 1)
+                remaining = avg_per_sample * (total_samples - sample_idx - 1)
                 logging.info(
                     f"Progress: {sample_idx + 1}/{total_samples} samples | "
-                    f"New: {new_count} | Skipped: {skipped_count}"
+                    f"New: {new_count} | Skipped: {skipped_count} | "
+                    f"Elapsed: {elapsed/60:.1f}m | ETA: {remaining/60:.1f}m"
                 )
 
+    total_elapsed = time.time() - start_time
     logging.info(f"--- JASCO Masking Experiment (Stage 1) Complete ---")
     logging.info(f"  Total expected: {total_expected}")
     logging.info(f"  New trials:     {new_count}")
     logging.info(f"  Skipped:        {skipped_count}")
+    logging.info(f"  Total time:     {total_elapsed/60:.1f} minutes")
     logging.info(f"  Results:        {output_path}")
