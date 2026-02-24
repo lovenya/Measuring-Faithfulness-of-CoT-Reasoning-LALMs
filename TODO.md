@@ -1,6 +1,21 @@
 # TODO
 
-## 1. SNR Robustness Experiment
+## 1. Prompt Variance Diagnostics (CURRENTLY RUNNING)
+
+- [x] Run 3 strategies (two_turn, one_turn, no_cot) for Audio Flamingo 3, SALMONN 13B, SALMONN 7B, Qwen
+- [x] Run on MMAR and Sakura-Animal (100 samples, 5 chains)
+- [ ] Run `analyze_variance.py` for each model and dataset to compare the strategies and variance metrics
+- [ ] Compare metrics (Mean Intra-Variance, % Mixed) across strategies
+
+## 2. Parallelization Pipeline Improvements (NEXT PRIORITY)
+
+- [ ] Check if the parallelization is working correctly for Noisy Audio Generation
+- [ ] Create `data_processing/verify_parallel_completeness.py`
+  - Check entry counts per chunk vs expected (e.g., 11 entries/sample for audio_masking)
+  - Show per-chunk PASS/FAIL with expected vs actual
+- [ ] Update `data_processing/merge_parallel_results.py`
+
+## 3. SNR Robustness Experiment
 
 - [ ] Generate noisy audio data (request more CPU cores for speed)
   - [ ] MMAR: `python data_processing/generate_noisy_audio.py --source data/mmar --output data/mmar_noisy`
@@ -36,13 +51,6 @@
     - [ ] `analysis/cross_dataset/plot_adversarial.py`
     - [ ] `analysis/cross_dataset/plot_final_audio_masking.py`
 
-## 4. Parallelization Pipeline Improvements
-
-- [ ] Check if the parallelization is working right for Noisy Audio Generation
-- [ ] Create `data_processing/verify_parallel_completeness.py`
-  - Check entry counts per chunk vs expected (e.g., 11 entries/sample for audio_masking)
-  - Show per-chunk PASS/FAIL with expected vs actual
-- [ ] Update `data_processing/merge_parallel_results.py`
   - Refuse to merge if any chunk is incomplete
   - Add `--force-merge` CLI flag to override
   - Add `--expected-entries-per-sample` flag

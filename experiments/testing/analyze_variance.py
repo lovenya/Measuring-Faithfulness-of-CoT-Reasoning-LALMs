@@ -234,6 +234,8 @@ def main():
                         help="Temperature to auto-build test path (e.g., 0.1).")
     parser.add_argument('--top-p', type=float, default=None,
                         help="Top-p to auto-build test path (e.g., 0.9).")
+    parser.add_argument('--top-k', type=int, default=None,
+                        help="Top-k to auto-build test path (e.g., 50).")
     parser.add_argument('--all', action='store_true',
                         help="Compare baseline against ALL test results found in test/ folder.")
     parser.add_argument('--results-dir', type=str, default='results',
