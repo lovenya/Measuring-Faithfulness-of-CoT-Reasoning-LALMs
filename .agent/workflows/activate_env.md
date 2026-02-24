@@ -1,10 +1,10 @@
 ---
-description: Load modules and activate the appropriate conda environment for a model
+description: Load modules and activate the appropriate virtual environment for a model
 ---
 
 # Activate Environment
 
-Load required modules and activate the correct conda environment for the specified model.
+Load required modules and activate the correct Python virtual environment for the specified model.
 
 ## Step 1: Deactivate any current environment
 
@@ -52,6 +52,26 @@ source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/salmonn_en
 
 ```bash
 source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-flamingo-env/bin/activate
+```
+
+---
+
+## Recommended helper (repeatable)
+
+Use the helper script so setup is one command:
+
+```bash
+source scripts/activate_env.sh qwen
+source scripts/activate_env.sh salmonn
+source scripts/activate_env.sh salmonn_7b
+source scripts/activate_env.sh flamingo
+```
+
+Optional:
+
+```bash
+source scripts/activate_env.sh mistral
+source scripts/activate_env.sh analysis
 ```
 
 ---

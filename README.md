@@ -243,16 +243,38 @@ python -m data_fetch_and_normalisation.download_and_normalize_sakura
 
    This command runs the adding mistakes experiment (AF3 dataset), for the 5th part (out of 50 parts) of the baseline (and no-reasoning) file.
    Note - Mentioning which part to run the experiment on, is really important for the parallel runs, whereas the `--total-parts` flag is not a required flag, but rather good practice for logs.  
-   Then after all the **N** runs are finished, we can safely merge the results.
+   Then after all the **N** runs are finished, first verify chunk completeness, and only then merge.
 
-   c. Merging
+   c. Verifying chunk completeness (recommended)
 
    ```bash
-   python data_processing/merge_parallel_results.py --model <model_alias> --experiment <exp_name> --dataset <dataset_alias>  [--restricted]
+   python data_processing/verify_parallel_completeness.py \
+     --model <model_alias> \
+     --experiment <exp_name> \
+     --dataset <dataset_alias> \
+     --expected-parts <N> \
+     --num-chains <num_chains_used_in_run> \
+     [--restricted]
    ```
 
-   This combines the scattered results from multiple parallel jobs into a single, clean, final .jsonl file. This is the final step of a parallel run.
-   After merging we can normally continue our analysis by executing the analysis scripts. You should include `--restricted` flag if you are trying to merge the results of the restricted runs.
+   For `audio_masking`, also provide `--mask-type` and `--mask-mode`.  
+   The verifier checks each expected part index (1..N), prints per-chunk PASS/FAIL, and exits non-zero if any chunk is incomplete.
+
+   d. Merging
+
+   ```bash
+   python data_processing/merge_parallel_results.py \
+     --model <model_alias> \
+     --experiment <exp_name> \
+     --dataset <dataset_alias> \
+     --expected-parts <N> \
+     --num-chains <num_chains_used_in_run> \
+     [--restricted]
+   ```
+
+   Merge is now strict by default: it refuses to merge if any expected chunk is missing/incomplete.  
+   Use `--force-merge` only if you intentionally want to merge an incomplete run.  
+   After merging we can normally continue analysis by executing the analysis scripts.
 
    </details>
 
