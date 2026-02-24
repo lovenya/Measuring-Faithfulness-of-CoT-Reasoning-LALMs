@@ -146,7 +146,7 @@ def _convert_messages_to_salmonn_prompt(messages: List[Dict[str, str]], model_co
 def run_inference(
     model: object, processor: object, messages: List[Dict[str, str]],
     audio_path: str, max_new_tokens: int, do_sample: bool,
-    temperature: float, top_p: float
+    temperature: float = 1.0, top_p: float = 0.9, top_k: int = 50
 ) -> str:
     """
     Runs multi-modal inference using the SALMONN model, including audio preprocessing.
@@ -175,8 +175,15 @@ def run_inference(
         generate_cfg = model.custom_config.generate
         generate_cfg['max_new_tokens'] = max_new_tokens
         generate_cfg['do_sample'] = do_sample
-        generate_cfg['temperature'] = temperature
-        generate_cfg['top_p'] = top_p
+        if do_sample:
+            generate_cfg['temperature'] = temperature
+            generate_cfg['top_p'] = top_p
+            generate_cfg['top_k'] = top_k
+        else:
+            # Prevent HuggingFace from throwing UserWarnings by removing sampling kwargs
+            for k in ['temperature', 'top_p', 'top_k']:
+                if k in generate_cfg:
+                    del generate_cfg[k]
         generate_cfg['num_beams'] = 1 # We use greedy/sampling, not beam search.
 
         # We use automatic mixed precision for better performance on the GPU.
@@ -198,7 +205,7 @@ def run_inference(
 
 def run_text_only_inference(
     model: object, processor: object, messages: List[Dict[str, str]],
-    max_new_tokens: int, do_sample: bool, temperature: float, top_p: float
+    max_new_tokens: int, do_sample: bool, temperature: float = 1.0, top_p: float = 0.9, top_k: int = 50
 ) -> str:
     """
     Handles text-only tasks by providing a dummy silent audio input.
@@ -210,7 +217,7 @@ def run_text_only_inference(
     
     return run_inference(
         model, processor, messages, silent_audio_path,
-        max_new_tokens, do_sample, temperature, top_p
+        max_new_tokens, do_sample, temperature, top_p, top_k
     )
 
 

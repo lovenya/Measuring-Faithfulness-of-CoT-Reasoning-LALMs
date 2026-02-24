@@ -84,7 +84,7 @@ def _convert_messages_to_flamingo_prompt(messages: List[Dict[str, str]]) -> str:
 def run_inference(
     model: object, processor: object, messages: List[Dict[str, str]],
     audio_path: str, max_new_tokens: int, do_sample: bool,
-    temperature: float, top_p: float
+    temperature: float = 0.7, top_p: float = 0.8, top_k: int = 20
 ) -> str:
     """
     This is the gatekeeper for all multi-modal interactions with the Flamingo model.
@@ -100,17 +100,22 @@ def run_inference(
         text_prompt = user_question_part + "\nLet's think step by step:"
         
     prompt_list = [Sound(audio_path), text_prompt]
-    generation_config = GenerationConfig(
-        max_new_tokens=max_new_tokens, do_sample=do_sample,
-        temperature=temperature, top_p=top_p,
-    )
+    if do_sample:
+        generation_config = GenerationConfig(
+            max_new_tokens=max_new_tokens, do_sample=True,
+            temperature=temperature, top_p=top_p, top_k=top_k
+        )
+    else:
+        generation_config = GenerationConfig(
+            max_new_tokens=max_new_tokens, do_sample=False
+        )
     response = model.generate_content(prompt_list, generation_config=generation_config)
     return response
 
 
 def run_text_only_inference(
     model: object, processor: object, messages: List[Dict[str, str]],
-    max_new_tokens: int, do_sample: bool, temperature: float, top_p: float
+    max_new_tokens: int, do_sample: bool, temperature: float = 0.7, top_p: float = 0.8, top_k: int = 20
 ) -> str:
     """
     Handles text-only tasks by providing a dummy silent audio input.
@@ -125,7 +130,8 @@ def run_text_only_inference(
         max_new_tokens=max_new_tokens,
         do_sample=do_sample,
         temperature=temperature,
-        top_p=top_p
+        top_p=top_p,
+        top_k=top_k
     )
 
 

@@ -114,6 +114,33 @@ def main():
         help="Adversarial variant: 'correct' (correct choice injected) or 'wrong' (wrong choice injected)."
     )
 
+    # --- Arguments for Prompt Variance Test ---
+    parser.add_argument(
+        '--strategy',
+        type=str,
+        default='two_turn_cot',
+        choices=['two_turn_cot', 'one_turn_cot', 'no_cot'],
+        help="Prompt strategy for variance test: 'two_turn_cot', 'one_turn_cot', or 'no_cot'."
+    )
+    parser.add_argument(
+        '--temperature',
+        type=float,
+        default=None,
+        help="Temperature for CoT generation in variance test."
+    )
+    parser.add_argument(
+        '--top-p',
+        type=float,
+        default=None,
+        help="Top-p sampling parameter for generation."
+    )
+    parser.add_argument(
+        '--top-k',
+        type=int,
+        default=None,
+        help="Top-k sampling parameter for generation."
+    )
+
     args = parser.parse_args()
 
     # --- 1. Global Configuration Setup ---
@@ -148,6 +175,12 @@ def main():
     # Adversarial audio settings
     config.ADVERSARIAL_AUG = args.adversarial_aug
     config.ADVERSARIAL_VARIANT = args.adversarial_variant
+
+    # Prompt variance test settings
+    config.STRATEGY = args.strategy
+    config.TEMPERATURE = args.temperature
+    config.TOP_P = args.top_p
+    config.TOP_K = args.top_k
 
     # --- 2. Centralized Path Management (Now Chunk-Aware) ---
     experiment_name = args.experiment
@@ -236,7 +269,7 @@ def main():
     # --- 5. Dynamic Experiment Loading ---
     # Experiments are now organized into subfolders: baseline/, cot/, audio_interventions/
     # We try each subfolder in order until we find the experiment module.
-    EXPERIMENT_SUBFOLDERS = ['baseline', 'cot', 'audio_interventions']
+    EXPERIMENT_SUBFOLDERS = ['baseline', 'cot', 'audio_interventions', 'testing']
     
     try:
         experiment_module = None

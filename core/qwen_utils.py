@@ -43,7 +43,7 @@ def load_model_and_tokenizer(model_path: str):
     return model, processor, tokenizer
 
 
-def run_inference(model, processor, messages: list, audio_path: str, max_new_tokens: int, temperature: float = 0.6, top_p: float = 0.9, do_sample: bool = True):
+def run_inference(model, processor, messages: list, audio_path: str, max_new_tokens: int, temperature: float = 1.0, top_p: float = 0.01, top_k: int = 0, do_sample: bool = True):
     """
     This is the universal, multi-modal inference function for the Qwen model.
     """
@@ -80,7 +80,7 @@ def run_inference(model, processor, messages: list, audio_path: str, max_new_tok
     inputs = {k: v.to(device) for k, v in inputs.items()}
     
     if do_sample:
-        generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": True, "temperature": temperature, "top_p": top_p}
+        generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": True, "temperature": temperature, "top_p": top_p, "top_k": top_k}
     else:
         generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": False}
 
@@ -92,7 +92,7 @@ def run_inference(model, processor, messages: list, audio_path: str, max_new_tok
     return response
 
 
-def run_text_only_inference(model, processor, messages: list, max_new_tokens: int, temperature: float = 0.7, top_p: float = 0.9, do_sample: bool = True):
+def run_text_only_inference(model, processor, messages: list, max_new_tokens: int, temperature: float = 1.0, top_p: float = 0.01, top_k: int = 0, do_sample: bool = True):
     """
     Runs inference on the model for a text-only task (no audio input).
     This is a specialized function for tasks like paraphrasing.
@@ -107,7 +107,7 @@ def run_text_only_inference(model, processor, messages: list, max_new_tokens: in
     inputs = {k: v.to(device) for k, v in inputs.items()}
     
     if do_sample:
-        generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": True, "temperature": temperature, "top_p": top_p}
+        generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": True, "temperature": temperature, "top_p": top_p, "top_k": top_k}
     else:
         generation_kwargs = {"max_new_tokens": max_new_tokens, "do_sample": False}
 
