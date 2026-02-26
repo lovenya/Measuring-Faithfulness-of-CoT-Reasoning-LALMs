@@ -22,56 +22,49 @@ import json
 import collections
 import logging
 from pathlib import Path
+from core.prompt_strategies import get_prompt_strategy, run_reasoning_trial
 
 # This is an 'independent' experiment - it processes original audio files
 # but needs baseline results for consistency comparison
 EXPERIMENT_TYPE = "independent"
 
 
-def run_trial(model, processor, tokenizer, model_utils, question: str, choices: str, audio_path: str) -> dict:
+def run_trial(
+    model,
+    processor,
+    tokenizer,
+    model_utils,
+    question: str,
+    choices: str,
+    audio_path: str,
+    prompt_strategy: str,
+) -> dict:
     """
     Runs inference on a single masked audio sample.
     Uses the same two-turn approach as baseline but without CoT generation.
     We directly ask for the answer since we're testing audio faithfulness, not reasoning.
     """
-    # We prompt the model to think and then give an answer
-    cot_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": "Let's think step by step:"}
-    ]
-    
-    # Generate reasoning
-    generated_cot = model_utils.run_inference(
-        model, processor, cot_prompt_messages, audio_path,
-        max_new_tokens=768, do_sample=True, temperature=1.0, top_p=0.9
+    prompt_outputs = run_reasoning_trial(
+        model=model,
+        processor=processor,
+        model_utils=model_utils,
+        question=question,
+        choices=choices,
+        audio_path=audio_path,
+        strategy=prompt_strategy,
     )
-    
-    # Sanitize the CoT
-    sanitized_cot = model_utils.sanitize_cot(generated_cot)
-    
-    # Get final answer
-    final_answer_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": sanitized_cot},
-        {"role": "user", "content": "Given the reasoning above, what is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else."}
-    ]
-    
-    final_answer_text = model_utils.run_inference(
-        model, processor, final_answer_prompt_messages, audio_path,
-        max_new_tokens=50, do_sample=False, temperature=1.0, top_p=0.9
-    )
-    
-    parsed_choice = model_utils.parse_answer(final_answer_text)
+
+    parsed_choice = model_utils.parse_answer(prompt_outputs["final_answer_raw"])
     
     return {
         "question": question,
         "choices": choices,
         "audio_path": audio_path,
-        "generated_cot": generated_cot,
-        "sanitized_cot": sanitized_cot,
-        "final_answer_raw": final_answer_text,
+        "generated_cot": prompt_outputs["generated_cot"],
+        "sanitized_cot": prompt_outputs["sanitized_cot"],
+        "final_answer_raw": prompt_outputs["final_answer_raw"],
         "predicted_choice": parsed_choice,
-        "final_prompt_messages": final_answer_prompt_messages,
+        "final_prompt_messages": prompt_outputs["final_prompt_messages"],
     }
 
 
@@ -109,6 +102,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     output_path = config.OUTPUT_PATH
     mask_type = getattr(config, 'MASK_TYPE', 'silence')
     mask_mode = getattr(config, 'MASK_MODE', 'random')
+    prompt_strategy = get_prompt_strategy(config)
     
     # Percentile levels to test (0% is hardcoded from baseline)
     levels = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
@@ -117,6 +111,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     logging.info(f"  Model: {config.MODEL_ALIAS.upper()}")
     logging.info(f"  Mask Type: {mask_type}")
     logging.info(f"  Mask Mode: {mask_mode}")
+    logging.info(f"  Prompt Strategy: {prompt_strategy}")
     logging.info(f"  Levels: {levels}")
     logging.info(f"  Output: {output_path}")
     
@@ -239,7 +234,8 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                                 model, processor, tokenizer, model_utils,
                                 baseline_trial['question'],
                                 baseline_trial['choices'],
-                                masked_audio_path
+                                masked_audio_path,
+                                prompt_strategy,
                             )
                             
                             # Build final result with consistency info

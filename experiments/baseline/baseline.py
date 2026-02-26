@@ -14,54 +14,36 @@ import os
 import json
 import collections
 import logging
+from core.prompt_strategies import get_prompt_strategy, run_reasoning_trial
 
 # This is a 'foundational' experiment.
 EXPERIMENT_TYPE = "foundational"
 
-def run_baseline_trial(model, processor, tokenizer, model_utils, question: str, choices: str, audio_path: str) -> dict:
+def run_baseline_trial(
+    model,
+    processor,
+    tokenizer,
+    model_utils,
+    question: str,
+    choices: str,
+    audio_path: str,
+    prompt_strategy: str,
+) -> dict:
     """
     Runs a full, two-turn baseline trial for a single question.
     This function first elicits a reasoning chain, then uses that chain to get a final answer.
     """
-    # --- Turn 1: Generate the Chain-of-Thought ---
-    # We prompt the model with the core question and ask it to "think step by step."
-    # This is designed to produce the model's natural, unstructured reasoning process.
-    cot_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": "Let's think step by step:"}
-    ]
-    
-    # We use sampling (do_sample=True) here because we want to see the diversity
-    # in the model's reasoning. This allows it to generate different logical paths
-    # across the multiple chains we run for each question.
-    generated_cot = model_utils.run_inference(
-        model, processor, cot_prompt_messages, audio_path, 
-        max_new_tokens=768, do_sample=True, temperature=1.0, top_p=0.9   
-    )
-
-    # --- Pre-computation Step: Sanitize the CoT ---
-    # We clean the generated reasoning by removing the final sentence. This is a crucial
-    # step to prevent the model from "cheating" in Turn 2 by simply finding a
-    # "spoiler" sentence like "Therefore, the answer is (C)."
-    sanitized_cot = model_utils.sanitize_cot(generated_cot)
-        
-    # --- Turn 2: Elicit the Final Answer ---
-    # We now present the model with its own cleaned-up reasoning and ask it to
-    # make a final, definitive choice in a structured format.
-    final_answer_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": sanitized_cot},
-        {"role": "user", "content": "Given the reasoning above, what is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else."}
-    ]
-    
-    # For this turn, we use deterministic generation (do_sample=False). We want to know
-    # the single most likely answer given this specific reasoning chain.
-    final_answer_text = model_utils.run_inference(
-        model, processor, final_answer_prompt_messages, audio_path, 
-        max_new_tokens=50, do_sample=False, temperature=1.0, top_p=0.9
+    prompt_outputs = run_reasoning_trial(
+        model=model,
+        processor=processor,
+        model_utils=model_utils,
+        question=question,
+        choices=choices,
+        audio_path=audio_path,
+        strategy=prompt_strategy,
     )
     
-    parsed_choice = model_utils.parse_answer(final_answer_text)
+    parsed_choice = model_utils.parse_answer(prompt_outputs["final_answer_raw"])
 
     # We return a comprehensive dictionary containing all artifacts of the trial.
     # Saving both the original and sanitized CoT is important for transparency.
@@ -69,11 +51,11 @@ def run_baseline_trial(model, processor, tokenizer, model_utils, question: str, 
         "question": question,
         "choices": choices,
         "audio_path": audio_path,
-        "generated_cot": generated_cot,
-        "sanitized_cot": sanitized_cot,
-        "final_answer_raw": final_answer_text,
+        "generated_cot": prompt_outputs["generated_cot"],
+        "sanitized_cot": prompt_outputs["sanitized_cot"],
+        "final_answer_raw": prompt_outputs["final_answer_raw"],
         "predicted_choice": parsed_choice,
-        "final_prompt_messages": final_answer_prompt_messages,
+        "final_prompt_messages": prompt_outputs["final_prompt_messages"],
     }
 
 
@@ -82,7 +64,9 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     Orchestrates the full baseline experiment with a robust, restartable design.
     """
     output_path = config.OUTPUT_PATH
+    prompt_strategy = get_prompt_strategy(config)
     logging.info(f"--- Running Baseline Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path} ---")
+    logging.info(f"Prompt strategy: {prompt_strategy}")
 
     # --- RESTARTABILITY LOGIC ---
     # This block makes our long-running experiments resilient to interruptions.
@@ -135,7 +119,8 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                         model, processor, tokenizer, model_utils,
                         sample['question'], 
                         choices_formatted,
-                        sample['audio_path']
+                        sample['audio_path'],
+                        prompt_strategy,
                     )
                     
                     # Add all the necessary metadata for downstream analysis.

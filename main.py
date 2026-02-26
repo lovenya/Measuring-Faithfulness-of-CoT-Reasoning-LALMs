@@ -61,6 +61,13 @@ def main():
     parser.add_argument("--num-samples", type=int, default=None)
     parser.add_argument("--num-chains", type=int, default=None)
     parser.add_argument('--verbose', action='store_true', help="Enable detailed, line-by-line progress logging.")
+    parser.add_argument(
+        "--prompt-strategy",
+        type=str,
+        default='legacy_two_turn',
+        choices=['legacy_two_turn', 'pooneh_single_turn'],
+        help="Prompt strategy for baseline/audio_masking experiments."
+    )
     
     # --- Arguments for External Perturbations (Mistral) ---
     parser.add_argument(
@@ -151,6 +158,7 @@ def main():
     config.DATASET_NAME = args.dataset
     config.VERBOSE = args.verbose
     config.RESTRICTED = args.restricted
+    config.PROMPT_STRATEGY = args.prompt_strategy
     
     # External perturbation settings (for adding_mistakes and paraphrasing experiments)
     config.USE_EXTERNAL_PERTURBATIONS = args.use_external_perturbations
@@ -256,6 +264,7 @@ def main():
     logging.info(f"  - Model:      {model_alias.upper()}")
     logging.info(f"  - Experiment: {args.experiment}")
     logging.info(f"  - Dataset:    {args.dataset}")
+    logging.info(f"  - Prompt Strategy: {config.PROMPT_STRATEGY}")
     
     # The run mode logging is now more detailed.
     run_mode = "RESTRICTED" if config.RESTRICTED else "FULL DATASET"
