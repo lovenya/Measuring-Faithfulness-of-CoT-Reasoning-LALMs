@@ -240,6 +240,8 @@ def main():
             from core import qwen_utils as model_utils
         elif model_alias == 'flamingo':
             from core import audio_flamingo_utils as model_utils
+        elif model_alias == 'flamingo_hf':
+            from core import audio_flamingo_hf_utils as model_utils
         elif model_alias in ('salmonn', 'salmonn_7b'):
             from core import salmonn_utils as model_utils
         else:

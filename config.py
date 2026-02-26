@@ -15,6 +15,7 @@ MODEL_PATHS = {
     # --- Audio Flamingo (Complex) ---
     "flamingo_code": "./audio-flamingo-code",
     "flamingo_weights": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-flamingo-weights",
+    "flamingo_hf": "/scratch/lovenya/models/AF3/audio-flamingo-3-hf",
 
     # --- SALMONN (Multi-Component) ---
     "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
@@ -82,6 +83,7 @@ SILENT_AUDIO_PATH = "./assets/silent.wav"
 MODEL_ALIASES = {
     "qwen": "qwen",
     "flamingo": "flamingo_weights",
+    "flamingo_hf": "flamingo_hf",
     # This line tells main.py: "when the user types 'salmonn', the key you
     # need to look for in MODEL_PATHS is 'salmonn_checkpoint'".
     "salmonn": "salmonn_checkpoint",
