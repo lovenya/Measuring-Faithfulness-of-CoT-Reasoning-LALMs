@@ -16,7 +16,7 @@ from typing import Dict, List, Tuple
 import nltk
 import torch
 from peft import PeftModel
-from transformers import AudioFlamingo3ForConditionalGeneration, AutoProcessor
+from transformers import AutoModelForSeq2SeqLM, AutoProcessor
 
 import config as framework_config
 
@@ -26,6 +26,30 @@ def _strip_audio_token(text: str) -> str:
     if not text:
         return ""
     return text.replace("audio\n\n", "", 1).strip()
+
+
+def _move_inputs_to_model_dtype(inputs: Dict[str, torch.Tensor], model: object) -> Dict[str, torch.Tensor]:
+    """
+    Move model inputs to the target device and cast floating tensors to the
+    model dtype (e.g., fp16) while preserving integer tensors like input_ids.
+    """
+    model_device = getattr(model, "device", None)
+    if model_device is None:
+        model_device = next(model.parameters()).device
+
+    model_dtype = getattr(model, "dtype", None)
+    if model_dtype is None:
+        model_dtype = next(model.parameters()).dtype
+
+    prepared: Dict[str, torch.Tensor] = {}
+    for key, value in inputs.items():
+        if not isinstance(value, torch.Tensor):
+            continue
+        if torch.is_floating_point(value):
+            prepared[key] = value.to(device=model_device, dtype=model_dtype)
+        else:
+            prepared[key] = value.to(device=model_device)
+    return prepared
 
 
 def load_model_and_tokenizer(model_path: str) -> Tuple[object, object, object]:
@@ -47,11 +71,15 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object, object]:
             f"  - {non_lora_path}"
         )
 
-    processor = AutoProcessor.from_pretrained(model_path)
-    model = AudioFlamingo3ForConditionalGeneration.from_pretrained(
+    processor = AutoProcessor.from_pretrained(
+        model_path,
+        trust_remote_code=True,
+    )
+    model = AutoModelForSeq2SeqLM.from_pretrained(
         model_path,
         device_map="auto",
         torch_dtype=torch.float16,
+        trust_remote_code=True,
     )
 
     non_lora_trainables = torch.load(non_lora_path, map_location="cpu")
@@ -141,7 +169,7 @@ def run_inference(
         add_generation_prompt=True,
         return_dict=True,
     )
-    inputs = inputs.to(model.device)
+    inputs = _move_inputs_to_model_dtype(inputs, model)
 
     generation_kwargs = {"max_new_tokens": max_new_tokens}
     if do_sample:
@@ -156,10 +184,11 @@ def run_inference(
     else:
         generation_kwargs.update({"do_sample": False})
 
+    input_len = inputs["input_ids"].shape[1]
     with torch.no_grad():
         outputs = model.generate(**inputs, **generation_kwargs)
 
-    generated_ids = outputs[:, inputs.input_ids.shape[1] :]
+    generated_ids = outputs[:, input_len:]
     decoded = processor.batch_decode(generated_ids, skip_special_tokens=True)
     return decoded[0] if decoded else ""
 
