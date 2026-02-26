@@ -11,13 +11,18 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-DEFAULT_PROMPT_STRATEGY = "legacy_two_turn"
-VALID_PROMPT_STRATEGIES = ("legacy_two_turn", "pooneh_single_turn")
+DEFAULT_PROMPT_STRATEGY = "two_turn_sanitized_cot"
+VALID_PROMPT_STRATEGIES = ("two_turn_sanitized_cot", "single_turn_explicit_letter")
+DEPRECATED_STRATEGY_ALIASES = {
+    "legacy_two_turn": "two_turn_sanitized_cot",
+    "pooneh_single_turn": "single_turn_explicit_letter",
+}
 
 
 def get_prompt_strategy(config) -> str:
     """Resolve and validate prompt strategy from runtime config."""
     strategy = getattr(config, "PROMPT_STRATEGY", DEFAULT_PROMPT_STRATEGY)
+    strategy = DEPRECATED_STRATEGY_ALIASES.get(strategy, strategy)
     if strategy not in VALID_PROMPT_STRATEGIES:
         raise ValueError(
             f"Invalid prompt strategy '{strategy}'. "
@@ -48,15 +53,15 @@ def _legacy_final_prompt(question: str, choices: str, sanitized_cot: str) -> Lis
     ]
 
 
-def _pooneh_single_turn_prompt(question: str, choices: str) -> List[Dict[str, str]]:
+def _single_turn_explicit_letter_prompt(question: str, choices: str) -> List[Dict[str, str]]:
     return [
         {
             "role": "user",
             "content": (
                 f"audio\n\nQuestion: {question}\nChoices:\n{choices}\n\n"
-                "Please think step-by-step about the audio and the choices. "
-                "At the very end, provide the final answer as a single letter "
-                "in parentheses, for example: (A)."
+                "Please think step-by-step about the audio and the choices provided. "
+                "At the very end of your response, explicitly state your final prediction "
+                "using only the single letter of the correct choice (e.g., A, B, C, or D)."
             ),
         }
     ]
@@ -74,7 +79,9 @@ def run_reasoning_trial(
     """
     Execute the configured prompting flow and return normalized trial artifacts.
     """
-    if strategy == "legacy_two_turn":
+    strategy = DEPRECATED_STRATEGY_ALIASES.get(strategy, strategy)
+
+    if strategy == "two_turn_sanitized_cot":
         cot_prompt_messages = _legacy_cot_prompt(question, choices)
         generated_cot = model_utils.run_inference(
             model,
@@ -107,17 +114,14 @@ def run_reasoning_trial(
             "final_prompt_messages": final_answer_prompt_messages,
         }
 
-    if strategy == "pooneh_single_turn":
-        single_turn_messages = _pooneh_single_turn_prompt(question, choices)
+    if strategy == "single_turn_explicit_letter":
+        single_turn_messages = _single_turn_explicit_letter_prompt(question, choices)
         response_text = model_utils.run_inference(
             model,
             processor,
             single_turn_messages,
             audio_path,
             max_new_tokens=1024,
-            do_sample=True,
-            temperature=1.0,
-            top_p=0.9,
         )
 
         return {
@@ -128,5 +132,7 @@ def run_reasoning_trial(
         }
 
     raise ValueError(
-        f"Unknown prompt strategy '{strategy}'. Valid options: {VALID_PROMPT_STRATEGIES}"
+        f"Unknown prompt strategy '{strategy}'. "
+        f"Valid options: {VALID_PROMPT_STRATEGIES}. "
+        f"Deprecated aliases still accepted: {tuple(DEPRECATED_STRATEGY_ALIASES.keys())}"
     )

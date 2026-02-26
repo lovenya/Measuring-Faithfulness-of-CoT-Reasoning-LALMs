@@ -64,9 +64,17 @@ def main():
     parser.add_argument(
         "--prompt-strategy",
         type=str,
-        default='legacy_two_turn',
-        choices=['legacy_two_turn', 'pooneh_single_turn'],
-        help="Prompt strategy for baseline/audio_masking experiments."
+        default='two_turn_sanitized_cot',
+        choices=[
+            'two_turn_sanitized_cot',
+            'single_turn_explicit_letter',
+            'legacy_two_turn',
+            'pooneh_single_turn',
+        ],
+        help=(
+            "Prompt strategy for baseline/audio_masking experiments. "
+            "Use the new names; old names remain as deprecated aliases."
+        ),
     )
     
     # --- Arguments for External Perturbations (Mistral) ---
@@ -246,6 +254,8 @@ def main():
         
         if model_alias == 'qwen':
             from core import qwen_utils as model_utils
+        elif model_alias == 'qwen_omni':
+            from core import qwen_omni_utils as model_utils
         elif model_alias == 'flamingo':
             from core import audio_flamingo_utils as model_utils
         elif model_alias == 'flamingo_hf':

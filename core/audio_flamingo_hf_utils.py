@@ -153,10 +153,10 @@ def run_inference(
     messages: List[Dict[str, str]],
     audio_path: str,
     max_new_tokens: int,
-    do_sample: bool = True,
-    temperature: float = 1.0,
-    top_p: float = 0.9,
-    top_k: int = 50,
+    do_sample: bool | None = None,
+    temperature: float | None = None,
+    top_p: float | None = None,
+    top_k: int | None = None,
 ) -> str:
     """Run multimodal inference for AF3 HF."""
     if not os.path.exists(audio_path):
@@ -172,16 +172,19 @@ def run_inference(
     inputs = _move_inputs_to_model_dtype(inputs, model)
 
     generation_kwargs = {"max_new_tokens": max_new_tokens}
-    if do_sample:
+    if do_sample is True:
         generation_kwargs.update(
             {
                 "do_sample": True,
-                "temperature": temperature,
-                "top_p": top_p,
-                "top_k": top_k,
             }
         )
-    else:
+        if temperature is not None:
+            generation_kwargs["temperature"] = temperature
+        if top_p is not None:
+            generation_kwargs["top_p"] = top_p
+        if top_k is not None:
+            generation_kwargs["top_k"] = top_k
+    elif do_sample is False:
         generation_kwargs.update({"do_sample": False})
 
     input_len = inputs["input_ids"].shape[1]
@@ -198,10 +201,10 @@ def run_text_only_inference(
     processor: object,
     messages: List[Dict[str, str]],
     max_new_tokens: int,
-    do_sample: bool = True,
-    temperature: float = 1.0,
-    top_p: float = 0.9,
-    top_k: int = 50,
+    do_sample: bool | None = None,
+    temperature: float | None = None,
+    top_p: float | None = None,
+    top_k: int | None = None,
 ) -> str:
     """Run text-only tasks by pairing prompts with framework silent audio."""
     silent_audio_path = framework_config.SILENT_AUDIO_PATH

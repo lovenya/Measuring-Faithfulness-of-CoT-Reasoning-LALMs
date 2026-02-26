@@ -17,9 +17,13 @@ audio-flamingo-env/
 salmonn_env/
 analysis_env/
 af3-test-env/
+af3_new_hf_env/
 *_env/
 *-env/
 qwen_env/
+qwen_audio_env/
+qwen_new_env/
+qwen_omni_env/
 mistral_env/
 
 

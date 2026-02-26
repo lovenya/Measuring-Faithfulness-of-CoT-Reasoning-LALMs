@@ -11,6 +11,7 @@ parameters. This single source of truth makes our framework robust and easy to m
 MODEL_PATHS = {
     # --- Qwen (Self-Contained) ---
     "qwen": "/scratch/lovenya/models/Qwen/Qwen2-Audio-7B",
+    "qwen_omni": "/scratch/lovenya/models/Qwen/Qwen2.5-Omni-7B",
 
     # --- Audio Flamingo (Complex) ---
     "flamingo_code": "./audio-flamingo-code",
@@ -82,6 +83,7 @@ SILENT_AUDIO_PATH = "./assets/silent.wav"
 # to the internal keys used in MODEL_PATHS.
 MODEL_ALIASES = {
     "qwen": "qwen",
+    "qwen_omni": "qwen_omni",
     "flamingo": "flamingo_weights",
     "flamingo_hf": "flamingo_hf",
     # This line tells main.py: "when the user types 'salmonn', the key you
@@ -126,4 +128,4 @@ DATASET_NAME = "default"
 BASELINE_RESULTS_FILE_OVERRIDE = None
 VERBOSE = True
 OUTPUT_PATH = None
-PROMPT_STRATEGY = "legacy_two_turn"
+PROMPT_STRATEGY = "two_turn_sanitized_cot"
