@@ -40,6 +40,9 @@ spoken_reasoning/audio
 data/adversarial_aug_data/
 adverserial_sythetic_data/
 data/jasco/processed/
+pooneh_version/data/mmau/audio
+data/mmau
+data/mmar
 
 
 
@@ -90,7 +93,7 @@ sbatch_scripts/
 docs/
 rebuttal_analysis/
 
-
+output
 
 
 advadversarial_aug_data.tar.gz
