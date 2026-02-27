@@ -70,7 +70,7 @@ python interface/AF3_wrapper.py \
   --data_root data/ \
   --num_runs 1 \
   --use_reasoning \
-  
+
   ```
 
   ###  Step Post-Processing (Recovering Null Labels)
@@ -91,3 +91,26 @@ Command Example:
   --data_root data/
   --num_runs 1
   ```
+# Result
+## AF3
+## 📊 Evaluation Summary
+🔎 With Reasoning
+| Dataset                     | Total Items | Remaining Nulls | New Mean Accuracy | Missed reasoning |
+|------------------------------|------------|-----------------|-------------------|------------------|
+| Animal                       | 1000       | 10              | 81.30%            |23                |
+| Animal – 2-Step Sanity Check | 977        | changed_pred 110| 75.54%            |-                 |
+| LANGUAGE                     | 1000       | 17              | 79.60%            |10                |
+| EMOTION                      | 1000       | 34              | 45.70%            |18                |
+| GENDER                       | 1000       | 6               | 57.20%            |4                 |
+| MMAU                         | 1000       | 71              | 67.70%            |0                 |
+| MMAR                         | 997        | 4               | 52.86%            |27                |
+
+🚫 Without Reasoning
+| Dataset                     | Total Items | Remaining Nulls | New Mean Accuracy |
+|------------------------------|------------|-----------------|-------------------|
+| Animal                       | 1000       | 0              | 76.70%             |
+| LANGUAGE                     | 1000       | 0              | 76.30%             |
+| EMOTION                      | 1000       | 0              | 76.70%             |
+| GENDER                       | 1000       | 0              | 49.40%             |
+| MMAU                         | 1000       | 7              | 74.60%             |
+| MMAR                         | 997        | 0              | 54.26%             |
