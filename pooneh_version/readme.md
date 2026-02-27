@@ -132,8 +132,8 @@ Command Example:
 | Dataset                     | Total Items | Remaining Nulls | New Mean Accuracy |
 |------------------------------|------------|-----------------|-------------------|
 | Animal                       | 1000       | 0              | 81.40%             |
-| LANGUAGE                     | 1000       | 0              | -                  |
-| EMOTION                      | 1000       | 0              | -                  |
-| GENDER                       | 1000       | 0              | -                  |
+| LANGUAGE                     | 1000       | 0              | 79.20%                  |
+| EMOTION                      | 1000       | 0              | 31.80%                  |
+| GENDER                       | 1000       | 0              | 46.87%-                  |
 | MMAU                         | 1000       | 0              | 66.60%             |
-| MMAR                         | 997        | 0              | -                  |
+| MMAR                         | 997        | 0              | 52.06                 |
