@@ -20,6 +20,37 @@ from transformers import AutoModelForSeq2SeqLM, AutoProcessor
 
 import config as framework_config
 
+_STOPWORDS = {
+    "the",
+    "a",
+    "an",
+    "is",
+    "are",
+    "was",
+    "were",
+    "to",
+    "of",
+    "and",
+    "or",
+    "in",
+    "on",
+    "it",
+    "this",
+    "that",
+    "for",
+    "with",
+    "as",
+    "by",
+    "at",
+    "but",
+    "not",
+    "be",
+    "about",
+    "which",
+    "they",
+    "i",
+}
+
 
 def _strip_audio_token(text: str) -> str:
     """Remove framework's leading audio marker from prompt text."""
@@ -278,6 +309,65 @@ def parse_answer(text: str) -> str | None:
     return None
 
 
+def _extract_meaningful_words(text: str) -> set[str]:
+    if not text:
+        return set()
+    clean = re.sub(r"[^\w\s]", "", str(text)).strip().lower()
+    return set(clean.split()) - _STOPWORDS
+
+
+def _parse_choices_from_formatted(choices_formatted: str) -> List[str]:
+    choices_list: List[str] = []
+    for line in choices_formatted.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        match = re.match(r"^\([A-J]\)\s*(.+)$", stripped)
+        choices_list.append(match.group(1).strip() if match else stripped)
+    return choices_list
+
+
+def _parse_conditioned_output(raw_text: str, choices_list: List[str] | None = None) -> str | None:
+    if not raw_text:
+        return None
+
+    cleaned = raw_text.strip()
+    letters = [chr(ord("A") + i) for i in range(10)]
+
+    end_chunk = cleaned[-100:]
+    paren_matches = list(re.finditer(r"\(([A-J])\)", end_chunk, re.IGNORECASE))
+    if paren_matches:
+        return paren_matches[-1].group(1).upper()
+
+    prefix_matches = list(
+        re.finditer(r"(?:option|choice|answer|answer\s*is|is)\s*[:*]*\s*([A-J])\b", end_chunk, re.IGNORECASE)
+    )
+    if prefix_matches:
+        return prefix_matches[-1].group(1).upper()
+
+    if choices_list:
+        target_words = _extract_meaningful_words(cleaned)
+        best_letter = None
+        max_score = 0.0
+        for i, option in enumerate(choices_list):
+            option_words = _extract_meaningful_words(option)
+            if not option_words:
+                continue
+            overlap = option_words.intersection(target_words)
+            score = len(overlap) + (len(overlap) / len(option_words))
+            if score > max_score and len(overlap) > 0:
+                max_score = score
+                best_letter = letters[i]
+        if best_letter:
+            return best_letter
+
+    standalone = re.search(r"\b([A-J])\b[^\w]*$", cleaned[-30:], re.IGNORECASE)
+    if standalone and standalone.group(1).upper() not in ("A", "I"):
+        return standalone.group(1).upper()
+
+    return parse_answer(cleaned)
+
+
 def format_choices_for_prompt(choices: List[str]) -> str:
     """Format answer options as (A)...(B)... lines."""
     if not choices:
@@ -288,3 +378,55 @@ def format_choices_for_prompt(choices: List[str]) -> str:
         letter = chr(ord("A") + i)
         formatted.append(f"({letter}) {choice}")
     return "\n".join(formatted)
+
+
+def run_conditioned_inference(
+    model: object,
+    processor: object,
+    tokenizer: object,
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+    provided_reasoning: str,
+) -> Dict[str, object]:
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+
+    prompt_text = (
+        f"{question} Select one option from the provided choices.\n"
+        f"{choices_formatted}. "
+        "Please think and reason about the input audio before you respond.\n\n"
+        f"{provided_reasoning}\n\n"
+        "Therefore, the answer is:"
+    )
+
+    conversation = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt_text},
+                {"type": "audio", "path": os.path.abspath(audio_path)},
+            ],
+        }
+    ]
+
+    inputs = processor.apply_chat_template(
+        conversation,
+        tokenize=True,
+        add_generation_prompt=True,
+        return_dict=True,
+    )
+    inputs = _move_inputs_to_model_dtype(inputs, model)
+
+    with torch.no_grad():
+        outputs = model.generate(**inputs, max_new_tokens=20)
+
+    generated_ids = outputs[:, inputs["input_ids"].shape[1] :]
+    raw_output = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+    parsed = _parse_conditioned_output(raw_output, _parse_choices_from_formatted(choices_formatted))
+    return {
+        "predicted_choice": parsed,
+        "final_answer_raw": raw_output,
+        "final_prompt_messages": conversation,
+    }

@@ -71,6 +71,21 @@ def _build_xml_prompt_text(instruction: str) -> str:
     )
 
 
+def _build_conditioned_xml_prompt_text(instruction: str, provided_reasoning: str) -> str:
+    return (
+        f"{instruction}\n\n"
+        "You must analyze the audio and provide your answer strictly following the template below. "
+        "The analysis has been provided for you; use it to reach the conclusion.\n\n"
+        "Template:\n"
+        "<Reasoning>\n"
+        f"{provided_reasoning}\n"
+        "</Reasoning>\n"
+        "<Conclusion>\n"
+        "[Single letter choice here, e.g., A]\n"
+        "</Conclusion>"
+    )
+
+
 def _parse_model_output(raw_text: str) -> Dict[str, str | None]:
     reasoning = ""
     predicted_choice = None
@@ -168,6 +183,30 @@ def _build_conversation(messages: List[Dict[str, str]], audio_path: str) -> List
     ]
 
 
+def _build_conditioned_conversation(
+    question: str,
+    choices_formatted: str,
+    provided_reasoning: str,
+    audio_path: str,
+) -> List[Dict[str, object]]:
+    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    prompt_text = _build_conditioned_xml_prompt_text(instruction, provided_reasoning)
+
+    return [
+        {
+            "role": "system",
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+        },
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt_text},
+                {"type": "audio", "audio": os.path.abspath(audio_path)},
+            ],
+        },
+    ]
+
+
 def run_inference(
     model: object,
     processor: object,
@@ -220,6 +259,65 @@ def run_inference(
         clean_up_tokenization_spaces=False,
     )
     return decoded[0] if decoded else ""
+
+
+def run_conditioned_inference(
+    model: object,
+    processor: object,
+    tokenizer: object,
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+    provided_reasoning: str,
+) -> Dict[str, object]:
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+
+    conversation = _build_conditioned_conversation(
+        question=question,
+        choices_formatted=choices_formatted,
+        provided_reasoning=provided_reasoning,
+        audio_path=audio_path,
+    )
+
+    text = processor.apply_chat_template(
+        conversation,
+        add_generation_prompt=True,
+        tokenize=False,
+    )
+    process_mm_info = _ensure_process_mm_info()
+    audios, images, videos = process_mm_info(conversation, use_audio_in_video=False)
+
+    inputs = processor(
+        text=text,
+        audio=audios,
+        images=images,
+        videos=videos,
+        return_tensors="pt",
+        padding=True,
+        use_audio_in_video=False,
+    )
+    inputs = inputs.to(model.device).to(model.dtype)
+
+    with torch.no_grad():
+        text_ids, _ = model.generate(
+            **inputs,
+            max_new_tokens=1024,
+            use_audio_in_video=False,
+        )
+
+    generated_ids = text_ids[:, inputs.input_ids.shape[1] :]
+    raw_output = processor.batch_decode(
+        generated_ids,
+        skip_special_tokens=True,
+        clean_up_tokenization_spaces=False,
+    )[0]
+
+    return {
+        "predicted_choice": parse_answer(raw_output),
+        "final_answer_raw": raw_output,
+        "final_prompt_messages": conversation,
+    }
 
 
 def run_text_only_inference(
