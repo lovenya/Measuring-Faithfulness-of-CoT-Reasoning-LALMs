@@ -153,8 +153,28 @@ if __name__ == "__main__":
     with open(args.input, 'r', encoding='utf-8') as f:
         dataset = [json.loads(line) for line in f if line.strip()]
 
-    with open(args.output, 'w', encoding='utf-8') as f_out:
-        for item in tqdm(dataset):
+# 1. Load the original dataset
+    with open(args.input, 'r', encoding='utf-8') as f:
+        dataset = [json.loads(line) for line in f if line.strip()]
+
+    # 2. CHECK FOR EXISTING PROGRESS
+    processed_ids = set()
+    if os.path.exists(args.output):
+        with open(args.output, 'r', encoding='utf-8') as f_check:
+            for line in f_check:
+                try:
+                    data = json.loads(line)
+                    processed_ids.add(data['id'])
+                except:
+                    continue
+        print(f"Resuming: Found {len(processed_ids)} already processed items. Skipping...")
+
+    # 3. Filter the dataset to only include items NOT in processed_ids
+    to_process = [item for item in dataset if item['id'] not in processed_ids]
+
+    # 4. Open with 'a' (APPEND mode) instead of 'w'
+    with open(args.output, 'a', encoding='utf-8') as f_out:
+        for item in tqdm(to_process, desc="Inference"):
             runs_predictions, runs_raw, runs_reasoning, scores = [], [], [], []
             true_letter = item.get("true_letter")
 
@@ -167,11 +187,21 @@ if __name__ == "__main__":
                     runs_reasoning.append(result["reasoning"])
                     scores.append(1.0 if (pred and true_letter and pred.upper() == true_letter.upper()) else 0.0)
                 except Exception as e:
-                    runs_predictions.append(None); runs_raw.append(f"CRASH: {e}"); runs_reasoning.append(""); scores.append(0.0)
+                    runs_predictions.append(None)
+                    runs_raw.append(f"CRASH: {e}")
+                    runs_reasoning.append("")
+                    scores.append(0.0)
 
+            # Write individual line
             f_out.write(json.dumps({
-                "id": item["id"], "true_answer": item["answer"], "true_letter": true_letter,
-                "predicted_letters": runs_predictions, "reasoning": runs_reasoning,
-                "raw_model_outputs": runs_raw, "accuracy": np.mean(scores) if scores else 0.0
+                "id": item["id"], 
+                "true_answer": item.get("answer"), 
+                "true_letter": true_letter,
+                "predicted_letters": runs_predictions, 
+                "reasoning": runs_reasoning,
+                "raw_model_outputs": runs_raw, 
+                "accuracy": np.mean(scores) if scores else 0.0
             }, ensure_ascii=False) + "\n")
+            
+            # Flush frequently to ensure data is written to disk if process crashes again
             f_out.flush()
