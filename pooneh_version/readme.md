@@ -114,3 +114,26 @@ Command Example:
 | GENDER                       | 1000       | 0              | 49.40%             |
 | MMAU                         | 1000       | 7              | 74.60%             |
 | MMAR                         | 997        | 0              | 54.26%             |
+
+## QWEN2.5
+## 📊 Evaluation Summary
+🔎 With Reasoning
+| Dataset                     | Total Items | Remaining Nulls | New Mean Accuracy | Missed reasoning |
+|------------------------------|------------|-----------------|-------------------|------------------|
+| Animal                       | 1000       | __              | __            |-                |
+| Animal – 2-Step Sanity Check | 977        | __              | __           |-                 |
+| LANGUAGE                     | 1000       | __              | __            |-                |
+| EMOTION                      | 1000       | __              | __            |-                |
+| GENDER                       | 1000       | __               | __            |-                 |
+| MMAU                         | 1000       | __              |__            |0                 |
+| MMAR                         | 997        | __               | __            |-                |
+
+🚫 Without Reasoning
+| Dataset                     | Total Items | Remaining Nulls | New Mean Accuracy |
+|------------------------------|------------|-----------------|-------------------|
+| Animal                       | 1000       | 0              | 81.40%             |
+| LANGUAGE                     | 1000       | 0              | -                  |
+| EMOTION                      | 1000       | 0              | -                  |
+| GENDER                       | 1000       | 0              | -                  |
+| MMAU                         | 1000       | 0              | 66.60%             |
+| MMAR                         | 997        | 0              | -                  |
