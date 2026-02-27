@@ -132,7 +132,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
         if temperature is None: temperature = 1.0
         if top_p is None: top_p = 0.9
         if top_k is None: top_k = 50
-    elif model_alias == 'flamingo':
+    elif model_alias in ('flamingo', 'flamingo_hf'):
         if temperature is None: temperature = 0.7
         if top_p is None: top_p = 0.8
         if top_k is None: top_k = 20

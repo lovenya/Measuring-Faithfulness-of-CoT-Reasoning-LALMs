@@ -8,14 +8,14 @@ set -euo pipefail
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   echo "This script must be sourced to persist environment changes." >&2
-  echo "Use: source scripts/activate_env.sh <qwen|salmonn|salmonn_7b|flamingo|mistral|analysis>" >&2
+  echo "Use: source scripts/activate_env.sh <qwen|salmonn|salmonn_7b|flamingo|flamingo_hf|mistral|analysis>" >&2
   exit 1
 fi
 
 MODEL="${1:-}"
 if [[ -z "$MODEL" ]]; then
   echo "Missing model argument." >&2
-  echo "Use: source scripts/activate_env.sh <qwen|salmonn|salmonn_7b|flamingo|mistral|analysis>" >&2
+  echo "Use: source scripts/activate_env.sh <qwen|salmonn|salmonn_7b|flamingo|flamingo_hf|mistral|analysis>" >&2
   return 1
 fi
 
@@ -32,6 +32,9 @@ case "$MODEL" in
   flamingo)
     ENV_PATH="$REPO_ROOT/audio-flamingo-env/bin/activate"
     ;;
+  flamingo_hf)
+    ENV_PATH="$REPO_ROOT/af3_new_hf_env/bin/activate"
+    ;;
   mistral)
     ENV_PATH="$REPO_ROOT/mistral_env/bin/activate"
     ;;
@@ -40,7 +43,7 @@ case "$MODEL" in
     ;;
   *)
     echo "Unsupported model/env key: $MODEL" >&2
-    echo "Supported: qwen, salmonn, salmonn_7b, flamingo, mistral, analysis" >&2
+    echo "Supported: qwen, salmonn, salmonn_7b, flamingo, flamingo_hf, mistral, analysis" >&2
     return 1
     ;;
 esac

@@ -130,6 +130,9 @@ def get_scattered_mask_ranges(audio_length: int, percent: float, seed: int, item
     
     if total_mask_samples == 0:
         return []
+        
+    if total_mask_samples >= audio_length:
+        return [(0, audio_length)]
     
     # Convert ms to samples
     min_segment_samples = int(min_segment_ms * sample_rate / 1000)
@@ -141,42 +144,65 @@ def get_scattered_mask_ranges(audio_length: int, percent: float, seed: int, item
     
     rng = random.Random(f"{seed}_{item_id}_{percent}_scattered")
     
-    segments = []
-    remaining_mask = total_mask_samples
-    
-    # Keep track of which regions are already masked to avoid overlap
-    masked_regions = []
-    
-    max_attempts = 1000  # Prevent infinite loop
-    attempts = 0
-    
-    while remaining_mask > min_segment_samples and attempts < max_attempts:
-        attempts += 1
-        
-        # Random segment length
-        seg_len = min(rng.randint(min_segment_samples, max_segment_samples), remaining_mask)
-        
-        # Random start position
-        max_start = audio_length - seg_len
-        if max_start <= 0:
-            break
-            
-        start = rng.randint(0, max_start)
-        end = start + seg_len
-        
-        # Check for overlap with existing segments
-        overlaps = False
-        for existing_start, existing_end in masked_regions:
-            if not (end <= existing_start or start >= existing_end):
-                overlaps = True
+    # 1. Generate a sequence of masked lengths that exactly sum to total_mask_samples
+    masked_lengths = []
+    remaining = total_mask_samples
+    while remaining > 0:
+        if remaining <= max_segment_samples:
+            if remaining >= min_segment_samples or not masked_lengths:
+                masked_lengths.append(remaining)
                 break
+            else:
+                masked_lengths[-1] += remaining
+                break
+                
+        max_possible = min(max_segment_samples, remaining - min_segment_samples)
+        if max_possible < min_segment_samples:
+            max_possible = min_segment_samples
+            
+        l = rng.randint(min_segment_samples, max_possible)
+        masked_lengths.append(l)
+        remaining -= l
         
-        if not overlaps:
-            segments.append((start, end))
-            masked_regions.append((start, end))
-            remaining_mask -= seg_len
+    n_masked = len(masked_lengths)
     
-    # Sort segments by start position for cleaner processing
+    # 2. Distribute unmasked gaps
+    if n_masked == 1:
+        start = rng.randint(0, audio_length - masked_lengths[0])
+        return [(start, start + masked_lengths[0])]
+        
+    unmasked_samples = audio_length - total_mask_samples
+    num_slots = n_masked + 1
+    
+    # If we don't have enough unmasked samples to separate the masked chunks
+    if unmasked_samples < n_masked - 1:
+        return [(0, total_mask_samples)]
+        
+    # Allocate at least 1 sample to each internal gap
+    slots = [0] * num_slots
+    for i in range(1, n_masked):
+        slots[i] = 1
+        unmasked_samples -= 1
+        
+    # Distribute remaining randomly (Stars and Bars)
+    if unmasked_samples > 0:
+        total_positions = unmasked_samples + num_slots - 1
+        bar_positions = sorted(rng.sample(range(total_positions), num_slots - 1))
+        
+        slots[0] += bar_positions[0]
+        for i in range(1, len(bar_positions)):
+            slots[i] += bar_positions[i] - bar_positions[i-1] - 1
+        slots[-1] += total_positions - bar_positions[-1] - 1
+        
+    # 3. Assemble segments
+    segments = []
+    current_pos = 0
+    for i in range(n_masked):
+        current_pos += slots[i]
+        segments.append((current_pos, current_pos + masked_lengths[i]))
+        current_pos += masked_lengths[i]
+        
+    # Sort segments by start position just to be safe
     segments.sort(key=lambda x: x[0])
     
     return segments

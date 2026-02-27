@@ -61,6 +61,21 @@ def main():
     parser.add_argument("--num-samples", type=int, default=None)
     parser.add_argument("--num-chains", type=int, default=None)
     parser.add_argument('--verbose', action='store_true', help="Enable detailed, line-by-line progress logging.")
+    parser.add_argument(
+        "--prompt-strategy",
+        type=str,
+        default='two_turn_sanitized_cot',
+        choices=[
+            'two_turn_sanitized_cot',
+            'single_turn_explicit_letter',
+            'legacy_two_turn',
+            'pooneh_single_turn',
+        ],
+        help=(
+            "Prompt strategy for baseline/audio_masking experiments. "
+            "Use the new names; old names remain as deprecated aliases."
+        ),
+    )
     
     # --- Arguments for External Perturbations (Mistral) ---
     parser.add_argument(
@@ -151,6 +166,7 @@ def main():
     config.DATASET_NAME = args.dataset
     config.VERBOSE = args.verbose
     config.RESTRICTED = args.restricted
+    config.PROMPT_STRATEGY = args.prompt_strategy
     
     # External perturbation settings (for adding_mistakes and paraphrasing experiments)
     config.USE_EXTERNAL_PERTURBATIONS = args.use_external_perturbations
@@ -238,8 +254,12 @@ def main():
         
         if model_alias == 'qwen':
             from core import qwen_utils as model_utils
+        elif model_alias == 'qwen_omni':
+            from core import qwen_omni_utils as model_utils
         elif model_alias == 'flamingo':
             from core import audio_flamingo_utils as model_utils
+        elif model_alias == 'flamingo_hf':
+            from core import audio_flamingo_hf_utils as model_utils
         elif model_alias in ('salmonn', 'salmonn_7b'):
             from core import salmonn_utils as model_utils
         else:
@@ -254,6 +274,7 @@ def main():
     logging.info(f"  - Model:      {model_alias.upper()}")
     logging.info(f"  - Experiment: {args.experiment}")
     logging.info(f"  - Dataset:    {args.dataset}")
+    logging.info(f"  - Prompt Strategy: {config.PROMPT_STRATEGY}")
     
     # The run mode logging is now more detailed.
     run_mode = "RESTRICTED" if config.RESTRICTED else "FULL DATASET"

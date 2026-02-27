@@ -297,7 +297,7 @@ def main():
             if temp is None: temp = 1.0
             if top_p is None: top_p = 0.9
             if top_k is None: top_k = 50
-        elif args.model == 'flamingo':
+        elif args.model in ('flamingo', 'flamingo_hf'):
             if temp is None: temp = 0.7
             if top_p is None: top_p = 0.8
             if top_k is None: top_k = 20
