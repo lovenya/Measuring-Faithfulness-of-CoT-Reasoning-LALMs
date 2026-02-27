@@ -41,7 +41,9 @@ Clone the Sakura repository and ensure the audio data is saved locally. You will
 ```bash
 mkdir -p data/
 cd data/
-git clone [https://github.com/ckyang1124/SAKURA.git](https://github.com/ckyang1124/SAKURA.git)
+Sakura --> git clone [https://github.com/ckyang1124/SAKURA.git](https://github.com/ckyang1124/SAKURA.git)
+MMAU --> HF clone [https://huggingface.co/datasets/gamma-lab-umd/MMAU-test](https://huggingface.co/datasets/gamma-lab-umd/MMAU-test)
+MMAR -->  HF clone [https://huggingface.co/datasets/BoJack/MMAR](https://huggingface.co/datasets/BoJack/MMAR)
 ```
 
 ## Step 3 — Run Baseline Inference
@@ -56,22 +58,30 @@ Required Arguments:
 
 --data_root: The path to the root directory where the SAKURA repository was cloned.
 
+--num_runs: Numebr of trails per sample. (set to 1).
+
+--use_reasoning: If set , it uses prompt that asks for reason ehn answer. otehrwise, it tries to directly provide answer(no-reasoning baseline)
+
 Command Example:
 ```bash
 python interface/AF3_wrapper.py \
   --input processed_input/sakura/{name}/sakura_manifest.jsonl \
   --output output/sakura/af3/{name}/baseline_{name}.jsonl \
-  --data_root data/
+  --data_root data/ \
+  --num_runs 1 \
+  --use_reasoning
+
   ```
 
 ## Step 4 — Run Conditioned Inference (Faithfulness)
-To test if the model actually relies on its own logic, use the conditioned inference scripts. These scripts take the runs_reasonings generated in Step 3, inject them back into the prompt, and force the model to make a final prediction based strictly on that text.
+To test if the model actually relies on its own logic, use the conditioned inference scripts. These scripts take the runs_reasonings generated in Step 3, inject them back into the prompt, and force the model to make a final prediction.
 
 Command Example:
 ```bash 
   python interface/{model}_conditioned.py \
-  --manifest_file  processed_input/sakura/{name}/sakura_manifest.jsonl \
-  --input_results_file output/sakura/af3/{name}/baseline_{name}.jsonl \
-  --output_conditioned_file output/sakura/af3/{name}/conditioned_{name}.jsonl \
+  --manifest  processed_input/sakura/{name}/sakura_manifest.jsonl \
+  --results_in  output/sakura/af3/{name}/baseline_{name}.jsonl \
+  --output  output/sakura/af3/{name}/conditioned_{name}.jsonl \
   --data_root data/
+  --num_runs 1
   ```
