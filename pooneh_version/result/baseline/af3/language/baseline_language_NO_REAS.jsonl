@@ -1,0 +1,1000 @@
+{"id": "sakura_language_0_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_0_multi", "true_answer": "(d) Liechtenstein", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Liechtenstein"], "accuracy": 1.0}
+{"id": "sakura_language_1_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_1_multi", "true_answer": "(c) Bratwurst", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Bratwurst"], "accuracy": 1.0}
+{"id": "sakura_language_2_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_2_multi", "true_answer": "(a) Innsbruck", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Colmar"], "accuracy": 0.0}
+{"id": "sakura_language_3_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_3_multi", "true_answer": "(a) Pretzel", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Paella"], "accuracy": 0.0}
+{"id": "sakura_language_4_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_4_multi", "true_answer": "(d) Indo-European", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_5_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_5_multi", "true_answer": "(c) Johann Wolfgang von Goethe", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Mahatma Gandhi"], "accuracy": 0.0}
+{"id": "sakura_language_6_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_6_multi", "true_answer": "(d) Berlin", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chihuahua City"], "accuracy": 0.0}
+{"id": "sakura_language_7_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_7_multi", "true_answer": "(d) de", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) de"], "accuracy": 1.0}
+{"id": "sakura_language_8_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_8_multi", "true_answer": "(d) The Sorrows of Young Werther", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) The Sorrows of Young Werther."], "accuracy": 1.0}
+{"id": "sakura_language_9_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_9_multi", "true_answer": "(a) TestDaF", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) TestDaF"], "accuracy": 1.0}
+{"id": "sakura_language_10_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_10_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_11_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_11_multi", "true_answer": "(b) Germany", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Germany"], "accuracy": 1.0}
+{"id": "sakura_language_12_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_12_multi", "true_answer": "(d) de", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) de"], "accuracy": 1.0}
+{"id": "sakura_language_13_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_13_multi", "true_answer": "(a) Prosperit\u00e4t", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Prosperit\u00e4t"], "accuracy": 1.0}
+{"id": "sakura_language_14_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_14_multi", "true_answer": "(d) Germany", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Germany"], "accuracy": 1.0}
+{"id": "sakura_language_15_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_15_multi", "true_answer": "(b) Innsbruck", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Innsbruck"], "accuracy": 1.0}
+{"id": "sakura_language_16_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_16_multi", "true_answer": "(c) Meisterwerk", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) \uac78\uc791"], "accuracy": 0.0}
+{"id": "sakura_language_17_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_17_multi", "true_answer": "(d) DSH", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) DSH"], "accuracy": 1.0}
+{"id": "sakura_language_18_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_18_multi", "true_answer": "(c) de", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) ja"], "accuracy": 0.0}
+{"id": "sakura_language_19_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_19_multi", "true_answer": "(b) Johann Wolfgang von Goethe", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Johann Wolfgang von Goethe"], "accuracy": 1.0}
+{"id": "sakura_language_20_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_20_multi", "true_answer": "(c) The Sorrows of Young Werther", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Zeno's Conscience"], "accuracy": 0.0}
+{"id": "sakura_language_21_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_21_multi", "true_answer": "(c) Liechtenstein", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Liechtenstein"], "accuracy": 1.0}
+{"id": "sakura_language_22_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_22_multi", "true_answer": "(c) Germany", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Germany"], "accuracy": 1.0}
+{"id": "sakura_language_23_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_23_multi", "true_answer": "(d) Indo-European", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_24_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_24_multi", "true_answer": "(c) Prosperit\u00e4t", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Prosperit\u00e0"], "accuracy": 1.0}
+{"id": "sakura_language_25_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_25_multi", "true_answer": "(c) Goethe-Zertifikat", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) TOCFL"], "accuracy": 0.0}
+{"id": "sakura_language_26_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_26_multi", "true_answer": "(c) Bratwurst", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Miso Soup"], "accuracy": 0.0}
+{"id": "sakura_language_27_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_27_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_28_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_28_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_29_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_29_multi", "true_answer": "(c) Johann Wolfgang von Goethe", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Napoleon Bonaparte"], "accuracy": 0.0}
+{"id": "sakura_language_30_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_30_multi", "true_answer": "(c) Liechtenstein", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Liechtenstein"], "accuracy": 1.0}
+{"id": "sakura_language_31_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_31_multi", "true_answer": "(a) Innsbruck", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Abidjan"], "accuracy": 0.0}
+{"id": "sakura_language_32_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_32_multi", "true_answer": "(c) Berlin", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Naples"], "accuracy": 0.0}
+{"id": "sakura_language_33_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_33_multi", "true_answer": "(c) Steppenwolf", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Fortress Besieged"], "accuracy": 0.0}
+{"id": "sakura_language_34_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_34_multi", "true_answer": "(d) TestDaF", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) HSK"], "accuracy": 0.0}
+{"id": "sakura_language_35_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_35_multi", "true_answer": "(a) The Magic Mountain", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) If This Is a Man"], "accuracy": 0.0}
+{"id": "sakura_language_36_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_36_multi", "true_answer": "(b) Sigmund Freud", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Sigmund Freud"], "accuracy": 1.0}
+{"id": "sakura_language_37_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_37_multi", "true_answer": "(c) All Quiet on the Western Front", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Like Water for Chocolate"], "accuracy": 0.0}
+{"id": "sakura_language_38_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_38_multi", "true_answer": "(d) de", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) de"], "accuracy": 1.0}
+{"id": "sakura_language_39_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_39_multi", "true_answer": "(d) TestDaF", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) CELI"], "accuracy": 0.0}
+{"id": "sakura_language_40_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_40_multi", "true_answer": "(d) Steppenwolf", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Journey to the West"], "accuracy": 0.0}
+{"id": "sakura_language_41_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_41_multi", "true_answer": "(a) Vaduz", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Vaduz"], "accuracy": 1.0}
+{"id": "sakura_language_42_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_42_multi", "true_answer": "(a) Ludwig van Beethoven", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Emperor Meiji"], "accuracy": 0.0}
+{"id": "sakura_language_43_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_43_multi", "true_answer": "(a) Schnitzel", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Schnitzel"], "accuracy": 1.0}
+{"id": "sakura_language_44_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_44_multi", "true_answer": "(b) Indo-European", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_45_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_45_multi", "true_answer": "(a) Dankbarkeit", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Dankbarkeit"], "accuracy": 1.0}
+{"id": "sakura_language_46_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_46_multi", "true_answer": "(d) de", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) es"], "accuracy": 0.0}
+{"id": "sakura_language_47_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_47_multi", "true_answer": "(d) Indo-European", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_48_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_48_multi", "true_answer": "(b) Prosperit\u00e4t", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) \u30d7\u30a2\u30ea\u30c6\u30a3\u30fc"], "accuracy": 0.0}
+{"id": "sakura_language_49_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_49_multi", "true_answer": "(b) Sp\u00e4tzle", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Sp\u00e4tzle"], "accuracy": 1.0}
+{"id": "sakura_language_50_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_50_multi", "true_answer": "(b) de", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) de"], "accuracy": 1.0}
+{"id": "sakura_language_51_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_51_multi", "true_answer": "(b) de", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) de"], "accuracy": 1.0}
+{"id": "sakura_language_52_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_52_multi", "true_answer": "(b) Innsbruck", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Innsbruck"], "accuracy": 1.0}
+{"id": "sakura_language_53_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_53_multi", "true_answer": "(b) Sauerkraut", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Sauerkraut"], "accuracy": 1.0}
+{"id": "sakura_language_54_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_54_multi", "true_answer": "(b) Sp\u00e4tzle", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Sp\u00e4tzle"], "accuracy": 1.0}
+{"id": "sakura_language_55_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_55_multi", "true_answer": "(c) de", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) de"], "accuracy": 1.0}
+{"id": "sakura_language_56_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_56_multi", "true_answer": "(b) The Sorrows of Young Werther", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) The Sorrows of Young Werther"], "accuracy": 1.0}
+{"id": "sakura_language_57_single", "true_answer": "(c) German", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) German"], "accuracy": 1.0}
+{"id": "sakura_language_57_multi", "true_answer": "(c) Prosperit\u00e4t", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Prosperit\u00e4t"], "accuracy": 1.0}
+{"id": "sakura_language_58_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 0.0}
+{"id": "sakura_language_58_multi", "true_answer": "(a) Ludwig van Beethoven", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Ludwig van Beethoven"], "accuracy": 1.0}
+{"id": "sakura_language_59_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 0.0}
+{"id": "sakura_language_59_multi", "true_answer": "(b) DSH", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) TOEFL"], "accuracy": 0.0}
+{"id": "sakura_language_60_single", "true_answer": "(d) German", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) German"], "accuracy": 1.0}
+{"id": "sakura_language_60_multi", "true_answer": "(d) Hermann Hesse", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Eva Per\u00f3n"], "accuracy": 0.0}
+{"id": "sakura_language_61_single", "true_answer": "(a) German", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 1.0}
+{"id": "sakura_language_61_multi", "true_answer": "(a) Goethe-Zertifikat", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) ESLAT"], "accuracy": 0.0}
+{"id": "sakura_language_62_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_62_multi", "true_answer": "(b) Austria", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) India"], "accuracy": 0.0}
+{"id": "sakura_language_63_single", "true_answer": "(b) German", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) German"], "accuracy": 1.0}
+{"id": "sakura_language_63_multi", "true_answer": "(b) Weisheit", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Weisheit"], "accuracy": 1.0}
+{"id": "sakura_language_64_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_64_multi", "true_answer": "(d) TOEFL", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) BRT"], "accuracy": 0.0}
+{"id": "sakura_language_65_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_65_multi", "true_answer": "(d) PTE Academic", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) CILS"], "accuracy": 0.0}
+{"id": "sakura_language_66_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_66_multi", "true_answer": "(c) en", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) en"], "accuracy": 1.0}
+{"id": "sakura_language_67_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_67_multi", "true_answer": "(b) The Great Gatsby", "true_letter": "B", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Pedro P\u00e1ramo"], "accuracy": 0.0}
+{"id": "sakura_language_68_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_68_multi", "true_answer": "(b) TOEFL", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Goethe-Zertifikat"], "accuracy": 0.0}
+{"id": "sakura_language_69_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_69_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_70_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_70_multi", "true_answer": "(b) en", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) en"], "accuracy": 1.0}
+{"id": "sakura_language_71_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_71_multi", "true_answer": "(b) Indo-European", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_72_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_72_multi", "true_answer": "(c) Indo-European", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_73_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_73_multi", "true_answer": "(a) 1984", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) 1984"], "accuracy": 1.0}
+{"id": "sakura_language_74_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_74_multi", "true_answer": "(c) Shepherd's Pie", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Bibimbap"], "accuracy": 0.0}
+{"id": "sakura_language_75_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_75_multi", "true_answer": "(c) Winston Churchill", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) L\u00e9opold S\u00e9dar Senghor"], "accuracy": 0.0}
+{"id": "sakura_language_76_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_76_multi", "true_answer": "(d) South Africa", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Haiti"], "accuracy": 0.0}
+{"id": "sakura_language_77_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_77_multi", "true_answer": "(d) Lord of the Flies", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Rashomon"], "accuracy": 0.0}
+{"id": "sakura_language_78_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_78_multi", "true_answer": "(c) PTE Academic", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) TOEFL"], "accuracy": 0.0}
+{"id": "sakura_language_79_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_79_multi", "true_answer": "(d) Cornish Pasty", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Kimchi"], "accuracy": 0.0}
+{"id": "sakura_language_80_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_80_multi", "true_answer": "(c) Liverpool", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Venice"], "accuracy": 0.0}
+{"id": "sakura_language_81_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_81_multi", "true_answer": "(a) United Kingdom", "true_letter": "A", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) China"], "accuracy": 0.0}
+{"id": "sakura_language_82_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_82_multi", "true_answer": "(a) en", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) en"], "accuracy": 1.0}
+{"id": "sakura_language_83_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_83_multi", "true_answer": "(c) Cornish Pasty", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Cornish Pasty"], "accuracy": 1.0}
+{"id": "sakura_language_84_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_84_multi", "true_answer": "(d) Indo-European", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_85_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_85_multi", "true_answer": "(b) IELTS", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) IELTS"], "accuracy": 1.0}
+{"id": "sakura_language_86_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_86_multi", "true_answer": "(a) New Zealand", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) New Zealand"], "accuracy": 1.0}
+{"id": "sakura_language_87_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_87_multi", "true_answer": "(b) South Africa", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) South Africa"], "accuracy": 1.0}
+{"id": "sakura_language_88_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_88_multi", "true_answer": "(d) Manchester", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Venice"], "accuracy": 0.0}
+{"id": "sakura_language_89_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_89_multi", "true_answer": "(b) Edmund Hillary", "true_letter": "B", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) L\u00e9opold S\u00e9dar Senghor"], "accuracy": 0.0}
+{"id": "sakura_language_90_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_90_multi", "true_answer": "(d) Lord of the Flies", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Garden of the Finzi-Continis"], "accuracy": 0.0}
+{"id": "sakura_language_91_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_91_multi", "true_answer": "(d) Indo-European", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_92_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_92_multi", "true_answer": "(d) en", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) en"], "accuracy": 1.0}
+{"id": "sakura_language_93_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_93_multi", "true_answer": "(d) Indo-European", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_94_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_94_multi", "true_answer": "(d) Fish and Chips", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Tteokbokki"], "accuracy": 0.0}
+{"id": "sakura_language_95_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_95_multi", "true_answer": "(b) en", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) en"], "accuracy": 1.0}
+{"id": "sakura_language_96_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_96_multi", "true_answer": "(b) Edmund Hillary", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Sigmund Freud"], "accuracy": 0.0}
+{"id": "sakura_language_97_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_97_multi", "true_answer": "(c) en", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) en"], "accuracy": 1.0}
+{"id": "sakura_language_98_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_98_multi", "true_answer": "(d) New Zealand", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) South Korea"], "accuracy": 0.0}
+{"id": "sakura_language_99_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_99_multi", "true_answer": "(a) PTE Academic", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) HSK"], "accuracy": 0.0}
+{"id": "sakura_language_100_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_100_multi", "true_answer": "(d) United Kingdom", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) United Kingdom"], "accuracy": 1.0}
+{"id": "sakura_language_101_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_101_multi", "true_answer": "(b) Shepherd's Pie", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Paella"], "accuracy": 0.0}
+{"id": "sakura_language_102_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_102_multi", "true_answer": "(d) Winston Churchill", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Johann Wolfgang von Goethe"], "accuracy": 0.0}
+{"id": "sakura_language_103_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 0.0}
+{"id": "sakura_language_103_multi", "true_answer": "(d) Nelson Mandela", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Murasaki Shikibu"], "accuracy": 0.0}
+{"id": "sakura_language_104_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_104_multi", "true_answer": "(c) To Kill a Mockingbird", "true_letter": "C", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) The Tale of Gyonghyang"], "accuracy": 0.0}
+{"id": "sakura_language_105_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_105_multi", "true_answer": "(b) Indo-European", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_106_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_106_multi", "true_answer": "(d) Nelson Mandela", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Maria Theresa"], "accuracy": 0.0}
+{"id": "sakura_language_107_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_107_multi", "true_answer": "(b) 1984", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Wind-Up Bird Chronicle"], "accuracy": 0.0}
+{"id": "sakura_language_108_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_108_multi", "true_answer": "(d) en", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) en"], "accuracy": 1.0}
+{"id": "sakura_language_109_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_109_multi", "true_answer": "(a) Wuthering Heights", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Wuthering Heights"], "accuracy": 1.0}
+{"id": "sakura_language_110_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_110_multi", "true_answer": "(c) Mahatma Gandhi", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Mahatma Gandhi"], "accuracy": 1.0}
+{"id": "sakura_language_111_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_111_multi", "true_answer": "(c) IELTS", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) TOPIK"], "accuracy": 0.0}
+{"id": "sakura_language_112_single", "true_answer": "(b) English", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 1.0}
+{"id": "sakura_language_112_multi", "true_answer": "(b) South Africa", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) South Africa"], "accuracy": 1.0}
+{"id": "sakura_language_113_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_113_multi", "true_answer": "(c) Cape Town", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Cape Town"], "accuracy": 1.0}
+{"id": "sakura_language_114_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_114_multi", "true_answer": "(c) Indo-European", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_115_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_115_multi", "true_answer": "(a) Shepherd's Pie", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Gazpacho"], "accuracy": 0.0}
+{"id": "sakura_language_116_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_116_multi", "true_answer": "(c) Nelson Mandela", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Nelson Mandela"], "accuracy": 1.0}
+{"id": "sakura_language_117_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_117_multi", "true_answer": "(d) PTE Academic", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) TUW (German Language Proficiency Test)"], "accuracy": 0.0}
+{"id": "sakura_language_118_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_118_multi", "true_answer": "(d) Wellington", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Wellington"], "accuracy": 1.0}
+{"id": "sakura_language_119_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_119_multi", "true_answer": "(c) Edinburgh", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Vaduz"], "accuracy": 0.0}
+{"id": "sakura_language_120_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_120_multi", "true_answer": "(c) Edinburgh", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Edinburgh"], "accuracy": 1.0}
+{"id": "sakura_language_121_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_121_multi", "true_answer": "(d) en", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) en"], "accuracy": 1.0}
+{"id": "sakura_language_122_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_122_multi", "true_answer": "(c) Shepherd's Pie", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Dumplings"], "accuracy": 0.0}
+{"id": "sakura_language_123_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_123_multi", "true_answer": "(a) Heart of Darkness", "true_letter": "A", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Death in Venice."], "accuracy": 0.0}
+{"id": "sakura_language_124_single", "true_answer": "(d) English", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) English"], "accuracy": 1.0}
+{"id": "sakura_language_124_multi", "true_answer": "(d) Cape Town", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Paris"], "accuracy": 0.0}
+{"id": "sakura_language_125_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_125_multi", "true_answer": "(a) Liverpool", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Bogot\u00e1"], "accuracy": 0.0}
+{"id": "sakura_language_126_single", "true_answer": "(c) English", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 1.0}
+{"id": "sakura_language_126_multi", "true_answer": "(c) South Africa", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) South Africa"], "accuracy": 1.0}
+{"id": "sakura_language_127_single", "true_answer": "(a) English", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 1.0}
+{"id": "sakura_language_127_multi", "true_answer": "(a) Fish and Chips", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Gazpacho"], "accuracy": 0.0}
+{"id": "sakura_language_128_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_128_multi", "true_answer": "(d) SIELE", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) EJU"], "accuracy": 0.0}
+{"id": "sakura_language_129_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_129_multi", "true_answer": "(b) amabilidad", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) amabilidad"], "accuracy": 1.0}
+{"id": "sakura_language_130_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_130_multi", "true_answer": "(d) Hopscotch", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Tale of Chunhyang"], "accuracy": 0.0}
+{"id": "sakura_language_131_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_131_multi", "true_answer": "(d) Hopscotch", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Kim Ji-young, Born 1982"], "accuracy": 0.0}
+{"id": "sakura_language_132_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_132_multi", "true_answer": "(a) Guatemala", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) San Marino"], "accuracy": 0.0}
+{"id": "sakura_language_133_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_133_multi", "true_answer": "(d) es", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) es"], "accuracy": 1.0}
+{"id": "sakura_language_134_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_134_multi", "true_answer": "(b) Pablo Neruda", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Pablo Neruda"], "accuracy": 1.0}
+{"id": "sakura_language_135_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_135_multi", "true_answer": "(b) SIELE", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) SIELE"], "accuracy": 1.0}
+{"id": "sakura_language_136_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_136_multi", "true_answer": "(b) Sevilla", "true_letter": "B", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Vaduz"], "accuracy": 0.0}
+{"id": "sakura_language_137_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_137_multi", "true_answer": "(c) Madrid", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Venice"], "accuracy": 0.0}
+{"id": "sakura_language_138_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_138_multi", "true_answer": "(a) obra maestra", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) obra maestra"], "accuracy": 1.0}
+{"id": "sakura_language_139_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_139_multi", "true_answer": "(a) SIELE", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) SIELE"], "accuracy": 1.0}
+{"id": "sakura_language_140_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_140_multi", "true_answer": "(a) aventura", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Adventura"], "accuracy": 1.0}
+{"id": "sakura_language_141_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_141_multi", "true_answer": "(a) The Death of Artemio Cruz", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Zeno's Conscience"], "accuracy": 0.0}
+{"id": "sakura_language_142_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_142_multi", "true_answer": "(b) Indo-European", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_143_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_143_multi", "true_answer": "(b) SIELE", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) SIELE"], "accuracy": 1.0}
+{"id": "sakura_language_144_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_144_multi", "true_answer": "(b) Ecuador", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Ecuador"], "accuracy": 1.0}
+{"id": "sakura_language_145_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_145_multi", "true_answer": "(c) es", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) es"], "accuracy": 1.0}
+{"id": "sakura_language_146_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_146_multi", "true_answer": "(a) gratitud", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) gratitud"], "accuracy": 1.0}
+{"id": "sakura_language_147_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_147_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_148_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_148_multi", "true_answer": "(b) Pablo Neruda", "true_letter": "B", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Jean-B\u00e9del Bokassa"], "accuracy": 0.0}
+{"id": "sakura_language_149_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_149_multi", "true_answer": "(c) es", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) es"], "accuracy": 1.0}
+{"id": "sakura_language_150_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_150_multi", "true_answer": "(b) The Death of Artemio Cruz", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Trial"], "accuracy": 0.0}
+{"id": "sakura_language_151_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_151_multi", "true_answer": "(b) Indo-European", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_152_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_152_multi", "true_answer": "(d) Madrid", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Madrid"], "accuracy": 1.0}
+{"id": "sakura_language_153_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_153_multi", "true_answer": "(b) Paella", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Paella"], "accuracy": 1.0}
+{"id": "sakura_language_154_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_154_multi", "true_answer": "(d) Indo-European", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_155_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_155_multi", "true_answer": "(a) Bogot\u00e1", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Edinburgh"], "accuracy": 0.0}
+{"id": "sakura_language_156_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_156_multi", "true_answer": "(a) Tacos", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Sp\u00e4tzle"], "accuracy": 0.0}
+{"id": "sakura_language_157_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_157_multi", "true_answer": "(c) Gazpacho", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Pizza Margherita"], "accuracy": 0.0}
+{"id": "sakura_language_158_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_158_multi", "true_answer": "(a) Argentina", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Argentina"], "accuracy": 1.0}
+{"id": "sakura_language_159_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_159_multi", "true_answer": "(a) valent\u00eda", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) valent\u00eda"], "accuracy": 1.0}
+{"id": "sakura_language_160_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_160_multi", "true_answer": "(c) Pablo Neruda", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Pablo Neruda"], "accuracy": 1.0}
+{"id": "sakura_language_161_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_161_multi", "true_answer": "(b) Bogot\u00e1", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Bogot\u00e1"], "accuracy": 1.0}
+{"id": "sakura_language_162_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_162_multi", "true_answer": "(c) prosperidad", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) prosperidad"], "accuracy": 1.0}
+{"id": "sakura_language_163_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_163_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_164_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_164_multi", "true_answer": "(a) Spain", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) South Africa"], "accuracy": 0.0}
+{"id": "sakura_language_165_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_165_multi", "true_answer": "(d) gratitud", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) \uac10\uc0ac"], "accuracy": 0.0}
+{"id": "sakura_language_166_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_166_multi", "true_answer": "(b) SIELE", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) SIELE"], "accuracy": 1.0}
+{"id": "sakura_language_167_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_167_multi", "true_answer": "(d) Don Quixote", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) The Name of the Rose"], "accuracy": 0.0}
+{"id": "sakura_language_168_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_168_multi", "true_answer": "(b) Indo-European", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_169_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_169_multi", "true_answer": "(b) es", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) es"], "accuracy": 1.0}
+{"id": "sakura_language_170_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_170_multi", "true_answer": "(c) Madrid", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Madrid"], "accuracy": 1.0}
+{"id": "sakura_language_171_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_171_multi", "true_answer": "(c) SIELE", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) SIELE"], "accuracy": 1.0}
+{"id": "sakura_language_172_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_172_multi", "true_answer": "(a) The Death of Artemio Cruz", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Death of Jose Cruz"], "accuracy": 1.0}
+{"id": "sakura_language_173_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_173_multi", "true_answer": "(c) valent\u00eda", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) valent\u00eda"], "accuracy": 1.0}
+{"id": "sakura_language_174_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_174_multi", "true_answer": "(c) Sim\u00f3n Bol\u00edvar", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Hermann Hesse"], "accuracy": 0.0}
+{"id": "sakura_language_175_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_175_multi", "true_answer": "(d) Arepas", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Arepas."], "accuracy": 1.0}
+{"id": "sakura_language_176_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_176_multi", "true_answer": "(b) Chile", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chile"], "accuracy": 1.0}
+{"id": "sakura_language_177_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_177_multi", "true_answer": "(b) Tacos", "true_letter": "B", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Bulgogi"], "accuracy": 0.0}
+{"id": "sakura_language_178_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_178_multi", "true_answer": "(d) prosperidad", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) \u7e41\u6804"], "accuracy": 0.0}
+{"id": "sakura_language_179_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_179_multi", "true_answer": "(d) es", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) es."], "accuracy": 1.0}
+{"id": "sakura_language_180_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_180_multi", "true_answer": "(a) amabilidad", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) amabilidad"], "accuracy": 1.0}
+{"id": "sakura_language_181_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_181_multi", "true_answer": "(c) aventura", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) \ufffd (C) Adventura"], "accuracy": 1.0}
+{"id": "sakura_language_182_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_182_multi", "true_answer": "(a) Gabriel Garc\u00eda M\u00e1rquez", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Gabriel Garc\u00eda M\u00e1rquez"], "accuracy": 1.0}
+{"id": "sakura_language_183_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_183_multi", "true_answer": "(c) Ecuador", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Ecuador"], "accuracy": 1.0}
+{"id": "sakura_language_184_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_184_multi", "true_answer": "(c) gratitud", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) gratitud"], "accuracy": 1.0}
+{"id": "sakura_language_185_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_185_multi", "true_answer": "(c) prosperidad", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) prosperidad"], "accuracy": 1.0}
+{"id": "sakura_language_186_single", "true_answer": "(a) Spanish", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_186_multi", "true_answer": "(a) aventura", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Adventura"], "accuracy": 1.0}
+{"id": "sakura_language_187_single", "true_answer": "(b) Spanish", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_187_multi", "true_answer": "(b) Tacos", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Tacos"], "accuracy": 1.0}
+{"id": "sakura_language_188_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_188_multi", "true_answer": "(c) Chihuahua City", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Frankfurt"], "accuracy": 0.0}
+{"id": "sakura_language_189_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_189_multi", "true_answer": "(c) Sim\u00f3n Bol\u00edvar", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Sim\u00f3n Bol\u00edvar"], "accuracy": 1.0}
+{"id": "sakura_language_190_single", "true_answer": "(c) Spanish", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 0.0}
+{"id": "sakura_language_190_multi", "true_answer": "(c) Chile", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) New Zealand"], "accuracy": 0.0}
+{"id": "sakura_language_191_single", "true_answer": "(d) Spanish", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Spanish"], "accuracy": 1.0}
+{"id": "sakura_language_191_multi", "true_answer": "(d) es", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) es"], "accuracy": 1.0}
+{"id": "sakura_language_192_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_192_multi", "true_answer": "(d) Candide", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Tale of Genji"], "accuracy": 0.0}
+{"id": "sakura_language_193_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_193_multi", "true_answer": "(c) Abidjan", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Edinburgh"], "accuracy": 0.0}
+{"id": "sakura_language_194_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_194_multi", "true_answer": "(c) Coq au Vin", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Coq au Vin"], "accuracy": 1.0}
+{"id": "sakura_language_195_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_195_multi", "true_answer": "(d) DELF", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) DELF."], "accuracy": 1.0}
+{"id": "sakura_language_196_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 0.0}
+{"id": "sakura_language_196_multi", "true_answer": "(d) Ivory Coast", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Mexico"], "accuracy": 0.0}
+{"id": "sakura_language_197_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_197_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_198_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_198_multi", "true_answer": "(c) Senegal", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chile"], "accuracy": 0.0}
+{"id": "sakura_language_199_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_199_multi", "true_answer": "(d) Germinal", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Please Look After Mom"], "accuracy": 0.0}
+{"id": "sakura_language_200_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_200_multi", "true_answer": "(a) TCF", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) TestDaF"], "accuracy": 0.0}
+{"id": "sakura_language_201_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_201_multi", "true_answer": "(a) fr", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) fr"], "accuracy": 1.0}
+{"id": "sakura_language_202_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_202_multi", "true_answer": "(b) Port-au-Prince", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Port-au-Prince"], "accuracy": 1.0}
+{"id": "sakura_language_203_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_203_multi", "true_answer": "(c) Bouillabaisse", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Cornish Pasty"], "accuracy": 0.0}
+{"id": "sakura_language_204_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_204_multi", "true_answer": "(c) fr", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) fr"], "accuracy": 1.0}
+{"id": "sakura_language_205_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_205_multi", "true_answer": "(b) fr", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) fr"], "accuracy": 1.0}
+{"id": "sakura_language_206_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_206_multi", "true_answer": "(d) L\u00e9opold S\u00e9dar Senghor", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) L\u00e9opold S\u00e9dar Senghor"], "accuracy": 1.0}
+{"id": "sakura_language_207_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_207_multi", "true_answer": "(a) Abidjan", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Abidjan"], "accuracy": 1.0}
+{"id": "sakura_language_208_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_208_multi", "true_answer": "(c) The Red and the Black", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Kokoro"], "accuracy": 0.0}
+{"id": "sakura_language_209_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_209_multi", "true_answer": "(d) Haiti", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Colombia"], "accuracy": 0.0}
+{"id": "sakura_language_210_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_210_multi", "true_answer": "(d) Napoleon Bonaparte", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Winston Churchill"], "accuracy": 0.0}
+{"id": "sakura_language_211_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_211_multi", "true_answer": "(a) Haiti", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Vatican City"], "accuracy": 0.0}
+{"id": "sakura_language_212_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_212_multi", "true_answer": "(d) Germinal", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Ficciones"], "accuracy": 0.0}
+{"id": "sakura_language_213_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_213_multi", "true_answer": "(b) Indo-European", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_214_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_214_multi", "true_answer": "(d) Napoleon Bonaparte", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Hermann Hesse"], "accuracy": 0.0}
+{"id": "sakura_language_215_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_215_multi", "true_answer": "(c) Ivory Coast", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) C\u00f4te d'Ivoire"], "accuracy": 1.0}
+{"id": "sakura_language_216_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_216_multi", "true_answer": "(d) Indo-European", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_217_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_217_multi", "true_answer": "(d) Senegal", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) San Marino"], "accuracy": 0.0}
+{"id": "sakura_language_218_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_218_multi", "true_answer": "(c) sagesse", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) sagesse"], "accuracy": 1.0}
+{"id": "sakura_language_219_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_219_multi", "true_answer": "(b) TCF", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) TCF"], "accuracy": 1.0}
+{"id": "sakura_language_220_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_220_multi", "true_answer": "(b) bravoure", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) bravoure"], "accuracy": 1.0}
+{"id": "sakura_language_221_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_221_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_222_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_222_multi", "true_answer": "(a) L\u00e9opold S\u00e9dar Senghor", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) L\u00e9opold S\u00e9dar Senghor"], "accuracy": 1.0}
+{"id": "sakura_language_223_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_223_multi", "true_answer": "(d) Bouillabaisse", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Fish and Chips"], "accuracy": 0.0}
+{"id": "sakura_language_224_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_224_multi", "true_answer": "(d) chef-d'\u0153uvre", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) chef-d'\u0153uvre."], "accuracy": 1.0}
+{"id": "sakura_language_225_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_225_multi", "true_answer": "(d) DALF", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) SIELE"], "accuracy": 0.0}
+{"id": "sakura_language_226_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_226_multi", "true_answer": "(d) Indo-European", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_227_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 0.0}
+{"id": "sakura_language_227_multi", "true_answer": "(c) Abidjan", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Wellington"], "accuracy": 0.0}
+{"id": "sakura_language_228_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_228_multi", "true_answer": "(d) DALF", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Goethe-Zertifikat"], "accuracy": 0.0}
+{"id": "sakura_language_229_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_229_multi", "true_answer": "(b) Toussaint Louverture", "true_letter": "B", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Sim\u00f3n Bol\u00edvar"], "accuracy": 0.0}
+{"id": "sakura_language_230_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_230_multi", "true_answer": "(d) Ratatouille", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Takoyaki"], "accuracy": 0.0}
+{"id": "sakura_language_231_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 0.0}
+{"id": "sakura_language_231_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_232_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_232_multi", "true_answer": "(c) fr", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) en"], "accuracy": 0.0}
+{"id": "sakura_language_233_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_233_multi", "true_answer": "(c) DALF", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) CELI"], "accuracy": 0.0}
+{"id": "sakura_language_234_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_234_multi", "true_answer": "(a) fr", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) fr"], "accuracy": 1.0}
+{"id": "sakura_language_235_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_235_multi", "true_answer": "(d) Jean-B\u00e9del Bokassa", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) King Sejong"], "accuracy": 0.0}
+{"id": "sakura_language_236_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_236_multi", "true_answer": "(b) Les Mis\u00e9rables", "true_letter": "B", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) If This Is a Man."], "accuracy": 0.0}
+{"id": "sakura_language_237_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_237_multi", "true_answer": "(d) Dakar", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Madrid"], "accuracy": 0.0}
+{"id": "sakura_language_238_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_238_multi", "true_answer": "(d) Germinal", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Gazinal."], "accuracy": 1.0}
+{"id": "sakura_language_239_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_239_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_240_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_240_multi", "true_answer": "(a) gentillesse", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) gentillesse"], "accuracy": 1.0}
+{"id": "sakura_language_241_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_241_multi", "true_answer": "(b) Bouillabaisse", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Paella"], "accuracy": 0.0}
+{"id": "sakura_language_242_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_242_multi", "true_answer": "(a) chef-d'\u0153uvre", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) chef-d'\u0153uvre"], "accuracy": 1.0}
+{"id": "sakura_language_243_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_243_multi", "true_answer": "(c) Jean-B\u00e9del Bokassa", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Jean-B\u00e9del Bokassa"], "accuracy": 1.0}
+{"id": "sakura_language_244_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_244_multi", "true_answer": "(d) fr", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) fr"], "accuracy": 1.0}
+{"id": "sakura_language_245_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_245_multi", "true_answer": "(b) Paris", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Paris"], "accuracy": 1.0}
+{"id": "sakura_language_246_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_246_multi", "true_answer": "(d) aventure", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Excursions"], "accuracy": 0.0}
+{"id": "sakura_language_247_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 0.0}
+{"id": "sakura_language_247_multi", "true_answer": "(d) fr", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) en"], "accuracy": 0.0}
+{"id": "sakura_language_248_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_248_multi", "true_answer": "(b) Swann's Way", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Thousand Cranes"], "accuracy": 0.0}
+{"id": "sakura_language_249_single", "true_answer": "(b) French", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 1.0}
+{"id": "sakura_language_249_multi", "true_answer": "(b) aventure", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) aventure"], "accuracy": 1.0}
+{"id": "sakura_language_250_single", "true_answer": "(c) French", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) French"], "accuracy": 1.0}
+{"id": "sakura_language_250_multi", "true_answer": "(c) Quiche Lorraine", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Peking Duck"], "accuracy": 0.0}
+{"id": "sakura_language_251_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_251_multi", "true_answer": "(a) Ratatouille", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Tiramisu"], "accuracy": 0.0}
+{"id": "sakura_language_252_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_252_multi", "true_answer": "(d) Haiti", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Haiti"], "accuracy": 1.0}
+{"id": "sakura_language_253_single", "true_answer": "(d) French", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) French"], "accuracy": 1.0}
+{"id": "sakura_language_253_multi", "true_answer": "(d) Napoleon Bonaparte", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Hermann Hesse"], "accuracy": 0.0}
+{"id": "sakura_language_254_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_254_multi", "true_answer": "(a) Abidjan", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Shanghai"], "accuracy": 0.0}
+{"id": "sakura_language_255_single", "true_answer": "(a) French", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) French"], "accuracy": 1.0}
+{"id": "sakura_language_255_multi", "true_answer": "(a) DELF", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) DELF"], "accuracy": 1.0}
+{"id": "sakura_language_256_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_256_multi", "true_answer": "(b) Indo-European", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_257_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_257_multi", "true_answer": "(a) Vatican City", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Vatican City"], "accuracy": 1.0}
+{"id": "sakura_language_258_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_258_multi", "true_answer": "(b) CELI", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) CELI"], "accuracy": 1.0}
+{"id": "sakura_language_259_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_259_multi", "true_answer": "(b) it", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) it"], "accuracy": 1.0}
+{"id": "sakura_language_260_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_260_multi", "true_answer": "(b) Rome", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Rome"], "accuracy": 1.0}
+{"id": "sakura_language_261_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 0.0}
+{"id": "sakura_language_261_multi", "true_answer": "(b) The Betrothed", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) The Betrothed"], "accuracy": 1.0}
+{"id": "sakura_language_262_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_262_multi", "true_answer": "(d) Florence", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Florence"], "accuracy": 1.0}
+{"id": "sakura_language_263_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_263_multi", "true_answer": "(a) CILS", "true_letter": "A", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) DELE."], "accuracy": 0.0}
+{"id": "sakura_language_264_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_264_multi", "true_answer": "(b) it", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) it"], "accuracy": 1.0}
+{"id": "sakura_language_265_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_265_multi", "true_answer": "(b) Dante Alighieri", "true_letter": "B", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Hokusai"], "accuracy": 0.0}
+{"id": "sakura_language_266_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_266_multi", "true_answer": "(a) Rome", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Rome"], "accuracy": 1.0}
+{"id": "sakura_language_267_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_267_multi", "true_answer": "(c) CELI", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) TOCFL"], "accuracy": 0.0}
+{"id": "sakura_language_268_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_268_multi", "true_answer": "(b) Tiramisu", "true_letter": "B", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Sushi."], "accuracy": 0.0}
+{"id": "sakura_language_269_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_269_multi", "true_answer": "(c) The Divine Comedy", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) The Divine Comedy"], "accuracy": 1.0}
+{"id": "sakura_language_270_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_270_multi", "true_answer": "(c) Italy", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italy"], "accuracy": 1.0}
+{"id": "sakura_language_271_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_271_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_272_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_272_multi", "true_answer": "(a) San Marino", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Ecuador"], "accuracy": 0.0}
+{"id": "sakura_language_273_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_273_multi", "true_answer": "(c) The Betrothed", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) The Betrothed"], "accuracy": 1.0}
+{"id": "sakura_language_274_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_274_multi", "true_answer": "(c) Risotto", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Takoyaki"], "accuracy": 0.0}
+{"id": "sakura_language_275_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_275_multi", "true_answer": "(d) Giuseppe Verdi", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Giuseppe Verdi"], "accuracy": 1.0}
+{"id": "sakura_language_276_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_276_multi", "true_answer": "(b) San Marino", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) San Marino"], "accuracy": 1.0}
+{"id": "sakura_language_277_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_277_multi", "true_answer": "(a) it", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) it"], "accuracy": 1.0}
+{"id": "sakura_language_278_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_278_multi", "true_answer": "(d) gentilezza", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) gentilezza"], "accuracy": 1.0}
+{"id": "sakura_language_279_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_279_multi", "true_answer": "(a) it", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) it"], "accuracy": 1.0}
+{"id": "sakura_language_280_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_280_multi", "true_answer": "(d) saggezza", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) sabidur\u00eda"], "accuracy": 0.0}
+{"id": "sakura_language_281_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 0.0}
+{"id": "sakura_language_281_multi", "true_answer": "(c) Indo-European", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_282_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_282_multi", "true_answer": "(a) Pizza Margherita", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Bulgogi"], "accuracy": 0.0}
+{"id": "sakura_language_283_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 0.0}
+{"id": "sakura_language_283_multi", "true_answer": "(c) it", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) zh"], "accuracy": 0.0}
+{"id": "sakura_language_284_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_284_multi", "true_answer": "(a) Decameron", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Faust"], "accuracy": 0.0}
+{"id": "sakura_language_285_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_285_multi", "true_answer": "(b) CELI", "true_letter": "B", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) TestDaF."], "accuracy": 0.0}
+{"id": "sakura_language_286_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_286_multi", "true_answer": "(b) Indo-European", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_287_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_287_multi", "true_answer": "(d) riconoscenza", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) riconoscenza"], "accuracy": 1.0}
+{"id": "sakura_language_288_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_288_multi", "true_answer": "(b) saggezza", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) saggezza"], "accuracy": 1.0}
+{"id": "sakura_language_289_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_289_multi", "true_answer": "(d) Venice", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Barcelona"], "accuracy": 0.0}
+{"id": "sakura_language_290_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_290_multi", "true_answer": "(c) Indo-European", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_291_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_291_multi", "true_answer": "(b) it", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) it"], "accuracy": 1.0}
+{"id": "sakura_language_292_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_292_multi", "true_answer": "(d) Naples", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Vienna"], "accuracy": 0.0}
+{"id": "sakura_language_293_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_293_multi", "true_answer": "(c) Leonardo da Vinci", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Leonardo da Vinci"], "accuracy": 1.0}
+{"id": "sakura_language_294_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_294_multi", "true_answer": "(a) Italy", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italy"], "accuracy": 1.0}
+{"id": "sakura_language_295_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_295_multi", "true_answer": "(d) prosperit\u00e0", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) prosperit\u00e0"], "accuracy": 1.0}
+{"id": "sakura_language_296_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_296_multi", "true_answer": "(b) Gelato", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Gelato"], "accuracy": 1.0}
+{"id": "sakura_language_297_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_297_multi", "true_answer": "(c) Vatican City", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Austria"], "accuracy": 0.0}
+{"id": "sakura_language_298_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_298_multi", "true_answer": "(b) The Betrothed", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) The Betrothed"], "accuracy": 1.0}
+{"id": "sakura_language_299_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_299_multi", "true_answer": "(c) Pizza Margherita", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Pizza Margherita"], "accuracy": 1.0}
+{"id": "sakura_language_300_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 0.0}
+{"id": "sakura_language_300_multi", "true_answer": "(d) Lasagna", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Paella"], "accuracy": 0.0}
+{"id": "sakura_language_301_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_301_multi", "true_answer": "(a) If This Is a Man", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) If This Is a Man"], "accuracy": 1.0}
+{"id": "sakura_language_302_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_302_multi", "true_answer": "(a) it", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) it"], "accuracy": 1.0}
+{"id": "sakura_language_303_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_303_multi", "true_answer": "(a) Michelangelo Buonarroti", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Kim Dae-jung"], "accuracy": 0.0}
+{"id": "sakura_language_304_single", "true_answer": "(c) Italian", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_304_multi", "true_answer": "(c) Gelato", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Tacos"], "accuracy": 0.0}
+{"id": "sakura_language_305_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_305_multi", "true_answer": "(d) The Leopard", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Water Margin"], "accuracy": 0.0}
+{"id": "sakura_language_306_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_306_multi", "true_answer": "(b) Italy", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italy"], "accuracy": 1.0}
+{"id": "sakura_language_307_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_307_multi", "true_answer": "(b) CILS", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) CILS"], "accuracy": 1.0}
+{"id": "sakura_language_308_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_308_multi", "true_answer": "(a) Giuseppe Verdi", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Giuseppe Verdi"], "accuracy": 1.0}
+{"id": "sakura_language_309_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_309_multi", "true_answer": "(a) CELI", "true_letter": "A", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) TestDaF"], "accuracy": 0.0}
+{"id": "sakura_language_310_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_310_multi", "true_answer": "(b) riconoscenza", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) riconoscenza"], "accuracy": 1.0}
+{"id": "sakura_language_311_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_311_multi", "true_answer": "(d) Indo-European", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_312_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_312_multi", "true_answer": "(a) Indo-European", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Indo-European"], "accuracy": 1.0}
+{"id": "sakura_language_313_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_313_multi", "true_answer": "(a) Giuseppe Verdi", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Giuseppe Verdi"], "accuracy": 1.0}
+{"id": "sakura_language_314_single", "true_answer": "(d) Italian", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_314_multi", "true_answer": "(d) Naples", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Paris"], "accuracy": 0.0}
+{"id": "sakura_language_315_single", "true_answer": "(b) Italian", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 1.0}
+{"id": "sakura_language_315_multi", "true_answer": "(b) CELI", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) CELI"], "accuracy": 1.0}
+{"id": "sakura_language_316_single", "true_answer": "(a) Italian", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 0.0}
+{"id": "sakura_language_316_multi", "true_answer": "(a) prosperit\u00e0", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) prosperit\u00e0"], "accuracy": 1.0}
+{"id": "sakura_language_317_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_317_multi", "true_answer": "(a) Japan", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japan"], "accuracy": 1.0}
+{"id": "sakura_language_318_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_318_multi", "true_answer": "(d) Kokoro", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Kokoro."], "accuracy": 1.0}
+{"id": "sakura_language_319_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_319_multi", "true_answer": "(b) \u5192\u967a", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) ennuis"], "accuracy": 0.0}
+{"id": "sakura_language_320_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_320_multi", "true_answer": "(b) Japonic", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japonic"], "accuracy": 1.0}
+{"id": "sakura_language_321_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_321_multi", "true_answer": "(c) ja", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) ja"], "accuracy": 1.0}
+{"id": "sakura_language_322_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_322_multi", "true_answer": "(d) Hiroshima", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Vaduz"], "accuracy": 0.0}
+{"id": "sakura_language_323_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_323_multi", "true_answer": "(d) Toyotomi Hideyoshi", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Sigmund Freud"], "accuracy": 0.0}
+{"id": "sakura_language_324_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) English"], "accuracy": 0.0}
+{"id": "sakura_language_324_multi", "true_answer": "(d) Takoyaki", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Takoyaki"], "accuracy": 1.0}
+{"id": "sakura_language_325_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_325_multi", "true_answer": "(a) EJU", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) BRT"], "accuracy": 0.0}
+{"id": "sakura_language_326_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_326_multi", "true_answer": "(a) Oda Nobunaga", "true_letter": "A", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) King Sejong"], "accuracy": 0.0}
+{"id": "sakura_language_327_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_327_multi", "true_answer": "(b) Emperor Meiji", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Eva Per\u00f3n"], "accuracy": 0.0}
+{"id": "sakura_language_328_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_328_multi", "true_answer": "(c) Ramen", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Gazpacho"], "accuracy": 0.0}
+{"id": "sakura_language_329_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_329_multi", "true_answer": "(d) Silent Cry", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Effi Briest"], "accuracy": 0.0}
+{"id": "sakura_language_330_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_330_multi", "true_answer": "(c) Japonic", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japonic"], "accuracy": 1.0}
+{"id": "sakura_language_331_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_331_multi", "true_answer": "(a) Sushi", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Sushi"], "accuracy": 1.0}
+{"id": "sakura_language_332_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_332_multi", "true_answer": "(d) Japonic", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japonic"], "accuracy": 1.0}
+{"id": "sakura_language_333_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_333_multi", "true_answer": "(a) The Wind-Up Bird Chronicle", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Faust"], "accuracy": 0.0}
+{"id": "sakura_language_334_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_334_multi", "true_answer": "(c) Tempura", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Tteokbokki"], "accuracy": 0.0}
+{"id": "sakura_language_335_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_335_multi", "true_answer": "(b) \u512a\u3057\u3055", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) \u512a\u3057\u3055"], "accuracy": 1.0}
+{"id": "sakura_language_336_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_336_multi", "true_answer": "(c) Hiroshima", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Hiroshima"], "accuracy": 1.0}
+{"id": "sakura_language_337_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_337_multi", "true_answer": "(c) ja", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) ja"], "accuracy": 1.0}
+{"id": "sakura_language_338_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_338_multi", "true_answer": "(c) Tokyo", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Tokyo"], "accuracy": 1.0}
+{"id": "sakura_language_339_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_339_multi", "true_answer": "(b) The Makioka Sisters", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) The Makioka Sisters"], "accuracy": 1.0}
+{"id": "sakura_language_340_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_340_multi", "true_answer": "(c) Japan", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japan"], "accuracy": 1.0}
+{"id": "sakura_language_341_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_341_multi", "true_answer": "(a) J.TEST", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) J.TEST"], "accuracy": 1.0}
+{"id": "sakura_language_342_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_342_multi", "true_answer": "(c) Japonic", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japonic"], "accuracy": 1.0}
+{"id": "sakura_language_343_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_343_multi", "true_answer": "(a) JLPT", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) CELI"], "accuracy": 0.0}
+{"id": "sakura_language_344_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_344_multi", "true_answer": "(d) J.TEST", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) SIELE"], "accuracy": 0.0}
+{"id": "sakura_language_345_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_345_multi", "true_answer": "(d) Japan", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japan"], "accuracy": 1.0}
+{"id": "sakura_language_346_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_346_multi", "true_answer": "(a) Oda Nobunaga", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Oda Nobunaga"], "accuracy": 1.0}
+{"id": "sakura_language_347_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_347_multi", "true_answer": "(c) Kyoto", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Naples"], "accuracy": 0.0}
+{"id": "sakura_language_348_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_348_multi", "true_answer": "(b) \u7e41\u6804", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) \u7e41\u6804"], "accuracy": 1.0}
+{"id": "sakura_language_349_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_349_multi", "true_answer": "(a) Kyoto", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Liverpool"], "accuracy": 0.0}
+{"id": "sakura_language_350_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_350_multi", "true_answer": "(b) Emperor Meiji", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Emperor Meiji"], "accuracy": 1.0}
+{"id": "sakura_language_351_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_351_multi", "true_answer": "(b) Japan", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japan"], "accuracy": 1.0}
+{"id": "sakura_language_352_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Italian"], "accuracy": 0.0}
+{"id": "sakura_language_352_multi", "true_answer": "(d) Snow Country", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Leopard"], "accuracy": 0.0}
+{"id": "sakura_language_353_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Spanish"], "accuracy": 0.0}
+{"id": "sakura_language_353_multi", "true_answer": "(c) Ramen", "true_letter": "C", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Dumplings"], "accuracy": 0.0}
+{"id": "sakura_language_354_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_354_multi", "true_answer": "(c) Tempura", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Tempura"], "accuracy": 1.0}
+{"id": "sakura_language_355_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) English"], "accuracy": 0.0}
+{"id": "sakura_language_355_multi", "true_answer": "(a) Snow Country", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Snow Country"], "accuracy": 1.0}
+{"id": "sakura_language_356_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_356_multi", "true_answer": "(a) Rashomon", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Rashomon"], "accuracy": 1.0}
+{"id": "sakura_language_357_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_357_multi", "true_answer": "(c) Japonic", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japonic"], "accuracy": 1.0}
+{"id": "sakura_language_358_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_358_multi", "true_answer": "(c) Kyoto", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Florence"], "accuracy": 0.0}
+{"id": "sakura_language_359_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_359_multi", "true_answer": "(c) ja", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) it"], "accuracy": 0.0}
+{"id": "sakura_language_360_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) French"], "accuracy": 0.0}
+{"id": "sakura_language_360_multi", "true_answer": "(d) Japan", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Senegal"], "accuracy": 0.0}
+{"id": "sakura_language_361_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_361_multi", "true_answer": "(a) EJU", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) CILS"], "accuracy": 0.0}
+{"id": "sakura_language_362_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_362_multi", "true_answer": "(c) Hokusai", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Hokusai"], "accuracy": 1.0}
+{"id": "sakura_language_363_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_363_multi", "true_answer": "(a) BJT", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) BRT"], "accuracy": 0.0}
+{"id": "sakura_language_364_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_364_multi", "true_answer": "(d) \u3086\u3046\u304d", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) timidez"], "accuracy": 0.0}
+{"id": "sakura_language_365_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 0.0}
+{"id": "sakura_language_365_multi", "true_answer": "(b) ja", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) ja"], "accuracy": 1.0}
+{"id": "sakura_language_366_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_366_multi", "true_answer": "(a) Japan", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japan"], "accuracy": 1.0}
+{"id": "sakura_language_367_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 0.0}
+{"id": "sakura_language_367_multi", "true_answer": "(b) Oda Nobunaga", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Oda Nobunaga"], "accuracy": 1.0}
+{"id": "sakura_language_368_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_368_multi", "true_answer": "(d) Takoyaki", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Bulgogi"], "accuracy": 0.0}
+{"id": "sakura_language_369_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_369_multi", "true_answer": "(c) Osaka", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Busan"], "accuracy": 0.0}
+{"id": "sakura_language_370_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_370_multi", "true_answer": "(d) \u611f\u8b1d\u306e\u6c17\u6301\u3061", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) \u611f\u8b1d\u306e\u6c17\u6301\u3061."], "accuracy": 1.0}
+{"id": "sakura_language_371_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_371_multi", "true_answer": "(b) ja", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) ja"], "accuracy": 1.0}
+{"id": "sakura_language_372_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_372_multi", "true_answer": "(b) Japonic", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japonic"], "accuracy": 1.0}
+{"id": "sakura_language_373_single", "true_answer": "(a) Japanese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_373_multi", "true_answer": "(a) EJU", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) EJU"], "accuracy": 1.0}
+{"id": "sakura_language_374_single", "true_answer": "(b) Japanese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_374_multi", "true_answer": "(b) Japonic", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Japonic"], "accuracy": 1.0}
+{"id": "sakura_language_375_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_375_multi", "true_answer": "(d) \u30a6\u30a3\u30ba\u30c0\u30e0", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) saggezza"], "accuracy": 0.0}
+{"id": "sakura_language_376_single", "true_answer": "(d) Japanese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_376_multi", "true_answer": "(d) \u7e41\u6804", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Armut"], "accuracy": 0.0}
+{"id": "sakura_language_377_single", "true_answer": "(c) Japanese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Japanese"], "accuracy": 1.0}
+{"id": "sakura_language_377_multi", "true_answer": "(c) ja", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) es"], "accuracy": 0.0}
+{"id": "sakura_language_378_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_378_multi", "true_answer": "(d) \uc9c0\ud61c", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) \uc9c0\ud61c."], "accuracy": 1.0}
+{"id": "sakura_language_379_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_379_multi", "true_answer": "(a) TOPIK", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) TOPIK"], "accuracy": 1.0}
+{"id": "sakura_language_380_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_380_multi", "true_answer": "(c) Busan", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Colmar"], "accuracy": 0.0}
+{"id": "sakura_language_381_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_381_multi", "true_answer": "(b) Koreanic", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Koreanic"], "accuracy": 1.0}
+{"id": "sakura_language_382_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_382_multi", "true_answer": "(a) Our Twisted Hero", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chronicle of a Death Foretold"], "accuracy": 0.0}
+{"id": "sakura_language_383_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_383_multi", "true_answer": "(a) Please Look After Mom", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Please Look After Mom"], "accuracy": 1.0}
+{"id": "sakura_language_384_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_384_multi", "true_answer": "(c) Pyongyang", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Tokyo"], "accuracy": 0.0}
+{"id": "sakura_language_385_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_385_multi", "true_answer": "(a) ko", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) ko"], "accuracy": 1.0}
+{"id": "sakura_language_386_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_386_multi", "true_answer": "(d) Bibimbap", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Bibimbap."], "accuracy": 1.0}
+{"id": "sakura_language_387_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_387_multi", "true_answer": "(a) The Tale of Chunhyang", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Tale of Chunhyang"], "accuracy": 1.0}
+{"id": "sakura_language_388_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_388_multi", "true_answer": "(b) Bibimbap", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Bibimbap"], "accuracy": 1.0}
+{"id": "sakura_language_389_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_389_multi", "true_answer": "(a) ko", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) ko"], "accuracy": 1.0}
+{"id": "sakura_language_390_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_390_multi", "true_answer": "(b) Koreanic", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Koreanic"], "accuracy": 1.0}
+{"id": "sakura_language_391_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_391_multi", "true_answer": "(b) \uc9c0\ud61c", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) \uc9c0\ud61c"], "accuracy": 1.0}
+{"id": "sakura_language_392_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_392_multi", "true_answer": "(b) Pyongyang", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Pyongyang"], "accuracy": 1.0}
+{"id": "sakura_language_393_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_393_multi", "true_answer": "(d) Koreanic", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 0.0}
+{"id": "sakura_language_394_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_394_multi", "true_answer": "(a) Samgyeopsal", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Paella"], "accuracy": 0.0}
+{"id": "sakura_language_395_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_395_multi", "true_answer": "(c) North Korea", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) North Korea"], "accuracy": 1.0}
+{"id": "sakura_language_396_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_396_multi", "true_answer": "(a) North Korea", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) North Korea"], "accuracy": 1.0}
+{"id": "sakura_language_397_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_397_multi", "true_answer": "(a) \uce5c\uc808", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) \uce5c\uc808"], "accuracy": 1.0}
+{"id": "sakura_language_398_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_398_multi", "true_answer": "(c) Koreanic", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 0.0}
+{"id": "sakura_language_399_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_399_multi", "true_answer": "(d) KLAT", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) PTE Academic"], "accuracy": 0.0}
+{"id": "sakura_language_400_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_400_multi", "true_answer": "(b) KLAT", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) ESLAT"], "accuracy": 1.0}
+{"id": "sakura_language_401_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_401_multi", "true_answer": "(c) Yi Sun-sin", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Yi Sun-sin"], "accuracy": 1.0}
+{"id": "sakura_language_402_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_402_multi", "true_answer": "(b) South Korea", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) South Korea"], "accuracy": 1.0}
+{"id": "sakura_language_403_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_403_multi", "true_answer": "(b) ko", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) ko"], "accuracy": 1.0}
+{"id": "sakura_language_404_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_404_multi", "true_answer": "(d) KLAT", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) HSK"], "accuracy": 0.0}
+{"id": "sakura_language_405_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_405_multi", "true_answer": "(a) \uac78\uc791", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) \uac78\uc791"], "accuracy": 1.0}
+{"id": "sakura_language_406_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_406_multi", "true_answer": "(a) Kim Ji-young, Born 1982", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Kim Ji-young, Born 1982"], "accuracy": 1.0}
+{"id": "sakura_language_407_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_407_multi", "true_answer": "(b) \uac78\uc791", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) \uac78\uc791"], "accuracy": 1.0}
+{"id": "sakura_language_408_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_408_multi", "true_answer": "(d) Kim Ji-young, Born 1982", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Plague"], "accuracy": 0.0}
+{"id": "sakura_language_409_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_409_multi", "true_answer": "(b) North Korea", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) North Korea"], "accuracy": 1.0}
+{"id": "sakura_language_410_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_410_multi", "true_answer": "(c) Samgyeopsal", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Samgyeopsal"], "accuracy": 1.0}
+{"id": "sakura_language_411_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_411_multi", "true_answer": "(d) Koreanic", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Koreanic"], "accuracy": 1.0}
+{"id": "sakura_language_412_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_412_multi", "true_answer": "(a) Yi Sun-sin", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Miguel de Cervantes"], "accuracy": 0.0}
+{"id": "sakura_language_413_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_413_multi", "true_answer": "(c) Bibimbap", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Bibimbap"], "accuracy": 1.0}
+{"id": "sakura_language_414_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_414_multi", "true_answer": "(d) Koreanic", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Sino-Tibetan"], "accuracy": 0.0}
+{"id": "sakura_language_415_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_415_multi", "true_answer": "(d) South Korea", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) San Marino"], "accuracy": 0.0}
+{"id": "sakura_language_416_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_416_multi", "true_answer": "(d) ko", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) ko"], "accuracy": 1.0}
+{"id": "sakura_language_417_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_417_multi", "true_answer": "(a) Incheon", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Manchester"], "accuracy": 0.0}
+{"id": "sakura_language_418_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_418_multi", "true_answer": "(d) Kim Gu", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Miguel de Cervantes"], "accuracy": 0.0}
+{"id": "sakura_language_419_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_419_multi", "true_answer": "(b) Kim Dae-jung", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Kim Dae-jung"], "accuracy": 1.0}
+{"id": "sakura_language_420_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_420_multi", "true_answer": "(c) TOPIK", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) BILT"], "accuracy": 0.0}
+{"id": "sakura_language_421_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_421_multi", "true_answer": "(c) Koreanic", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Koreanic"], "accuracy": 1.0}
+{"id": "sakura_language_422_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_422_multi", "true_answer": "(b) Yi Sun-sin", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Yi Sun-sin"], "accuracy": 1.0}
+{"id": "sakura_language_423_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_423_multi", "true_answer": "(c) KLAT", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Goethe-Zertifikat"], "accuracy": 0.0}
+{"id": "sakura_language_424_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_424_multi", "true_answer": "(b) ko", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) ko"], "accuracy": 1.0}
+{"id": "sakura_language_425_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Italian"], "accuracy": 0.0}
+{"id": "sakura_language_425_multi", "true_answer": "(d) Bibimbap", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Lasagna"], "accuracy": 0.0}
+{"id": "sakura_language_426_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_426_multi", "true_answer": "(b) Seoul", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Seoul"], "accuracy": 1.0}
+{"id": "sakura_language_427_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_427_multi", "true_answer": "(b) ko", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) ko"], "accuracy": 1.0}
+{"id": "sakura_language_428_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_428_multi", "true_answer": "(a) Seoul", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Bogot\u00e1"], "accuracy": 0.0}
+{"id": "sakura_language_429_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_429_multi", "true_answer": "(b) Our Twisted Hero", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Makioka Sisters"], "accuracy": 0.0}
+{"id": "sakura_language_430_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_430_multi", "true_answer": "(a) BKT", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) IELTS"], "accuracy": 0.0}
+{"id": "sakura_language_431_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_431_multi", "true_answer": "(c) South Korea", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) South Korea"], "accuracy": 1.0}
+{"id": "sakura_language_432_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_432_multi", "true_answer": "(c) The Vegetarian", "true_letter": "C", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Thousand Cranes."], "accuracy": 0.0}
+{"id": "sakura_language_433_single", "true_answer": "(a) Korean", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_433_multi", "true_answer": "(a) ko", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) ko"], "accuracy": 1.0}
+{"id": "sakura_language_434_single", "true_answer": "(b) Korean", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_434_multi", "true_answer": "(b) North Korea", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) North Korea"], "accuracy": 1.0}
+{"id": "sakura_language_435_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_435_multi", "true_answer": "(d) Busan", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Florence"], "accuracy": 0.0}
+{"id": "sakura_language_436_single", "true_answer": "(d) Korean", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_436_multi", "true_answer": "(d) Yi Sun-sin", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Yi Sun-sin."], "accuracy": 1.0}
+{"id": "sakura_language_437_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_437_multi", "true_answer": "(c) Kim Dae-jung", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Kim Dae-jung"], "accuracy": 1.0}
+{"id": "sakura_language_438_single", "true_answer": "(c) Korean", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Korean"], "accuracy": 1.0}
+{"id": "sakura_language_438_multi", "true_answer": "(c) \uc6a9\uae30", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) \uc6a9\uae30"], "accuracy": 1.0}
+{"id": "sakura_language_439_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_439_multi", "true_answer": "(c) \u667a\u6167", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) saggezza"], "accuracy": 0.0}
+{"id": "sakura_language_440_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_440_multi", "true_answer": "(b) China", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) China"], "accuracy": 1.0}
+{"id": "sakura_language_441_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_441_multi", "true_answer": "(b) zh", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) zh"], "accuracy": 1.0}
+{"id": "sakura_language_442_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_442_multi", "true_answer": "(b) Strange Stories from a Chinese Studio", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Divine Comedy"], "accuracy": 0.0}
+{"id": "sakura_language_443_single", "true_answer": "(d) Chinese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_443_multi", "true_answer": "(d) Mooncakes", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Sp\u00e4tzle"], "accuracy": 0.0}
+{"id": "sakura_language_444_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_444_multi", "true_answer": "(a) Sino-Tibetan", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Sino-Tibetan"], "accuracy": 1.0}
+{"id": "sakura_language_445_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_445_multi", "true_answer": "(c) zh", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) zh"], "accuracy": 1.0}
+{"id": "sakura_language_446_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_446_multi", "true_answer": "(a) zh", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) zh"], "accuracy": 1.0}
+{"id": "sakura_language_447_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_447_multi", "true_answer": "(b) Dumplings", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Dumplings"], "accuracy": 1.0}
+{"id": "sakura_language_448_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_448_multi", "true_answer": "(a) China", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) China"], "accuracy": 1.0}
+{"id": "sakura_language_449_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_449_multi", "true_answer": "(a) Beijing", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Port-au-Prince"], "accuracy": 0.0}
+{"id": "sakura_language_450_single", "true_answer": "(d) Chinese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_450_multi", "true_answer": "(d) Water Margin", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Death of Julieta Cruz"], "accuracy": 0.0}
+{"id": "sakura_language_451_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_451_multi", "true_answer": "(b) TOCFL", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) TOCFL"], "accuracy": 1.0}
+{"id": "sakura_language_452_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_452_multi", "true_answer": "(a) Dumplings", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Samgyeopsal"], "accuracy": 0.0}
+{"id": "sakura_language_453_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_453_multi", "true_answer": "(a) Dumplings", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Kimchi"], "accuracy": 0.0}
+{"id": "sakura_language_454_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_454_multi", "true_answer": "(c) The Scholars", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) The Tale of Chunhyang"], "accuracy": 0.0}
+{"id": "sakura_language_455_single", "true_answer": "(d) Chinese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_455_multi", "true_answer": "(d) Taipei", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Taipei"], "accuracy": 1.0}
+{"id": "sakura_language_456_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_456_multi", "true_answer": "(c) Taipei", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Hiroshima"], "accuracy": 0.0}
+{"id": "sakura_language_457_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_457_multi", "true_answer": "(a) Taipei", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Innsbruck"], "accuracy": 0.0}
+{"id": "sakura_language_458_single", "true_answer": "(d) Chinese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_458_multi", "true_answer": "(d) China", "true_letter": "D", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) India"], "accuracy": 0.0}
+{"id": "sakura_language_459_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_459_multi", "true_answer": "(a) \u611f\u6fc0", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) \u611f\u6fc0"], "accuracy": 1.0}
+{"id": "sakura_language_460_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_460_multi", "true_answer": "(c) Sino-Tibetan", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 0.0}
+{"id": "sakura_language_461_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_461_multi", "true_answer": "(a) Laozi", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Laozi"], "accuracy": 1.0}
+{"id": "sakura_language_462_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_462_multi", "true_answer": "(c) Dream of the Red Chamber", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Thousand Cranes"], "accuracy": 0.0}
+{"id": "sakura_language_463_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_463_multi", "true_answer": "(a) Wang Xizhi", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Hulusai"], "accuracy": 0.0}
+{"id": "sakura_language_464_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Japanese"], "accuracy": 0.0}
+{"id": "sakura_language_464_multi", "true_answer": "(c) Shanghai", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) London"], "accuracy": 0.0}
+{"id": "sakura_language_465_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_465_multi", "true_answer": "(b) Strange Stories from a Chinese Studio", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) The Great Gatsby"], "accuracy": 0.0}
+{"id": "sakura_language_466_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_466_multi", "true_answer": "(a) \u5584\u826f", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) \u5584\u826f"], "accuracy": 1.0}
+{"id": "sakura_language_467_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_467_multi", "true_answer": "(b) Mooncakes", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Cornish Pasty"], "accuracy": 0.0}
+{"id": "sakura_language_468_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_468_multi", "true_answer": "(a) Du Fu", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Du Fu"], "accuracy": 1.0}
+{"id": "sakura_language_469_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_469_multi", "true_answer": "(a) Sino-Tibetan", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Sino-Tibetan"], "accuracy": 1.0}
+{"id": "sakura_language_470_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_470_multi", "true_answer": "(a) China", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) South Africa"], "accuracy": 0.0}
+{"id": "sakura_language_471_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_471_multi", "true_answer": "(c) TOCFL", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) DSH"], "accuracy": 0.0}
+{"id": "sakura_language_472_single", "true_answer": "(d) Chinese", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) German"], "accuracy": 0.0}
+{"id": "sakura_language_472_multi", "true_answer": "(d) HSK", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) TestDaF"], "accuracy": 0.0}
+{"id": "sakura_language_473_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_473_multi", "true_answer": "(b) \u611f\u6fc0", "true_letter": "B", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) \uac10\uc0ac."], "accuracy": 0.0}
+{"id": "sakura_language_474_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_474_multi", "true_answer": "(c) Sino-Tibetan", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Indo-European"], "accuracy": 0.0}
+{"id": "sakura_language_475_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_475_multi", "true_answer": "(c) zh", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) zh"], "accuracy": 1.0}
+{"id": "sakura_language_476_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_476_multi", "true_answer": "(b) Sino-Tibetan", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Sino-Tibetan"], "accuracy": 1.0}
+{"id": "sakura_language_477_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_477_multi", "true_answer": "(b) China", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) China"], "accuracy": 1.0}
+{"id": "sakura_language_478_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_478_multi", "true_answer": "(b) \u611f\u6fc0", "true_letter": "B", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) \u611f\u8b1d\u7684\u6c17\u6301\u3061"], "accuracy": 0.0}
+{"id": "sakura_language_479_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_479_multi", "true_answer": "(b) zh", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) zh"], "accuracy": 1.0}
+{"id": "sakura_language_480_single", "true_answer": "(d) Chinese", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) English"], "accuracy": 0.0}
+{"id": "sakura_language_480_multi", "true_answer": "(d) The Rice-Sprout Song", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) The Rice-Sprout Song."], "accuracy": 1.0}
+{"id": "sakura_language_481_single", "true_answer": "(d) Chinese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_481_multi", "true_answer": "(d) Shanghai", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Rome"], "accuracy": 0.0}
+{"id": "sakura_language_482_single", "true_answer": "(d) Chinese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_482_multi", "true_answer": "(d) Beijing", "true_letter": "D", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Paris"], "accuracy": 0.0}
+{"id": "sakura_language_483_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_483_multi", "true_answer": "(c) \u5192\u9669", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) aventure"], "accuracy": 0.0}
+{"id": "sakura_language_484_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_484_multi", "true_answer": "(b) China", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) China"], "accuracy": 1.0}
+{"id": "sakura_language_485_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_485_multi", "true_answer": "(b) zh", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) zh"], "accuracy": 1.0}
+{"id": "sakura_language_486_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_486_multi", "true_answer": "(b) Cai Lun", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Cai Lun"], "accuracy": 1.0}
+{"id": "sakura_language_487_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_487_multi", "true_answer": "(c) Mapo Tofu", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Schnitzel"], "accuracy": 0.0}
+{"id": "sakura_language_488_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_488_multi", "true_answer": "(a) HSK", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) JLPT"], "accuracy": 0.0}
+{"id": "sakura_language_489_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_489_multi", "true_answer": "(b) HSK", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) HSK"], "accuracy": 1.0}
+{"id": "sakura_language_490_single", "true_answer": "(d) Chinese", "true_letter": "D", "predicted_letters": ["D"], "reasoning": [""], "raw_model_outputs": ["(D) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_490_multi", "true_answer": "(d) \u5584\u826f", "true_letter": "D", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) \u81ea\u5df1"], "accuracy": 0.0}
+{"id": "sakura_language_491_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_491_multi", "true_answer": "(b) China", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) China"], "accuracy": 1.0}
+{"id": "sakura_language_492_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_492_multi", "true_answer": "(c) HSK", "true_letter": "C", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) JLPT"], "accuracy": 0.0}
+{"id": "sakura_language_493_single", "true_answer": "(b) Chinese", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_493_multi", "true_answer": "(b) Du Fu", "true_letter": "B", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Du Fu"], "accuracy": 1.0}
+{"id": "sakura_language_494_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_494_multi", "true_answer": "(c) Sino-Tibetan", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Sino-Tibetan"], "accuracy": 1.0}
+{"id": "sakura_language_495_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_495_multi", "true_answer": "(a) Laozi", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Laozi"], "accuracy": 1.0}
+{"id": "sakura_language_496_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_496_multi", "true_answer": "(a) Peking Duck", "true_letter": "A", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) Shepherd's Pie"], "accuracy": 0.0}
+{"id": "sakura_language_497_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_497_multi", "true_answer": "(c) TOCFL", "true_letter": "C", "predicted_letters": ["B"], "reasoning": [""], "raw_model_outputs": ["(B) TestDaF"], "accuracy": 0.0}
+{"id": "sakura_language_498_single", "true_answer": "(a) Chinese", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_498_multi", "true_answer": "(a) zh", "true_letter": "A", "predicted_letters": ["A"], "reasoning": [""], "raw_model_outputs": ["(A) zh"], "accuracy": 1.0}
+{"id": "sakura_language_499_single", "true_answer": "(c) Chinese", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Chinese"], "accuracy": 1.0}
+{"id": "sakura_language_499_multi", "true_answer": "(c) Confucius", "true_letter": "C", "predicted_letters": ["C"], "reasoning": [""], "raw_model_outputs": ["(C) Confucius"], "accuracy": 1.0}

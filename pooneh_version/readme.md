@@ -65,13 +65,19 @@ Required Arguments:
 Command Example:
 ```bash
 python interface/AF3_wrapper.py \
-  --input processed_input/sakura/{name}/sakura_manifest.jsonl \
-  --output output/sakura/af3/{name}/baseline_{name}.jsonl \
+  --input processed_input/sakura/{name}/{name}_manifest.jsonl \
+  --output result/baselie/af3/{name}/baseline_{name}_REAS.jsonl \
   --data_root data/ \
   --num_runs 1 \
-  --use_reasoning
-
+  --use_reasoning \
+  
   ```
+
+  ###  Step Post-Processing (Recovering Null Labels)
+   To extract labels for any remaining null predictions, these scripts parse the model's text using exact string matching, word stemming, and semantic overlap.
+   - For SAKURA: Run python pooneh_version/repair_and_save_final.py
+   - For MMAR and MMAU: Run python pooneh_version/repair_and_save_final_mm.py
+   Fix path inside the scripts.
 
 ## Step 4 — Run Conditioned Inference (Faithfulness)
 To test if the model actually relies on its own logic, use the conditioned inference scripts. These scripts take the runs_reasonings generated in Step 3, inject them back into the prompt, and force the model to make a final prediction.
@@ -79,9 +85,9 @@ To test if the model actually relies on its own logic, use the conditioned infer
 Command Example:
 ```bash 
   python interface/{model}_conditioned.py \
-  --manifest  processed_input/sakura/{name}/sakura_manifest.jsonl \
-  --results_in  output/sakura/af3/{name}/baseline_{name}.jsonl \
-  --output  output/sakura/af3/{name}/conditioned_{name}.jsonl \
+  --manifest  processed_input/sakura/{name}/{name}_manifest.jsonl \
+  --results_in  result/baselie/af3/{name}/baseline_{name}_REAS_post_process.jsonl \
+  --output   result/baselie/af3/{name}/baseline_{name}/conditioned_{name}.jsonl \
   --data_root data/
   --num_runs 1
   ```
