@@ -121,15 +121,39 @@ if __name__ == "__main__":
 
     print(f"Starting Step 4: Conditioned Inference on {len(prev_results)} items...")
 
-    with open(args.output, 'w') as f_out:
-        for res in tqdm(prev_results):
+# 1. Load Step 3 Reasoning Results
+    with open(args.results_in, 'r', encoding='utf-8') as f:
+        prev_results = [json.loads(line) for line in f if line.strip()]
+
+    # 2. CHECK FOR EXISTING PROGRESS
+    processed_ids = set()
+    if os.path.exists(args.output):
+        with open(args.output, 'r', encoding='utf-8') as f_check:
+            for line in f_check:
+                try:
+                    data = json.loads(line)
+                    processed_ids.add(data['id'])
+                except:
+                    continue
+        print(f"Resuming: {len(processed_ids)} items already conditioned. Skipping...")
+
+    # 3. Filter to only process new items
+    to_process = [res for res in prev_results if res['id'] not in processed_ids]
+
+    # 4. Open in APPEND mode ('a')
+    with open(args.output, 'a', encoding='utf-8') as f_out:
+        for res in tqdm(to_process, desc="Conditioning"):
             item_id = res['id']
             item_info = manifest_map.get(item_id)
             
-            # Extract reasoning (handle list format from your current script)
+            if not item_info:
+                continue
+
+            # Extract reasoning and original prediction from Step 3 results
             provided_reasoning = res.get('reasoning', [""])[0]
             original_pred = res.get('predicted_letters', [None])[0]
             
+            # Skip failures from the previous step
             if not provided_reasoning or "CRASH" in provided_reasoning:
                 continue
 
@@ -145,8 +169,9 @@ if __name__ == "__main__":
                     "is_correct": 1.0 if inf_res["predicted_choice"] == item_info.get("true_letter") else 0.0,
                 }
                 
-                f_out.write(json.dumps(final_record) + '\n')
-                f_out.flush()
+                # Use ensure_ascii=False to keep reasoning text readable
+                f_out.write(json.dumps(final_record, ensure_ascii=False) + '\n')
+                f_out.flush() # Forces write to disk in case of crash
                 
             except Exception as e:
                 print(f"Error on {item_id}: {e}")
