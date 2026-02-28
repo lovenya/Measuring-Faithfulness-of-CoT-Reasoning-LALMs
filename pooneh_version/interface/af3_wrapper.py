@@ -120,28 +120,67 @@ if __name__ == "__main__":
     with open(args.input, 'r') as f:
         dataset = [json.loads(line) for line in f]
 
-    with open(args.output, 'w') as f:
-        for item in tqdm(dataset):
+ # 1. Load the original dataset
+    with open(args.input, 'r', encoding='utf-8') as f:
+        dataset = [json.loads(line) for line in f if line.strip()]
+
+    # 2. CHECK FOR PREVIOUS PROGRESS
+    processed_ids = set()
+    if os.path.exists(args.output):
+        with open(args.output, 'r', encoding='utf-8') as f_check:
+            for line in f_check:
+                try:
+                    data = json.loads(line)
+                    processed_ids.add(data['id'])
+                except:
+                    # Skip half-written or corrupted lines
+                    continue
+        print(f"Resuming: {len(processed_ids)} items already completed. Skipping those...")
+
+    # 3. Filter the dataset
+    to_process = [item for item in dataset if item['id'] not in processed_ids]
+
+    # 4. Open in APPEND mode ('a')
+    # This prevents 'w' from wiping the file on restart
+    with open(args.output, 'a', encoding='utf-8') as f_out:
+        for item in tqdm(to_process, desc="AF3 Inference"):
             runs_predictions = []
             runs_raw = []
             runs_reasoning = []
             scores = []
 
             for _ in range(args.num_runs):
-                result = run_audio_inference(item, args.data_root, args.use_reasoning)
-                pred = result["predicted_choice"]
-                
-                runs_predictions.append(pred)
-                runs_raw.append(result["raw_output"])
-                runs_reasoning.append(result["reasoning"])
-                scores.append(1 if pred == item.get("true_letter") else 0)
+                try:
+                    result = run_audio_inference(item, args.data_root, args.use_reasoning)
+                    pred = result["predicted_choice"]
+                    
+                    runs_predictions.append(pred)
+                    runs_raw.append(result["raw_output"])
+                    runs_reasoning.append(result["reasoning"])
+                    
+                    # Score calculation
+                    true_letter = item.get("true_letter")
+                    if pred and true_letter and pred.upper() == true_letter.upper():
+                        scores.append(1)
+                    else:
+                        scores.append(0)
+                except Exception as e:
+                    print(f"\n[ERROR] ID {item['id']} failed: {e}")
+                    runs_predictions.append(None)
+                    runs_raw.append(f"CRASH: {e}")
+                    runs_reasoning.append("")
+                    scores.append(0)
 
-            f.write(json.dumps({
+            # Write individual result
+            f_out.write(json.dumps({
                 "id": item["id"],
-                "true_answer": item["answer"],
+                "true_answer": item.get("answer"),
                 "true_letter": item.get("true_letter"),
                 "predicted_letters": runs_predictions,
                 "reasoning": runs_reasoning,
                 "raw_model_outputs": runs_raw,
-                "accuracy": np.mean(scores)
-            }) + "\n")
+                "accuracy": np.mean(scores) if scores else 0.0
+            }, ensure_ascii=False) + "\n")
+            
+            # Flush to disk immediately
+            f_out.flush()

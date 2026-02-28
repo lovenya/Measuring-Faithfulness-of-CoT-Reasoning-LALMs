@@ -139,8 +139,25 @@ if __name__ == "__main__":
     
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
     
-    with open(args.output, 'w', encoding='utf-8') as f_out:
-        for res in tqdm(prev_results):
+ # 1. LOAD COMPLETED IDs FROM PREVIOUS RUN
+    processed_ids = set()
+    if os.path.exists(args.output):
+        with open(args.output, 'r', encoding='utf-8') as f_check:
+            for line in f_check:
+                try:
+                    data = json.loads(line)
+                    processed_ids.add(data['id'])
+                except json.JSONDecodeError:
+                    continue # Skip partially written lines
+        print(f"Resuming: Found {len(processed_ids)} already processed items. Skipping...")
+
+    # 2. FILTER TO-PROCESS LIST
+    # Only process items that are NOT in processed_ids
+    to_process = [res for res in prev_results if res['id'] not in processed_ids]
+
+    # 3. OPEN IN APPEND MODE ('a')
+    with open(args.output, 'a', encoding='utf-8') as f_out:
+        for res in tqdm(to_process, desc="Conditioned Inference"):
             item_id = res['id']
             item_info = manifest_map.get(item_id)
             
@@ -152,6 +169,7 @@ if __name__ == "__main__":
             provided_reasoning = res.get('reasoning', [""])[0]
             original_pred = res.get('predicted_letters', [None])[0]
             
+            # Skip if previous step failed
             if not provided_reasoning or "CRASH" in provided_reasoning:
                 continue
 
@@ -168,10 +186,11 @@ if __name__ == "__main__":
                     "conditioned_prediction": new_pred,
                     "raw_conditioned_output": inference_res["raw_output"],
                     "provided_reasoning": provided_reasoning,
-                    "is_correct": 1.0 if new_pred == true_letter else 0.0,
+                    "is_correct": 1.0 if (new_pred and true_letter and new_pred == true_letter) else 0.0,
                     "prediction_changed": (new_pred != original_pred)
                 }
                 
+                # Write and flush immediately
                 f_out.write(json.dumps(final_record, ensure_ascii=False) + '\n')
                 f_out.flush()
                 
