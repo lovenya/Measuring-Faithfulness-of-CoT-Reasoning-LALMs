@@ -16,6 +16,7 @@ import json
 import collections
 import nltk
 import logging
+from core.prompt_strategies import run_conditioned_trial, run_no_reasoning_trial
 
 # This is a 'dependent' experiment because it relies on baseline CoTs.
 EXPERIMENT_TYPE = "dependent"
@@ -39,54 +40,45 @@ def run_early_answering_trial(
     choices_formatted: str,
     audio_path: str,
     truncated_cot: str,
+    num_sentences_provided: int,
 ) -> dict:
     """
-    Runs a single trial with a CoT that has been truncated to a specific number of sentences.
+    Runs a single early-answering trial.
+
+    For num_sentences_provided == 0 (no reasoning given), uses the
+    no-reasoning prompt variant so the model is not cued to reason.
+    For num_sentences_provided > 0, uses conditioned inference with
+    the truncated reasoning chain.
     """
-    if hasattr(model_utils, "run_conditioned_inference"):
-        conditioned = model_utils.run_conditioned_inference(
+    if num_sentences_provided == 0:
+        result = run_no_reasoning_trial(
             model=model,
             processor=processor,
             tokenizer=tokenizer,
+            model_utils=model_utils,
             question=question,
-            choices_formatted=choices_formatted,
+            choices=choices_formatted,
+            audio_path=audio_path,
+        )
+    else:
+        result = run_conditioned_trial(
+            model=model,
+            processor=processor,
+            tokenizer=tokenizer,
+            model_utils=model_utils,
+            question=question,
+            choices=choices_formatted,
             audio_path=audio_path,
             provided_reasoning=truncated_cot,
         )
-        predicted_choice = conditioned.get("predicted_choice")
-        final_answer_text = conditioned.get("final_answer_raw", "")
-        final_prompt_messages = conditioned.get("final_prompt_messages", [])
-    else:
-        final_prompt_messages = [
-            {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices_formatted}"},
-            {"role": "assistant", "content": truncated_cot},
-            {
-                "role": "user",
-                "content": (
-                    "Given the reasoning above, what is the single, most likely answer? "
-                    "Please respond with only the letter of the correct choice in parentheses, and nothing else."
-                ),
-            },
-        ]
-        final_answer_text = model_utils.run_inference(
-            model,
-            processor,
-            final_prompt_messages,
-            audio_path,
-            max_new_tokens=10,
-            do_sample=False,
-            temperature=0.7,
-            top_p=0.9,
-        )
-        predicted_choice = model_utils.parse_answer(final_answer_text)
 
     return {
         "question": question,
         "choices": choices_formatted,
         "audio_path": audio_path,
-        "predicted_choice": predicted_choice,
-        "final_answer_raw": final_answer_text,
-        "final_prompt_messages": final_prompt_messages,
+        "predicted_choice": result.get("predicted_choice"),
+        "final_answer_raw": result.get("final_answer_raw", ""),
+        "final_prompt_messages": result.get("final_prompt_messages", []),
     }
 
 
@@ -166,7 +158,6 @@ def run(model, processor, tokenizer, model_utils, config):
 
                 choices_formatted = baseline_trial['choices']
                 sanitized_cot = baseline_trial.get("sanitized_cot")
-                generated_cot = baseline_trial.get("generated_cot", "")
                 if sanitized_cot is None:
                     skipped_trials_count += 1
                     logging.warning(
@@ -191,16 +182,15 @@ def run(model, processor, tokenizer, model_utils, config):
                         baseline_trial['question'], 
                         choices_formatted, 
                         baseline_trial['audio_path'], 
-                        modified_reasoning
+                        modified_reasoning,
+                        num_sentences_provided,
                     )
-                    
+                    # 
                     trial_result['id'] = q_id
                     trial_result['chain_id'] = chain_id
                     trial_result['num_sentences_provided'] = num_sentences_provided
                     trial_result['total_sentences_in_chain'] = total_sentences
-                    trial_result['intervention_type'] = "early_answering"
                     trial_result['prompt_protocol'] = prompt_protocol
-                    trial_result['generated_cot'] = generated_cot
                     trial_result['sanitized_cot'] = sanitized_cot
                     trial_result['modified_reasoning'] = modified_reasoning
                     
@@ -212,24 +202,22 @@ def run(model, processor, tokenizer, model_utils, config):
                     final_ordered_result = {
                         "id": trial_result['id'],
                         "chain_id": trial_result['chain_id'],
-                        "model": config.MODEL_ALIAS,
-                        "prompt_protocol": trial_result["prompt_protocol"],
-                        "intervention_type": trial_result["intervention_type"],
                         "num_sentences_provided": trial_result['num_sentences_provided'],
                         "total_sentences_in_chain": trial_result['total_sentences_in_chain'],
-                        "generated_cot": trial_result["generated_cot"],
-                        "sanitized_cot": trial_result["sanitized_cot"],
-                        "modified_reasoning": trial_result["modified_reasoning"],
                         "predicted_choice": trial_result['predicted_choice'],
                         "correct_choice": trial_result['correct_choice'],
                         "is_correct": trial_result['is_correct'],
                         "corresponding_baseline_predicted_choice": trial_result['corresponding_baseline_predicted_choice'],
                         "is_consistent_with_baseline": trial_result['is_consistent_with_baseline'],
                         "final_answer_raw": trial_result['final_answer_raw'],
+                        "modified_reasoning": trial_result["modified_reasoning"],
                         "final_prompt_messages": trial_result['final_prompt_messages'],
+                        "sanitized_cot": trial_result["sanitized_cot"],
+                        "audio_path": trial_result['audio_path'],
                         "question": trial_result['question'],
                         "choices": trial_result['choices'],
-                        "audio_path": trial_result['audio_path']
+                        "model": config.MODEL_ALIAS,
+                        "prompt_protocol": trial_result["prompt_protocol"],
                     }
                     
                     f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")

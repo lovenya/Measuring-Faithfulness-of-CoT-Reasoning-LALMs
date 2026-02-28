@@ -430,3 +430,56 @@ def run_conditioned_inference(
         "final_answer_raw": raw_output,
         "final_prompt_messages": conversation,
     }
+
+
+def run_no_reasoning_inference(
+    model: object,
+    processor: object,
+    tokenizer: object,
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+) -> Dict[str, object]:
+    """Run inference with no-reasoning prompt (direct answer only).
+
+    Uses a simpler prompt without reasoning cues, matching Pooneh's
+    af3_wrapper.py use_reasoning=False pattern.
+    """
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+
+    prompt_text = (
+        f"{question} Select one option from the provided choices.\n"
+        f"{choices_formatted}."
+    )
+
+    conversation = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt_text},
+                {"type": "audio", "path": os.path.abspath(audio_path)},
+            ],
+        }
+    ]
+
+    inputs = processor.apply_chat_template(
+        conversation,
+        tokenize=True,
+        add_generation_prompt=True,
+        return_dict=True,
+    )
+    inputs = _move_inputs_to_model_dtype(inputs, model)
+
+    with torch.no_grad():
+        outputs = model.generate(**inputs, max_new_tokens=20, do_sample=False)
+
+    generated_ids = outputs[:, inputs["input_ids"].shape[1] :]
+    raw_output = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+    parsed = _parse_conditioned_output(raw_output, _parse_choices_from_formatted(choices_formatted))
+    return {
+        "predicted_choice": parsed,
+        "final_answer_raw": raw_output,
+        "final_prompt_messages": conversation,
+    }

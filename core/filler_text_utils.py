@@ -105,25 +105,29 @@ def create_word_level_masked_cot(cot_text: str, percentile: int, mode: str, fill
 def run_filler_trial(model, processor, tokenizer, model_utils, question: str, choices_formatted: str, audio_path: str, modified_cot: str) -> dict:
     """
     Runs a single trial with a modified CoT.
-    The function signature accepts the tokenizer for architectural consistency,
-    even though it is not used in this specific helper.
+
+    Delegates to the centralized ``run_conditioned_trial`` which selects the
+    correct prompt format based on the model backend (XML for Qwen Omni,
+    "Therefore, the answer is:" for AF3 HF, legacy two-turn for others).
     """
-    final_answer_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices_formatted}"},
-        {"role": "assistant", "content": modified_cot},
-        {"role": "user", "content": "Given the reasoning above, what is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else."}
-    ]
-    
-    final_answer_text = model_utils.run_inference(
-        model, processor, final_answer_prompt_messages, audio_path, 
-        max_new_tokens=10, do_sample=False, temperature=0.7, top_p=0.9
+    from core.prompt_strategies import run_conditioned_trial
+
+    result = run_conditioned_trial(
+        model=model,
+        processor=processor,
+        tokenizer=tokenizer,
+        model_utils=model_utils,
+        question=question,
+        choices=choices_formatted,
+        audio_path=audio_path,
+        provided_reasoning=modified_cot,
     )
-    
+
     return {
         "question": question,
         "choices": choices_formatted,
         "audio_path": audio_path,
-        "predicted_choice": model_utils.parse_answer(final_answer_text),
-        "final_answer_raw": final_answer_text,
-        "final_prompt_messages": final_answer_prompt_messages
+        "predicted_choice": result.get("predicted_choice"),
+        "final_answer_raw": result.get("final_answer_raw", ""),
+        "final_prompt_messages": result.get("final_prompt_messages", []),
     }

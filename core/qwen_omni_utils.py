@@ -71,6 +71,19 @@ def _build_xml_prompt_text(instruction: str) -> str:
     )
 
 
+def _build_no_reasoning_xml_prompt_text(instruction: str) -> str:
+    """Build XML prompt that asks for a direct answer without reasoning."""
+    return (
+        f"{instruction}\n\n"
+        "Based on the audio, provide your answer directly using the template below. "
+        "Do not include any reasoning or analysis.\n\n"
+        "Template:\n"
+        "<Conclusion>\n"
+        "[Single letter choice here, e.g., A]\n"
+        "</Conclusion>"
+    )
+
+
 def _build_conditioned_xml_prompt_text(instruction: str, provided_reasoning: str) -> str:
     return (
         f"{instruction}\n\n"
@@ -167,6 +180,30 @@ def load_model_and_tokenizer(model_path: str) -> Tuple[object, object, object]:
 def _build_conversation(messages: List[Dict[str, str]], audio_path: str) -> List[Dict[str, object]]:
     instruction = _extract_instruction_from_messages(messages)
     prompt_text = _build_xml_prompt_text(instruction)
+
+    return [
+        {
+            "role": "system",
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+        },
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt_text},
+                {"type": "audio", "audio": os.path.abspath(audio_path)},
+            ],
+        },
+    ]
+
+
+def _build_no_reasoning_conversation(
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+) -> List[Dict[str, object]]:
+    """Build conversation for no-reasoning inference (direct answer only)."""
+    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    prompt_text = _build_no_reasoning_xml_prompt_text(instruction)
 
     return [
         {
@@ -302,7 +339,65 @@ def run_conditioned_inference(
     with torch.no_grad():
         text_ids, _ = model.generate(
             **inputs,
-            max_new_tokens=1024,
+            max_new_tokens=32,
+            use_audio_in_video=False,
+        )
+
+    generated_ids = text_ids[:, inputs.input_ids.shape[1] :]
+    raw_output = processor.batch_decode(
+        generated_ids,
+        skip_special_tokens=True,
+        clean_up_tokenization_spaces=False,
+    )[0]
+
+    return {
+        "predicted_choice": parse_answer(raw_output),
+        "final_answer_raw": raw_output,
+        "final_prompt_messages": conversation,
+    }
+
+
+def run_no_reasoning_inference(
+    model: object,
+    processor: object,
+    tokenizer: object,
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+) -> Dict[str, object]:
+    """Run inference with no-reasoning prompt (direct answer only)."""
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+
+    conversation = _build_no_reasoning_conversation(
+        question=question,
+        choices_formatted=choices_formatted,
+        audio_path=audio_path,
+    )
+
+    text = processor.apply_chat_template(
+        conversation,
+        add_generation_prompt=True,
+        tokenize=False,
+    )
+    process_mm_info = _ensure_process_mm_info()
+    audios, images, videos = process_mm_info(conversation, use_audio_in_video=False)
+
+    inputs = processor(
+        text=text,
+        audio=audios,
+        images=images,
+        videos=videos,
+        return_tensors="pt",
+        padding=True,
+        use_audio_in_video=False,
+    )
+    inputs = inputs.to(model.device).to(model.dtype)
+
+    with torch.no_grad():
+        text_ids, _ = model.generate(
+            **inputs,
+            max_new_tokens=32,
             use_audio_in_video=False,
         )
 

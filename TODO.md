@@ -1,57 +1,48 @@
-# TODO
+# TODO — Prioritized Task List
 
-## 1. Prompt Variance Diagnostics (CURRENTLY RUNNING)
+## 1. Model-Specific Prompt Strategy Refactor ✅
 
-- [x] Run 3 strategies (two_turn, one_turn, no_cot) for Audio Flamingo 3, SALMONN 13B, SALMONN 7B, Qwen
-- [x] Run on MMAR and Sakura-Animal (100 samples, 5 chains)
-- [ ] Run `analyze_variance.py` for each model and dataset to compare the strategies and variance metrics
-- [ ] Compare metrics (Mean Intra-Variance, % Mixed) across strategies
+- [x] Add no-reasoning prompt builders to `qwen_omni_utils.py` and `audio_flamingo_hf_utils.py`
+- [x] Add centralized builder functions to `prompt_strategies.py` (`run_conditioned_trial`, `run_no_reasoning_trial`)
+- [x] Fix `early_answering.py` 0% case to use no-reasoning prompt
+- [x] Migrate `filler_text_utils.py`, `paraphrasing.py`, `adding_mistakes.py` to use centralized delegation
+- [x] Migrate `no_reasoning.py` to use centralized no-reasoning delegation
+- [x] Smoke test baseline + early answering for `flamingo_hf` (5 samples, 3 chains) ✓
+- [ ] **MANDATORY**: Make `run_conditioned_inference` and `run_no_reasoning_inference` required in ALL model_utils (remove fallback)
 
-## 2. Parallelization Pipeline Improvements (NEXT PRIORITY)
+## 2. Full-Scale Baseline + Early Answering Runs (CURRENT PRIORITY)
 
-- [ ] Check if the parallelization is working correctly for Noisy Audio Generation
-- [ ] Create `data_processing/verify_parallel_completeness.py`
-  - Check entry counts per chunk vs expected (e.g., 11 entries/sample for audio_masking)
-  - Show per-chunk PASS/FAIL with expected vs actual
-- [ ] Update `data_processing/merge_parallel_results.py`
+- [ ] Submit baseline `flamingo_hf` — all 5 datasets (mmar, sakura-animal/emotion/gender/language)
+- [ ] Submit baseline `qwen_omni` — all 5 datasets
+- [ ] Submit early answering `flamingo_hf` — all 5 datasets (after baseline completes)
+- [ ] Submit early answering `qwen_omni` — all 5 datasets (after baseline completes)
+- [ ] Validate output schema + prompt consistency across all runs
 
-## 3. SNR Robustness Experiment
+## 3. Filler Text CoT Intervention
 
-- [ ] Generate noisy audio data (request more CPU cores for speed)
-  - [ ] MMAR: `python data_processing/generate_noisy_audio.py --source data/mmar --output data/mmar_noisy`
-  - [ ] Sakura (all 4 tracks): `python data_processing/generate_noisy_audio.py --source data/sakura --output data/sakura_noisy`
-- [ ] Verify noisy data: correct file counts, audio loadable, SNR levels correct
-- [ ] Demo run experiment on 2 samples: `python main.py --model qwen --experiment snr_robustness --dataset mmar --num-samples 2`
-- [ ] Create sbatch submission scripts (4 models × 5 datasets = 20 scripts)
-  - Models: qwen, salmonn, salmonn_7b, flamingo
-  - Datasets: mmar, sakura-animal, sakura-emotion, sakura-gender, sakura-language
-- [ ] Submit all jobs
-- [ ] Run analysis: `python analysis/evaluate_snr_robustness.py --model qwen`
-- [ ] Create plotting script (`analysis/per_dataset/plot_snr_robustness.py`)
+- [x] Migrate `filler_text_utils.py` `run_filler_trial()` to use `run_conditioned_trial`
+- [ ] Run `no_reasoning` foundational experiment for `flamingo_hf` and `qwen_omni` (dependency for filler 0% case)
+- [ ] Smoke test filler text for both models (5 samples)
+- [ ] Full-scale filler text runs
 
-## 2. JASCO Experiment
+## 4. Paraphrasing Experiment
 
-- [x] Fix newline bug in `jasco_masking.py`
-- [x] Rewrite `evaluate_jasco.py` (--model arg, last-line parsing, tqdm, --judge CLI)
-- [x] Run Stage 1 (Qwen) — 1,680 entries generated ✓
-- [x] Run Stage 2 evaluation (Mistral judge) — scored ✓
-- [x] Create JASCO plotting/analysis script
-- [x] Add timer to JASCO experiment
-- [ ] Check JASCO runs for SALMONN 13B, SALMONN 7B, Flamingo
+- [x] Migrate `paraphrasing.py` `run_paraphrasing_trial()` to use `run_conditioned_trial`
+- [ ] Smoke test paraphrasing for both models (5 samples, self-perturbation)
+- [ ] Full-scale paraphrasing runs
+- [ ] Clean up external perturbation naming convention:
+  - Output: `results/{model}/paraphrasing/paraphrasing_{model}_{dataset}_external_perturbations-mistral.jsonl`
+  - Each JSONL row should include `perturbation_source` field (e.g., "self", "mistral")
 
-## 3. Hop Type Segregation for Sakura Analysis
+## 5. Adding Mistakes Experiment
 
-- [ ] Add `--hop-type` CLI arg to all Sakura-relevant analysis scripts
-  - Options: `merged` (default, current behavior), `single`, `multi`, `all` (runs both separately)
-  - Scripts to update:
-    - [x] `analysis/evaluate_adversarial.py`
-    - [x] `analysis/evaluate_snr_robustness.py`
-    - [ ] `analysis/per_dataset/plot_adversarial.py`
-    - [ ] `analysis/per_dataset/plot_audio_masking.py`
-    - [ ] `analysis/cross_dataset/plot_adversarial.py`
-    - [ ] `analysis/cross_dataset/plot_final_audio_masking.py`
+- [x] Migrate `adding_mistakes.py` `run_final_trial()` to use `run_conditioned_trial`
+- [x] Add `continue_reasoning` hook for model-specific implementations
+- [ ] Implement `run_continue_reasoning` in `qwen_omni_utils.py` and `audio_flamingo_hf_utils.py`
+- [ ] Smoke test + full-scale runs
+- [ ] Clean up external perturbation naming convention (same as paraphrasing)
 
-  - Refuse to merge if any chunk is incomplete
-  - Add `--force-merge` CLI flag to override
-  - Add `--expected-entries-per-sample` flag
-  - Print summary showing which chunks passed/failed
+## 6. Audio Masking Experiments (LATER)
+
+- [ ] Run audio masking for `qwen_omni` and `flamingo_hf`
+- [ ] Verify parallel pipeline for new models

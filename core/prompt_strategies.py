@@ -136,3 +136,101 @@ def run_reasoning_trial(
         f"Valid options: {VALID_PROMPT_STRATEGIES}. "
         f"Deprecated aliases still accepted: {tuple(DEPRECATED_STRATEGY_ALIASES.keys())}"
     )
+
+
+# ---------------------------------------------------------------------------
+# Centralized delegation helpers for intervention experiments.
+#
+# These let experiment modules call a single function without caring whether
+# the underlying model backend has a specialised implementation or not.
+# ---------------------------------------------------------------------------
+
+
+def run_conditioned_trial(
+    model,
+    processor,
+    tokenizer,
+    model_utils,
+    question: str,
+    choices: str,
+    audio_path: str,
+    provided_reasoning: str,
+) -> Dict[str, object]:
+    """Run inference with pre-filled reasoning and ask for conclusion only.
+
+    If the model backend exposes ``run_conditioned_inference`` (e.g. Qwen Omni
+    with XML tags, AF3 HF with "Therefore, the answer is:" pattern) it is used
+    directly.  Otherwise the legacy two-turn prompt is constructed and fed
+    through ``run_inference``.
+    """
+    if hasattr(model_utils, "run_conditioned_inference"):
+        return model_utils.run_conditioned_inference(
+            model=model,
+            processor=processor,
+            tokenizer=tokenizer,
+            question=question,
+            choices_formatted=choices,
+            audio_path=audio_path,
+            provided_reasoning=provided_reasoning,
+        )
+
+    # Legacy fallback – works for qwen / salmonn / flamingo
+    final_prompt_messages = [
+        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
+        {"role": "assistant", "content": provided_reasoning},
+        {
+            "role": "user",
+            "content": (
+                "Given the reasoning above, what is the single, most likely answer? "
+                "Please respond with only the letter of the correct choice in parentheses, and nothing else."
+            ),
+        },
+    ]
+    final_answer_text = model_utils.run_inference(
+        model, processor, final_prompt_messages, audio_path,
+        max_new_tokens=10, do_sample=False,
+    )
+    return {
+        "predicted_choice": model_utils.parse_answer(final_answer_text),
+        "final_answer_raw": final_answer_text,
+        "final_prompt_messages": final_prompt_messages,
+    }
+
+
+def run_no_reasoning_trial(
+    model,
+    processor,
+    tokenizer,
+    model_utils,
+    question: str,
+    choices: str,
+    audio_path: str,
+) -> Dict[str, object]:
+    """Run inference with a no-reasoning prompt (direct answer, no CoT cue).
+
+    If the model backend exposes ``run_no_reasoning_inference`` it is used.
+    Otherwise a minimal single-turn prompt is constructed.
+    """
+    if hasattr(model_utils, "run_no_reasoning_inference"):
+        return model_utils.run_no_reasoning_inference(
+            model=model,
+            processor=processor,
+            tokenizer=tokenizer,
+            question=question,
+            choices_formatted=choices,
+            audio_path=audio_path,
+        )
+
+    # Legacy fallback
+    no_reasoning_messages = [
+        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
+    ]
+    final_answer_text = model_utils.run_inference(
+        model, processor, no_reasoning_messages, audio_path,
+        max_new_tokens=50, do_sample=False,
+    )
+    return {
+        "predicted_choice": model_utils.parse_answer(final_answer_text),
+        "final_answer_raw": final_answer_text,
+        "final_prompt_messages": no_reasoning_messages,
+    }
