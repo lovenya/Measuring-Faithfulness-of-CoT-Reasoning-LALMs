@@ -91,6 +91,65 @@ Command Example:
   --data_root data/
   --num_runs 1
   ```
+
+# Audio Intervention
+
+Download the intervention data from:  
+https://drive.google.com/file/d/1rgwKqV0w06fFdLn65ihrJMTDrnjtBTAa/view?usp=drive_link
+
+---
+
+## Mask Intervention
+
+For each audio sample in the Sakura subset, **five versions** are generated with different masking ratios applied at random temporal locations:
+
+**Masking ratios:** 20%, 40%, 60%, 80%, and 90%
+
+The script below runs each ratio **sequentially**. You can modify it to run in parallel if needed.
+
+### Command Example
+
+```bash 
+name="$1"
+ratios=("p20" "p40" "p60" "p80","p80")
+
+for r in "${ratios[@]}"; do
+  echo "Running AF3 for MASK ${r}..."
+
+  python pooneh_version/interface/af3_wrapper.py \
+    --input pooneh_version/data/sakura/${name}/${name}_manifest.jsonl \
+    --output pooneh_version/result/baseline/af3/${name}/mask/${r}/baseline_${name}_REAS.jsonl \
+    --data_root [PATH_TO_YOUR_DATA]/${name}/mask/${r} \
+    --num_runs 1 \
+    --use_reasoning
+
+  echo "Done ${r}"
+done
+  ```
+
+## Noise
+Noise intervention applies additive noise to the entire audio using different SNR levels:
+
+**SNR values (dB):** -20, -10, 0, 10, 20
+
+The script below runs each SNR condition sequentially. You may adapt it for parallel execution.
+```bash 
+name="$1"
+snrs=("snr20" "snr10" "snr0" "snr-10" "snr-20" )
+
+for s in "${snrs[@]}"; do
+  echo "Running AF3 for NOISE ${s}..."
+
+  python pooneh_version/interface/af3_wrapper.py \
+    --input pooneh_version/data/sakura/${name}/${name}_manifest.jsonl \
+    --output pooneh_version/result/baseline/af3/${name}/noise/${s}/baseline_${name}_REAS.jsonl \
+    --data_root [PATH_TO_YOUR_DATA]/${name}/noise_snr/${s} \
+    --num_runs 1 \
+    --use_reasoning
+
+  echo "Done ${s}"
+done
+  ```
 # Result
 ## AF3
 ## 📊 Evaluation Summary
