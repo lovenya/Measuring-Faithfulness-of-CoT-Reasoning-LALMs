@@ -85,29 +85,60 @@ def run_audio_inference(item: dict, data_root: str, use_reasoning: bool) -> dict
         raise FileNotFoundError(f"Missing file: {abs_audio_path}")
 
     # --- UPDATED PROMPTING ---
+    base_identity = "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs."
+    
     if use_reasoning:
+        system_text = (
+            f"{base_identity}\n\n"
+            "CRITICAL: You must provide your analysis in a structured format using XML tags. "
+            "Do not engage in conversational filler. Use the following structure:\n"
+            "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n"
+            "<Conclusion>\n[Single Letter Only]\n</Conclusion>"
+        )
+        # Using your preferred ordering and phrasing
         prompt_text = (
-            f"{item['question']} Select one option from the provided choices.\n{item['choices']}. "
-            "Please think and reason about the input audio before you respond.\n\n"
-            "Template:\n<Reasoning>\n[thinking]\n</Reasoning>\n<Conclusion>\n[Letter]\n</Conclusion>"
+            f"{item['question']} Select one option from the provided choices.\n"
+            f"{item['choices']}.\n"
+            "Please think and reason about the input audio before you respond using the XML template."
         )
         max_tokens = 1024
     else:
+        system_text = (
+            f"{base_identity}\n\n"
+            "CRITICAL: Respond ONLY with the conclusion tag. No conversational text.\n"
+            "<Conclusion>\n[Letter]\n</Conclusion>"
+        )
         prompt_text = (
-            f"{item['question']} Select one option from the provided choices.\n{item['choices']}.\n\n"
-            "Template:\n<Conclusion>\n[Letter]\n</Conclusion>"
+            f"{item['question']} Select one option from the provided choices.\n"
+            f"{item['choices']}."
         )
         max_tokens = 128
 
-    # OFFICIAL SYSTEM PROMPT
     conversation = [
         {
             "role": "system", 
-            "content": [{"type": "text", "text": "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech."}]
+            "content": [{"type": "text", "text": system_text}]
         },
         {
             "role": "user", 
-            "content": [{"type": "text", "text": prompt_text}, {"type": "audio", "audio": abs_audio_path}]
+            "content": [
+                {"type": "text", "text": prompt_text}, 
+                {"type": "audio", "audio": abs_audio_path}
+            ]
+        }
+    ]
+    # OFFICIAL SYSTEM PROMPT INTEGRATION
+    conversation = [
+        {
+            "role": "system", 
+            "content": [{"type": "text", "text": system_text}]
+        },
+        {
+            "role": "user", 
+            "content": [
+                {"type": "text", "text": prompt_text}, 
+                {"type": "audio", "audio": abs_audio_path}
+            ]
         }
     ]
 
@@ -127,8 +158,6 @@ def run_audio_inference(item: dict, data_root: str, use_reasoning: bool) -> dict
             **inputs, 
             max_new_tokens=max_tokens,
             use_audio_in_video=False,
-            do_sample=False,  # Faster and more consistent for MCQ
-            use_cache=True    # Vital for long reasoning speed
         )
 
     generated_ids = text_ids[:, inputs.input_ids.shape[1]:]
