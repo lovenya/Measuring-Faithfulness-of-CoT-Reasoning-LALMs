@@ -78,7 +78,30 @@ def run_reasoning_trial(
 ) -> Dict[str, object]:
     """
     Execute the configured prompting flow and return normalized trial artifacts.
+
+    Dispatch order:
+    1. If model_utils has ``run_reasoning_inference`` → use it (model-specific default).
+    2. Otherwise fall back to legacy strategies (backward compatibility only).
     """
+    # --- Model-specific dispatch (preferred) ---
+    if hasattr(model_utils, "run_reasoning_inference"):
+        tokenizer = getattr(model_utils, "tokenizer", None)
+        result = model_utils.run_reasoning_inference(
+            model=model,
+            processor=processor,
+            tokenizer=tokenizer,
+            question=question,
+            choices_formatted=choices,
+            audio_path=audio_path,
+        )
+        # Ensure we parse if not already parsed
+        if "predicted_choice" not in result or result["predicted_choice"] is None:
+            result["predicted_choice"] = model_utils.parse_answer(
+                result.get("final_answer_raw", "")
+            )
+        return result
+
+    # --- Legacy fallback strategies (backward compatibility) ---
     strategy = DEPRECATED_STRATEGY_ALIASES.get(strategy, strategy)
 
     if strategy == "two_turn_sanitized_cot":
@@ -89,7 +112,6 @@ def run_reasoning_trial(
             cot_prompt_messages,
             audio_path,
             max_new_tokens=768,
-            do_sample=True,
         )
         sanitized_cot = model_utils.sanitize_cot(generated_cot)
 
@@ -100,7 +122,6 @@ def run_reasoning_trial(
             final_answer_prompt_messages,
             audio_path,
             max_new_tokens=50,
-            do_sample=False,
         )
 
         return {

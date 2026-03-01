@@ -22,15 +22,23 @@ module load StdEnv/2023 cuda rust gcc arrow
 
 ## Step 3: Choose which model environment to activate
 
-**Which model will you be using?**
+### For Audio Flamingo 3 HF (`flamingo_hf`):
 
-- `qwen` - Qwen2-Audio model
-- `salmonn` or `salmonn_7b` - SALMONN models
-- `flamingo` - Audio Flamingo 3 model
+// turbo
 
----
+```bash
+source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/af3_new_hf_env/bin/activate
+```
 
-### For Qwen:
+### For Qwen Omni (`qwen_omni`):
+
+// turbo
+
+```bash
+source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/qwen_omni_env/bin/activate
+```
+
+### For Qwen2-Audio (`qwen`):
 
 // turbo
 
@@ -46,32 +54,27 @@ source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/qwen_new_e
 source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/salmonn_env/bin/activate
 ```
 
-### For Audio Flamingo 3:
+### For Mistral (perturbation generation):
 
 // turbo
 
 ```bash
-source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-flamingo-env/bin/activate
+module load opencv
+source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/mistral_env/bin/activate
 ```
 
----
+### For Analysis (CPU-only tasks, plotting, data processing):
 
-## Recommended helper (repeatable)
-
-Use the helper script so setup is one command:
+// turbo
 
 ```bash
-source scripts/activate_env.sh qwen
-source scripts/activate_env.sh salmonn
-source scripts/activate_env.sh salmonn_7b
-source scripts/activate_env.sh flamingo
+source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/analysis_env/bin/activate
 ```
 
-Optional:
+**Note:** For analysis/CPU-only tasks, use an interactive node with `def-csubakan-ab_cpu` account:
 
 ```bash
-source scripts/activate_env.sh mistral
-source scripts/activate_env.sh analysis
+salloc --time=01:00:00 --cpus-per-task=4 --mem=16G --account=def-csubakan-ab_cpu
 ```
 
 ---
