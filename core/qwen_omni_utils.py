@@ -298,6 +298,84 @@ def run_inference(
     return decoded[0] if decoded else ""
 
 
+def run_reasoning_inference(
+    model: object,
+    processor: object,
+    tokenizer: object,
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+) -> Dict[str, object]:
+    """Qwen Omni model-specific baseline reasoning inference.
+
+    Builds the XML-templated prompt (``<Reasoning>`` + ``<Conclusion>``)
+    directly, runs greedy generation (model default), and parses the
+    structured output.  No do_sample override.
+    """
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+
+    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    prompt_text = _build_xml_prompt_text(instruction)
+
+    conversation = [
+        {
+            "role": "system",
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+        },
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt_text},
+                {"type": "audio", "audio": os.path.abspath(audio_path)},
+            ],
+        },
+    ]
+
+    text = processor.apply_chat_template(
+        conversation,
+        add_generation_prompt=True,
+        tokenize=False,
+    )
+    process_mm_info = _ensure_process_mm_info()
+    audios, images, videos = process_mm_info(conversation, use_audio_in_video=False)
+
+    inputs = processor(
+        text=text,
+        audio=audios,
+        images=images,
+        videos=videos,
+        return_tensors="pt",
+        padding=True,
+        use_audio_in_video=False,
+    )
+    inputs = inputs.to(model.device).to(model.dtype)
+
+    with torch.no_grad():
+        text_ids, _ = model.generate(
+            **inputs,
+            max_new_tokens=1024,
+            use_audio_in_video=False,
+        )
+
+    generated_ids = text_ids[:, inputs.input_ids.shape[1] :]
+    raw_output = processor.batch_decode(
+        generated_ids,
+        skip_special_tokens=True,
+        clean_up_tokenization_spaces=False,
+    )[0]
+
+    parsed = _parse_model_output(raw_output)
+
+    return {
+        "generated_cot": raw_output,
+        "sanitized_cot": str(parsed.get("reasoning", raw_output)),
+        "final_answer_raw": raw_output,
+        "predicted_choice": parsed.get("predicted_choice"),
+        "final_prompt_messages": conversation,
+    }
+
+
 def run_conditioned_inference(
     model: object,
     processor: object,

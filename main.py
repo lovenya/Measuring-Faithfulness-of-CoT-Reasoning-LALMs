@@ -30,6 +30,13 @@ else:
     exit(1)
 
 # Now that the environment is set, we can safely import our own project modules.
+import torch
+
+# --- Reproducibility: Fixed Seed ---
+SEED = 42
+torch.manual_seed(SEED)
+torch.cuda.manual_seed_all(SEED)
+
 import config
 from data_loader.data_loader import load_dataset
 
