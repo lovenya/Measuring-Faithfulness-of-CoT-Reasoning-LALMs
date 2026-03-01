@@ -472,7 +472,7 @@ def run_no_reasoning_inference(
     inputs = _move_inputs_to_model_dtype(inputs, model)
 
     with torch.no_grad():
-        outputs = model.generate(**inputs, max_new_tokens=20, do_sample=False)
+        outputs = model.generate(**inputs, max_new_tokens=20)
 
     generated_ids = outputs[:, inputs["input_ids"].shape[1] :]
     raw_output = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
@@ -483,3 +483,53 @@ def run_no_reasoning_inference(
         "final_answer_raw": raw_output,
         "final_prompt_messages": conversation,
     }
+
+
+def run_continue_reasoning(
+    model: object,
+    processor: object,
+    tokenizer: object,
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+    partial_cot: str,
+) -> str:
+    """Continue generating CoT from a partial reasoning chain.
+
+    The model receives the question, choices, and partial reasoning, and is
+    asked to continue reasoning from where the partial chain left off.
+    """
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+
+    prompt_text = (
+        f"{question} Select one option from the provided choices.\n"
+        f"{choices_formatted}. "
+        "Please think and reason about the input audio before you respond.\n\n"
+        f"{partial_cot}"
+    )
+
+    conversation = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt_text},
+                {"type": "audio", "path": os.path.abspath(audio_path)},
+            ],
+        }
+    ]
+
+    inputs = processor.apply_chat_template(
+        conversation,
+        tokenize=True,
+        add_generation_prompt=True,
+        return_dict=True,
+    )
+    inputs = _move_inputs_to_model_dtype(inputs, model)
+
+    with torch.no_grad():
+        outputs = model.generate(**inputs, max_new_tokens=512)
+
+    generated_ids = outputs[:, inputs["input_ids"].shape[1] :]
+    raw_output = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    return raw_output.strip()

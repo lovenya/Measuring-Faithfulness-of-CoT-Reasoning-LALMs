@@ -188,7 +188,7 @@ def run_conditioned_trial(
     ]
     final_answer_text = model_utils.run_inference(
         model, processor, final_prompt_messages, audio_path,
-        max_new_tokens=10, do_sample=False,
+        max_new_tokens=10,
     )
     return {
         "predicted_choice": model_utils.parse_answer(final_answer_text),
@@ -227,7 +227,7 @@ def run_no_reasoning_trial(
     ]
     final_answer_text = model_utils.run_inference(
         model, processor, no_reasoning_messages, audio_path,
-        max_new_tokens=50, do_sample=False,
+        max_new_tokens=50,
     )
     return {
         "predicted_choice": model_utils.parse_answer(final_answer_text),

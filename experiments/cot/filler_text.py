@@ -23,8 +23,9 @@ import logging
 import nltk # We need this for word tokenization
 from core.filler_text_utils import create_word_level_masked_cot, run_filler_trial
 
-# This is a 'dependent' experiment because it requires both 'baseline' and
-# 'no_reasoning' results to perform its analysis.
+# This is a 'dependent' experiment because it requires 'baseline' results.
+# NOTE: no_reasoning is NOT required — the 0% case runs actual conditioned
+# inference with the full original CoT rather than reusing cached results.
 EXPERIMENT_TYPE = "dependent"
 
 def run(model, processor, tokenizer, model_utils, config):
@@ -33,19 +34,15 @@ def run(model, processor, tokenizer, model_utils, config):
     robust, model-agnostic, and restartable design.
     """
     # --- 1. Load Dependent Data (Centralized Pathing) ---
-    # This script relies on two foundational datasets. It uses the definitive paths
-    # provided by main.py, making it fully compatible with the --restricted flag.
     baseline_results_path = config.BASELINE_RESULTS_PATH
-    no_reasoning_results_path = config.NO_REASONING_RESULTS_PATH
 
-    for path in [baseline_results_path, no_reasoning_results_path]:
-        if not os.path.exists(path):
-            logging.error(f"A required foundational results file was not found at: '{path}'")
-            return
+    if not os.path.exists(baseline_results_path):
+        logging.error(f"Baseline results file not found at: '{baseline_results_path}'")
+        return
             
     logging.info(f"Reading baseline data from '{baseline_results_path}'...")
     all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
-    
+        
     # --- 2. Apply Command-Line Filters ---
     if config.NUM_CHAINS_PER_QUESTION > 0:
         logging.info(f"Filtering to include only the first {config.NUM_CHAINS_PER_QUESTION} chains for each question.")
@@ -53,19 +50,13 @@ def run(model, processor, tokenizer, model_utils, config):
             trial for trial in all_baseline_trials
             if trial['chain_id'] < config.NUM_CHAINS_PER_QUESTION
         ]
-    
-    logging.info(f"Reading no-reasoning data from '{no_reasoning_results_path}'...")
-    all_no_reasoning_trials = [json.loads(line) for line in open(no_reasoning_results_path, 'r')]
-        
+
     # --- 3. Prepare Data for Efficient Processing ---
     # We group all baseline chains by their question ID.
     trials_by_question = collections.defaultdict(list)
     for trial in all_baseline_trials:
         trials_by_question[trial['id']].append(trial)
 
-    # We create a lookup dictionary for no-reasoning results for instant access.
-    no_reasoning_lookup = {(res['id'], res['chain_id']): res for res in all_no_reasoning_trials}
-            
     # This logic correctly handles the --num-samples flag for quick test runs.
     all_questions_to_process = list(trials_by_question.items())
     if config.NUM_SAMPLES_TO_RUN > 0:
@@ -108,9 +99,7 @@ def run(model, processor, tokenizer, model_utils, config):
                 if config.VERBOSE:
                     logging.info(f"Processing question {i+1}/{len(samples_to_process)}: ID {q_id}")
                 
-                # This experiment is a per-question analysis. We must first identify the
-                # single longest reasoning chain, as this represents the model's
-                # "best effort" at reasoning for this question.
+                # Identify the single longest reasoning chain.
                 longest_chain = max(question_trials, key=lambda t: len(nltk.word_tokenize(t['sanitized_cot'])))
                 max_len = len(nltk.word_tokenize(longest_chain['sanitized_cot']))
                 
@@ -119,29 +108,18 @@ def run(model, processor, tokenizer, model_utils, config):
                         logging.info(f"  - Skipping question {q_id} as its longest chain is empty.")
                     continue
 
-                # --- Optimization: Reuse No-Reasoning Data for 0% Step ---
-                # We now use the no_reasoning result that corresponds ONLY to our
-                # identified longest chain.
-                lookup_key = (q_id, longest_chain['chain_id'])
-                nr_result = no_reasoning_lookup.get(lookup_key)
-                if nr_result:
-                    # We add the 'percentile' key for consistency in our data format.
-                    zero_percentile_result = {
-                        "id": q_id, "chain_id": longest_chain['chain_id'], "percentile": 0,
-                        "predicted_choice": nr_result['predicted_choice'], "correct_choice": nr_result['correct_choice'],
-                        "is_correct": nr_result['is_correct'], "final_prompt_messages": nr_result['final_prompt_messages'],
-                        "final_answer_raw": nr_result.get('final_answer_raw', ''),
-                        "question": longest_chain['question'], "choices": longest_chain['choices'],
-                        "audio_path": longest_chain['audio_path']
-                    }
-                    f.write(json.dumps(zero_percentile_result, ensure_ascii=False) + "\n")
-                    f.flush()
-
-                # --- Run Inferences for 5% to 100% Percentiles ---
-                # This loop constitutes the main "compute-simulation-response" part of the experiment.
-                for percentile in range(5, 101, 5):
-                    # The filler text is now based on the length of the single longest chain.
-                    modified_cot = create_word_level_masked_cot(" " * max_len, percentile, mode='start')
+                # --- Run ALL Percentiles (0% to 100% in 5% steps) ---
+                # 0% = full original CoT (no filler), run actual conditioned inference.
+                # 5-95% = partial filler replacement.
+                # 100% = all words replaced by filler.
+                for percentile in range(0, 101, 5):
+                    if percentile == 0:
+                        # 0% filler = the full original reasoning, untouched.
+                        modified_cot = longest_chain['sanitized_cot']
+                    else:
+                        modified_cot = create_word_level_masked_cot(
+                            longest_chain['sanitized_cot'], percentile, mode='start'
+                        )
                     
                     trial_result = run_filler_trial(
                         model, processor, tokenizer, model_utils, 
@@ -151,17 +129,12 @@ def run(model, processor, tokenizer, model_utils, config):
                         modified_cot
                     )
                     
-                    
                     trial_result['id'] = q_id
                     trial_result['chain_id'] = longest_chain['chain_id']
                     trial_result['percentile'] = percentile
                     trial_result['correct_choice'] = longest_chain['correct_choice']
                     trial_result['is_correct'] = (trial_result['predicted_choice'] == longest_chain['correct_choice'])
                     
-                    
-                    # We save a single result per percentile, but now we also record the
-                    # chain_id of the longest chain for full traceability.
-                    # And also - explicitly order the keys for the final JSON object for readability.
                     final_ordered_result = {
                         "id": trial_result['id'],
                         "chain_id": trial_result['chain_id'],

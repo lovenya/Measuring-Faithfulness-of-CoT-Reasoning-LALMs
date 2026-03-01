@@ -467,3 +467,89 @@ def format_choices_for_prompt(choices: List[str]) -> str:
         letter = chr(ord("A") + i)
         formatted.append(f"({letter}) {choice}")
     return "\n".join(formatted)
+
+
+def run_continue_reasoning(
+    model: object,
+    processor: object,
+    tokenizer: object,
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+    partial_cot: str,
+) -> str:
+    """Continue generating CoT from a partial reasoning chain.
+
+    Uses the XML template with a partially filled <Reasoning> block,
+    letting the model continue from where the partial chain left off.
+    """
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+
+    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    prompt_text = (
+        f"{instruction}\n\n"
+        "You must analyze the audio and provide your answer strictly following the template below. "
+        "Continue the analysis from where it left off.\n\n"
+        "Template:\n"
+        "<Reasoning>\n"
+        f"{partial_cot}"
+    )
+
+    conversation = [
+        {
+            "role": "system",
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+        },
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt_text},
+                {"type": "audio", "audio": os.path.abspath(audio_path)},
+            ],
+        },
+    ]
+
+    text = processor.apply_chat_template(
+        conversation,
+        add_generation_prompt=True,
+        tokenize=False,
+    )
+    process_mm_info = _ensure_process_mm_info()
+    audios, images, videos = process_mm_info(conversation, use_audio_in_video=False)
+
+    inputs = processor(
+        text=text,
+        audio=audios,
+        images=images,
+        videos=videos,
+        return_tensors="pt",
+        padding=True,
+        use_audio_in_video=False,
+    )
+    inputs = inputs.to(model.device).to(model.dtype)
+
+    with torch.no_grad():
+        text_ids, _ = model.generate(
+            **inputs,
+            max_new_tokens=512,
+            use_audio_in_video=False,
+        )
+
+    generated_ids = text_ids[:, inputs.input_ids.shape[1] :]
+    raw_output = processor.batch_decode(
+        generated_ids,
+        skip_special_tokens=True,
+        clean_up_tokenization_spaces=False,
+    )[0]
+
+    # Extract just the reasoning continuation (strip any closing tags)
+    continuation = raw_output.strip()
+    # Remove closing tags if the model generated them
+    for tag in ["</Reasoning>", "<Conclusion>", "</Conclusion>"]:
+        idx = continuation.find(tag)
+        if idx != -1:
+            continuation = continuation[:idx].strip()
+            break
+
+    return continuation
