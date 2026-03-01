@@ -81,24 +81,30 @@ def get_paraphrased_text(model, processor, tokenizer, model_utils, text_to_parap
 def run_paraphrasing_trial(model, processor, tokenizer, model_utils, question: str, choices_formatted: str, audio_path: str, modified_cot: str) -> dict:
     """
     Runs a single trial with a (potentially) paraphrased Chain-of-Thought.
+
+    Delegates to the centralized ``run_conditioned_trial`` which selects the
+    correct prompt format based on the model backend.
     """
-    final_answer_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices_formatted}"},
-        {"role": "assistant", "content": modified_cot},
-        {"role": "user", "content": "Given the reasoning above, what is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else."}
-    ]
-    final_answer_text = model_utils.run_inference(
-        model, processor, final_answer_prompt_messages, audio_path, max_new_tokens=10, do_sample=False, temperature=0.7, top_p=0.9
+    from core.prompt_strategies import run_conditioned_trial
+
+    result = run_conditioned_trial(
+        model=model,
+        processor=processor,
+        tokenizer=tokenizer,
+        model_utils=model_utils,
+        question=question,
+        choices=choices_formatted,
+        audio_path=audio_path,
+        provided_reasoning=modified_cot,
     )
-    
-    # We return a complete dictionary to ensure a robust data flow, mirroring baseline.py.
+
     return {
         "question": question,
         "choices": choices_formatted,
         "audio_path": audio_path,
-        "predicted_choice": model_utils.parse_answer(final_answer_text),
-        "final_answer_raw": final_answer_text,
-        "final_prompt_messages": final_answer_prompt_messages
+        "predicted_choice": result.get("predicted_choice"),
+        "final_answer_raw": result.get("final_answer_raw", ""),
+        "final_prompt_messages": result.get("final_prompt_messages", []),
     }
 
 
@@ -193,30 +199,36 @@ def run(model, processor, tokenizer, model_utils, config):
                 total_sentences = len(sentences)
                 if total_sentences == 0: continue
 
-                # We loop from 1 to total_sentences, as the 0% case is just the baseline itself.
-                for num_to_paraphrase in range(1, total_sentences + 1):
+                # We loop from 0 to total_sentences.
+                # 0 sentences paraphrased = full original CoT (run actual conditioned inference).
+                for num_to_paraphrase in range(0, total_sentences + 1):
                     if config.VERBOSE:
                         logging.info(f"  - Paraphrasing {num_to_paraphrase}/{total_sentences} sentences...")
+
+                    if num_to_paraphrase == 0:
+                        # 0% case: use the original CoT as-is, run conditioned inference.
+                        modified_cot = sanitized_cot
+                    else:
+                        part_to_paraphrase = " ".join(sentences[:num_to_paraphrase])
+                        remaining_part = " ".join(sentences[num_to_paraphrase:])
                     
-                    part_to_paraphrase = " ".join(sentences[:num_to_paraphrase])
-                    remaining_part = " ".join(sentences[num_to_paraphrase:])
-                    
-                    # Use external paraphrase if available, otherwise generate on-the-fly
-                    if use_external:
+                    if num_to_paraphrase == 0:
+                        pass  # modified_cot already set above
+                    elif use_external:
                         lookup_key = (q_id, chain_id, num_to_paraphrase)
                         paraphrased_part = external_perturbations.get(lookup_key)
                         if paraphrased_part is None or paraphrased_part == "":
                             if config.VERBOSE:
                                 logging.info(f"  - SKIPPING STEP: No external paraphrase found for {lookup_key}.")
                             continue
+                        modified_cot = (paraphrased_part + " " + remaining_part).strip()
                     else:
                         paraphrased_part = get_paraphrased_text(model, processor, tokenizer, model_utils, part_to_paraphrase)
                         if paraphrased_part is None:
                             if config.VERBOSE:
                                 logging.warning(f"  - SKIPPING STEP: Model failed to generate a valid paraphrase for step {num_to_paraphrase}.")
                             continue
-
-                    modified_cot = (paraphrased_part + " " + remaining_part).strip()
+                        modified_cot = (paraphrased_part + " " + remaining_part).strip()
                     
                     trial_result = run_paraphrasing_trial(
                         model, processor, tokenizer, model_utils, 
@@ -239,6 +251,7 @@ def run(model, processor, tokenizer, model_utils, config):
                     trial_result['is_consistent_with_baseline'] = (trial_result['predicted_choice'] == baseline_final_choice)
                     
                     # Explicitly order the keys for the final JSON object for readability.
+                    perturbation_source = "external-mistral" if (use_external and num_to_paraphrase > 0) else "self"
                     final_ordered_result = {
                         "id": trial_result['id'],
                         "chain_id": trial_result['chain_id'],
@@ -253,7 +266,8 @@ def run(model, processor, tokenizer, model_utils, config):
                         "final_prompt_messages": trial_result['final_prompt_messages'],
                         "question": trial_result['question'],
                         "choices": trial_result['choices'],
-                        "audio_path": trial_result['audio_path']
+                        "audio_path": trial_result['audio_path'],
+                        "perturbation_source": perturbation_source,
                     }
                     
                     f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")

@@ -21,32 +21,31 @@ EXPERIMENT_TYPE = "foundational"
 
 def run_no_reasoning_trial(model, processor, tokenizer, model_utils, question: str, choices: str, audio_path: str) -> dict:
     """
-    Runs a single, deterministic trial with an empty CoT.
+    Runs a single, deterministic trial with no reasoning prompt.
+
+    Delegates to the centralized ``run_no_reasoning_trial`` from
+    prompt_strategies, which selects the correct no-reasoning prompt
+    based on the model backend.
     """
-    # This prompt structure perfectly matches the final prompt of the baseline
-    # experiment, but with an empty string for the assistant's CoT.
-    final_answer_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": ""}, # The reasoning is an empty string
-        {"role": "user", "content": "What is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else."}
-    ]
+    from core.prompt_strategies import run_no_reasoning_trial as _run_no_reasoning
 
-    # This is a deterministic call (do_sample=False).
-    final_answer_text = model_utils.run_inference(
-        model, processor, final_answer_prompt_messages, audio_path, 
-        max_new_tokens=10, do_sample=False, temperature=0.7, top_p=0.9
+    result = _run_no_reasoning(
+        model=model,
+        processor=processor,
+        tokenizer=tokenizer,
+        model_utils=model_utils,
+        question=question,
+        choices=choices,
+        audio_path=audio_path,
     )
-    
-    parsed_choice = model_utils.parse_answer(final_answer_text)
 
-    # Return a self-documenting dictionary.
     return {
         "question": question,
         "choices": choices,
         "audio_path": audio_path,
-        "final_answer_raw": final_answer_text,
-        "predicted_choice": parsed_choice,
-        "final_prompt_messages": final_answer_prompt_messages
+        "final_answer_raw": result.get("final_answer_raw", ""),
+        "predicted_choice": result.get("predicted_choice"),
+        "final_prompt_messages": result.get("final_prompt_messages", []),
     }
 
 def run(model, processor, tokenizer, model_utils, data_samples, config):

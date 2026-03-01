@@ -175,16 +175,12 @@ def main():
         description="Pre-generate perturbations using Mistral Small 3"
     )
     parser.add_argument(
-        "--baseline-results", "-b",
-        type=str,
-        required=True,
-        help="Path to baseline results JSONL file"
+        "--model", type=str, required=True,
+        help="Model alias (e.g., 'flamingo_hf', 'qwen_omni')"
     )
     parser.add_argument(
-        "--output", "-o",
-        type=str,
-        required=True,
-        help="Output path for perturbations JSONL file"
+        "--dataset", type=str, required=True,
+        help="Dataset alias (e.g., 'mmar', 'sakura-animal')"
     )
     parser.add_argument(
         "--mode", "-m",
@@ -194,9 +190,29 @@ def main():
         help="Type of perturbation to generate"
     )
     parser.add_argument(
+        "--restricted", action="store_true",
+        help="Use the '-restricted' baseline file (opt-in, NOT default)"
+    )
+    parser.add_argument(
+        "--results-dir", type=str, default="./results",
+        help="Root results directory (default: ./results)"
+    )
+    parser.add_argument(
+        "--baseline-results", "-b",
+        type=str,
+        default=None,
+        help="Override: explicit path to baseline results JSONL (auto-built if not provided)"
+    )
+    parser.add_argument(
+        "--output", "-o",
+        type=str,
+        default=None,
+        help="Override: explicit output path for perturbations JSONL (auto-built if not provided)"
+    )
+    parser.add_argument(
         "--model-path",
         type=str,
-        default="/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/mistral-small-3",
+        default=os.path.join(PROJECT_ROOT, "model_components", "mistral-small-3"),
         help="Path to Mistral model weights"
     )
     parser.add_argument(
@@ -205,16 +221,50 @@ def main():
         default=None,
         help="Limit to first N baseline trials (for testing)"
     )
+    parser.add_argument(
+        "--num-chains",
+        type=int,
+        default=None,
+        help="Only generate perturbations for the first N chains per question (e.g., 1 or 2)"
+    )
     args = parser.parse_args()
+
+    # --- Build paths from --model/--dataset/--mode if not explicitly provided ---
+    suffix = "-restricted" if args.restricted else ""
     
+    if args.baseline_results is None:
+        args.baseline_results = os.path.join(
+            args.results_dir, args.model, "baseline",
+            f"baseline_{args.model}_{args.dataset}{suffix}.jsonl"
+        )
+    
+    if args.output is None:
+        pert_suffix = "mistakes" if args.mode == "mistakes" else "paraphrased"
+        perturbations_dir = os.path.join(args.results_dir, "mistral_perturbations")
+        os.makedirs(perturbations_dir, exist_ok=True)
+        args.output = os.path.join(
+            perturbations_dir,
+            f"{args.model}_{args.dataset}{suffix}_{pert_suffix}.jsonl"
+        )
+
     # Validate input
     if not os.path.exists(args.baseline_results):
         logger.error(f"Baseline results not found: {args.baseline_results}")
         return 1
     
+    logger.info(f"Model: {args.model.upper()}")
+    logger.info(f"Dataset: {args.dataset.upper()}")
+    logger.info(f"Mode: {args.mode}")
+    logger.info(f"Baseline: {args.baseline_results}")
+    logger.info(f"Output: {args.output}")
+    
     # Load baseline
-    logger.info(f"Loading baseline results from: {args.baseline_results}")
     baseline_results = load_baseline_results(args.baseline_results)
+    
+    # Filter by num_chains if specified
+    if args.num_chains is not None:
+        baseline_results = [t for t in baseline_results if t.get('chain_id', 0) < args.num_chains]
+        logger.info(f"Filtered to chains 0..{args.num_chains - 1}: {len(baseline_results)} trials remaining")
     
     # Limit samples if specified
     if args.num_samples is not None:

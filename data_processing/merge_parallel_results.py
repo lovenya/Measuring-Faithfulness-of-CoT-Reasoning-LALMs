@@ -40,6 +40,7 @@ def merge_part_files(
     num_chains: int | None = None,
     expected_entries_per_sample: int | None = None,
     force_merge: bool = False,
+    filler_type: str | None = None,
     mask_type: str | None = None,
     mask_mode: str | None = None,
 ) -> int:
@@ -84,6 +85,7 @@ def merge_part_files(
         num_chains=num_chains,
         expected_entries_per_sample=expected_entries_per_sample,
         perturbation_source=perturbation_source,
+        filler_type=filler_type,
         mask_type=mask_type,
         mask_mode=mask_mode,
     )
@@ -197,17 +199,28 @@ def main() -> int:
         choices=["random", "start", "end", "scattered"],
         help="Mask mode (required for audio_masking).",
     )
+    parser.add_argument(
+        "--filler-type",
+        type=str,
+        default=None,
+        choices=["dots", "lorem"],
+        help="Filler type (mandatory for filler text experiments): 'dots' or 'lorem'.",
+    )
     args = parser.parse_args()
 
     if args.experiment == "audio_masking":
         if not args.mask_type or not args.mask_mode:
             parser.error("audio_masking requires --mask-type and --mask-mode.")
     else:
-        # Keep path behavior consistent for non-audio experiments.
         if args.mask_type or args.mask_mode:
-            print(
-                "WARNING: --mask-type/--mask-mode ignored for non-audio_masking experiments."
-            )
+            print("WARNING: --mask-type/--mask-mode ignored for non-audio_masking experiments.")
+
+    # Filler type is mandatory for filler text experiments
+    if "filler" in args.experiment and not args.filler_type:
+        parser.error(
+            f"--filler-type is mandatory for filler text experiments "
+            f"(experiment='{args.experiment}'). Use --filler-type dots or --filler-type lorem."
+        )
 
     # Validate location resolution early for clearer errors.
     build_output_location(
@@ -217,6 +230,7 @@ def main() -> int:
         results_dir=args.results_dir,
         restricted=args.restricted,
         perturbation_source=args.perturbation_source,
+        filler_type=args.filler_type,
         mask_type=args.mask_type,
         mask_mode=args.mask_mode,
     )
@@ -232,6 +246,7 @@ def main() -> int:
         num_chains=args.num_chains,
         expected_entries_per_sample=args.expected_entries_per_sample,
         force_merge=args.force_merge,
+        filler_type=args.filler_type,
         mask_type=args.mask_type,
         mask_mode=args.mask_mode,
     )

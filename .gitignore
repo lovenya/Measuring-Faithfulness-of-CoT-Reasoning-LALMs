@@ -57,6 +57,7 @@ submission_scripts/
 nltk_data/
 # Output files
 results/
+old_results/
 plots/
 final_plots
 old_comparitive_plots/

@@ -430,3 +430,177 @@ def run_conditioned_inference(
         "final_answer_raw": raw_output,
         "final_prompt_messages": conversation,
     }
+
+def run_reasoning_inference(
+    model: object,
+    processor: object,
+    tokenizer: object,
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+) -> Dict[str, object]:
+    """AF3 HF model-specific baseline reasoning prompt.
+
+    Matches Pooneh's af3_wrapper.py ``use_reasoning=True`` pattern:
+    single-turn, "Please think and reason about the input audio before you respond.",
+    512 max tokens, no do_sample override (model default = greedy).
+    """
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+
+    prompt_text = (
+        f"{question} Select one option from the provided choices.\n"
+        f"{choices_formatted}. "
+        "Please think and reason about the input audio before you respond."
+    )
+
+    conversation = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt_text},
+                {"type": "audio", "path": os.path.abspath(audio_path)},
+            ],
+        }
+    ]
+
+    inputs = processor.apply_chat_template(
+        conversation,
+        tokenize=True,
+        add_generation_prompt=True,
+        return_dict=True,
+    )
+    inputs = _move_inputs_to_model_dtype(inputs, model)
+
+    with torch.no_grad():
+        outputs = model.generate(**inputs, max_new_tokens=512)
+
+    generated_ids = outputs[:, inputs["input_ids"].shape[1] :]
+    raw_output = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+    # Split reasoning from final answer: the last sentence is typically the answer
+    import re
+    sentences = re.split(r'(?<=[.!?])\s+', raw_output.strip())
+    if len(sentences) > 1:
+        reasoning_text = " ".join(sentences[:-1])
+        final_text = sentences[-1]
+    else:
+        reasoning_text = raw_output
+        final_text = raw_output
+
+    sanitized = sanitize_cot(reasoning_text)
+
+    parsed_choice = _parse_conditioned_output(
+        final_text,
+        _parse_choices_from_formatted(choices_formatted),
+    )
+
+    return {
+        "generated_cot": raw_output,
+        "sanitized_cot": sanitized,
+        "final_answer_raw": raw_output,
+        "predicted_choice": parsed_choice,
+        "final_prompt_messages": conversation,
+    }
+
+def run_no_reasoning_inference(
+    model: object,
+    processor: object,
+    tokenizer: object,
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+) -> Dict[str, object]:
+    """Run inference with no-reasoning prompt (direct answer only).
+
+    Uses a simpler prompt without reasoning cues, matching Pooneh's
+    af3_wrapper.py use_reasoning=False pattern.
+    """
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+
+    prompt_text = (
+        f"{question} Select one option from the provided choices.\n"
+        f"{choices_formatted}."
+    )
+
+    conversation = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt_text},
+                {"type": "audio", "path": os.path.abspath(audio_path)},
+            ],
+        }
+    ]
+
+    inputs = processor.apply_chat_template(
+        conversation,
+        tokenize=True,
+        add_generation_prompt=True,
+        return_dict=True,
+    )
+    inputs = _move_inputs_to_model_dtype(inputs, model)
+
+    with torch.no_grad():
+        outputs = model.generate(**inputs, max_new_tokens=20)
+
+    generated_ids = outputs[:, inputs["input_ids"].shape[1] :]
+    raw_output = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+    parsed = _parse_conditioned_output(raw_output, _parse_choices_from_formatted(choices_formatted))
+    return {
+        "predicted_choice": parsed,
+        "final_answer_raw": raw_output,
+        "final_prompt_messages": conversation,
+    }
+
+
+def run_continue_reasoning(
+    model: object,
+    processor: object,
+    tokenizer: object,
+    question: str,
+    choices_formatted: str,
+    audio_path: str,
+    partial_cot: str,
+) -> str:
+    """Continue generating CoT from a partial reasoning chain.
+
+    The model receives the question, choices, and partial reasoning, and is
+    asked to continue reasoning from where the partial chain left off.
+    """
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(f"Audio file not found at: {audio_path}")
+
+    prompt_text = (
+        f"{question} Select one option from the provided choices.\n"
+        f"{choices_formatted}. "
+        "Please think and reason about the input audio before you respond.\n\n"
+        f"{partial_cot}"
+    )
+
+    conversation = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt_text},
+                {"type": "audio", "path": os.path.abspath(audio_path)},
+            ],
+        }
+    ]
+
+    inputs = processor.apply_chat_template(
+        conversation,
+        tokenize=True,
+        add_generation_prompt=True,
+        return_dict=True,
+    )
+    inputs = _move_inputs_to_model_dtype(inputs, model)
+
+    with torch.no_grad():
+        outputs = model.generate(**inputs, max_new_tokens=512)
+
+    generated_ids = outputs[:, inputs["input_ids"].shape[1] :]
+    raw_output = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    return raw_output.strip()

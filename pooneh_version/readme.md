@@ -150,9 +150,9 @@ for s in "${snrs[@]}"; do
   echo "Done ${s}"
 done
   ```
-# Result
-## AF3
-## 📊 Evaluation Summary
+# 📊Result
+
+## AF3 -baseline
 🔎 With Reasoning
 | Dataset                     | Total Items | Remaining Nulls | New Mean Accuracy | Missed reasoning |
 |------------------------------|------------|-----------------|-------------------|------------------|
@@ -173,6 +173,24 @@ done
 | GENDER                       | 1000       | 0              | 49.40%             |
 | MMAU                         | 1000       | 7              | 74.60%             |
 | MMAR                         | 997        | 0              | 54.26%             |
+
+## AF3 - Adversarial _intervention
+✅ correct injection
+| Dataset                     | Total Items | Remaining Nulls | New Mean Accuracy |  change-delta |
+|------------------------------|------------|-----------------|-------------------|------------------|
+| Animal                       | 1000       | 4              | 91.70%            |+10.3                |
+| LANGUAGE                     | 1000       | 11              | 92.40%           |+12.8                |
+| EMOTION                      | 1000       | -             | -           |-                |
+| GENDER                       | 1000       | 12              | 82.00%            |+24.8                 |
+
+❌🔎 Wrong injection
+| Dataset                     | Total Items | Remaining Nulls | New Mean Accuracy | change-delta |
+|------------------------------|------------|-----------------|-------------------|------------------|
+| Animal                       | 1000       | 11              | 27.00%            |-54.3                |
+| LANGUAGE                     | 1000       | 7              | 50.20%           |-25.34                |
+| EMOTION                      | 1000       | -             | -           |-                |
+| GENDER                       | 1000       | 6              | 26.70%            |-30.5                 |
+
 
 ## QWEN2.5
 ## 📊 Evaluation Summary
