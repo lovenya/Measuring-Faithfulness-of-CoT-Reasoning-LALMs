@@ -13,12 +13,18 @@ Before generating scripts, confirm with the user:
 3. **Which datasets** (e.g., `mmar`, `sakura-animal`, `sakura-emotion`, `sakura-gender`, `sakura-language`)
 4. **Experiment-specific flags**:
    - `baseline`: `--num-chains N`
-   - `early_answering`: `--num-chains 1 --restricted`
+   - `early_answering`: `--num-chains 1`
    - `random_partial_filler_text`: `--filler-type lorem --num-chains 1` (+ `--part P --total-parts T` if parallel)
-   - `adding_mistakes` / `paraphrasing`: `--num-chains 1` (+ `--use-external-perturbations` if Mistral)
+   - `adding_mistakes` / `paraphrasing`: `--num-chains 1` (+ `--use-external-perturbations` for Mistral — path auto-constructed)
    - `audio_masking`: `--mask-type TYPE --mask-mode MODE --num-chains 1`
-5. **Number of parallel chunks** (if any)
-6. **`--num-samples`** (for demo/test runs, e.g., `--num-samples 100`)
+5. **External LLM perturbation generation** (standalone):
+   - CLI: `python scripts/generate_perturbations.py --model {MODEL} --dataset {DATASET} --mode {mistakes|paraphrase}`
+   - No `--baseline-results` or `--output` needed — paths auto-constructed
+   - Output: `results/external_llm_perturbations/mistral/{model}/{dataset}/raw/{mistakes|paraphrased}.jsonl`
+   - Scripts: `submission_scripts/external_llm_perturbations/mistral/{model}/{dataset}/`
+   - Logs: `logs/external_llm_perturbations/mistral/{model}/{dataset}/`
+6. **Number of parallel chunks** (if any)
+7. **`--num-samples`** or **`--start-sample`/`--end-sample`** (for demo/test or range-split runs)
 
 ## Account Rotation Strategy
 

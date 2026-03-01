@@ -28,6 +28,7 @@ import logging
 import os
 import sys
 import nltk
+import torch
 from tqdm import tqdm
 
 # Add project root to path
@@ -48,6 +49,11 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# --- Reproducibility: Fixed Seed ---
+SEED = 42
+torch.manual_seed(SEED)
+torch.cuda.manual_seed_all(SEED)
 
 
 def load_baseline_results(baseline_path: str) -> list[dict]:
@@ -224,8 +230,8 @@ def main():
     parser.add_argument(
         "--num-chains",
         type=int,
-        default=None,
-        help="Only generate perturbations for the first N chains per question (e.g., 1 or 2)"
+        default=1,
+        help="Only generate perturbations for the first N chains per question (default: 1)"
     )
     args = parser.parse_args()
 
@@ -240,12 +246,12 @@ def main():
     
     if args.output is None:
         pert_suffix = "mistakes" if args.mode == "mistakes" else "paraphrased"
-        perturbations_dir = os.path.join(args.results_dir, "mistral_perturbations")
-        os.makedirs(perturbations_dir, exist_ok=True)
-        args.output = os.path.join(
-            perturbations_dir,
-            f"{args.model}_{args.dataset}{suffix}_{pert_suffix}.jsonl"
+        perturbations_dir = os.path.join(
+            args.results_dir, "external_llm_perturbations", "mistral",
+            args.model, args.dataset, "raw"
         )
+        os.makedirs(perturbations_dir, exist_ok=True)
+        args.output = os.path.join(perturbations_dir, f"{pert_suffix}.jsonl")
 
     # Validate input
     if not os.path.exists(args.baseline_results):

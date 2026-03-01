@@ -64,37 +64,24 @@ def run_mistral_inference(
     model: LLM,
     messages: list[dict],
     max_new_tokens: int = 256,
-    do_sample: bool = True,
-    temperature: float = 0.7,
-    top_p: float = 0.9,
 ) -> str:
     """
     Run inference with Mistral Small 3 using vLLM.
+    
+    Uses vLLM's default sampling parameters (temperature=1.0, top_p=1.0),
+    which are the model's true defaults. No artificial constraints.
     
     Args:
         model: The vLLM LLM instance.
         messages: List of message dictionaries with 'role' and 'content' keys.
         max_new_tokens: Maximum number of tokens to generate.
-        do_sample: Whether to use sampling (True) or greedy decoding (False).
-        temperature: Sampling temperature.
-        top_p: Nucleus sampling probability.
     
     Returns:
         Generated text string.
     """
-    # Set up sampling parameters
-    if do_sample:
-        sampling_params = SamplingParams(
-            max_tokens=max_new_tokens,
-            temperature=temperature,
-            top_p=top_p,
-        )
-    else:
-        # Greedy decoding
-        sampling_params = SamplingParams(
-            max_tokens=max_new_tokens,
-            temperature=0.0,
-        )
+    sampling_params = SamplingParams(
+        max_tokens=max_new_tokens,
+    )
     
     # Run inference using vLLM chat interface (disable tqdm to reduce log spam)
     outputs = model.chat(messages, sampling_params=sampling_params, use_tqdm=False)

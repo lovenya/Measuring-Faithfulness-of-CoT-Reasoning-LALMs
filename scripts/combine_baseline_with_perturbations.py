@@ -85,8 +85,7 @@ EXPERIMENTS = ["adding_mistakes", "paraphrasing"]
 
 # Paths
 RESULTS_DIR = "results"
-PERTURBATIONS_DIR = os.path.join(RESULTS_DIR, "mistral_perturbations")
-COMBINED_DIR = os.path.join(RESULTS_DIR, "combined")
+EXTERNAL_LLM_DIR = os.path.join(RESULTS_DIR, "external_llm_perturbations", "mistral")
 
 
 def get_baseline_path(model: str, dataset: str, restricted: bool) -> str:
@@ -96,19 +95,17 @@ def get_baseline_path(model: str, dataset: str, restricted: bool) -> str:
 
 
 def get_perturbation_path(model: str, dataset: str, experiment: str, restricted: bool) -> str:
-    """Get path to Mistral perturbation file."""
-    suffix = "-restricted" if restricted else ""
+    """Get path to Mistral perturbation file in the new directory structure."""
     if experiment == "adding_mistakes":
         pert_suffix = "mistakes"
     else:
         pert_suffix = "paraphrased"
-    return os.path.join(PERTURBATIONS_DIR, f"{model}_{dataset}{suffix}_{pert_suffix}.jsonl")
+    return os.path.join(EXTERNAL_LLM_DIR, model, dataset, "raw", f"{pert_suffix}.jsonl")
 
 
 def get_output_path(model: str, dataset: str, experiment: str, restricted: bool) -> str:
-    """Get path for combined output file."""
-    suffix = "-restricted" if restricted else ""
-    return os.path.join(COMBINED_DIR, f"{model}_{dataset}{suffix}_{experiment}_combined.jsonl")
+    """Get path for combined output file in the new directory structure."""
+    return os.path.join(EXTERNAL_LLM_DIR, model, dataset, "combined", f"{experiment}_combined.jsonl")
 
 
 def load_jsonl(path: str) -> list[dict]:
@@ -313,8 +310,8 @@ def main():
     parser.add_argument("--dataset", type=str, choices=DATASETS, help="Dataset name")
     parser.add_argument("--experiment", type=str, choices=EXPERIMENTS, required=True,
                         help="Experiment type")
-    parser.add_argument("--restricted", action="store_true", default=True,
-                        help="Use restricted datasets (default: True)")
+    parser.add_argument("--restricted", action="store_true", default=False,
+                        help="Use restricted datasets (default: False)")
     parser.add_argument("--all", action="store_true",
                         help="Process all models and datasets")
     
