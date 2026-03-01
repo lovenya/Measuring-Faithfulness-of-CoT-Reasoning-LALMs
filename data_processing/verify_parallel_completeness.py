@@ -23,11 +23,13 @@ def build_output_location(
     results_dir: str,
     restricted: bool,
     perturbation_source: str = "self",
+    filler_type: str | None = None,
     mask_type: str | None = None,
     mask_mode: str | None = None,
 ) -> tuple[str, str]:
     """
     Build (search_dir, base_filename) for parallel outputs.
+    Mirrors the path construction logic in main.py.
     """
     if experiment == "audio_masking":
         if not mask_type or not mask_mode:
@@ -44,6 +46,9 @@ def build_output_location(
 
     if perturbation_source == "mistral":
         base_filename += "-mistral"
+
+    if filler_type == "lorem":
+        base_filename += "-lorem"
 
     if experiment == "audio_masking":
         base_filename += f"_{mask_type}_{mask_mode}"
@@ -104,6 +109,7 @@ def validate_parallel_completeness(
     num_chains: int,
     expected_entries_per_sample: int | None = None,
     perturbation_source: str = "self",
+    filler_type: str | None = None,
     mask_type: str | None = None,
     mask_mode: str | None = None,
 ) -> dict[str, Any]:
@@ -125,6 +131,7 @@ def validate_parallel_completeness(
         results_dir=results_dir,
         restricted=restricted,
         perturbation_source=perturbation_source,
+        filler_type=filler_type,
         mask_type=mask_type,
         mask_mode=mask_mode,
     )
@@ -217,6 +224,7 @@ def validate_parallel_completeness(
             "num_chains": num_chains,
             "expected_entries_per_sample": expected_entries_per_sample,
             "perturbation_source": perturbation_source,
+            "filler_type": filler_type,
             "mask_type": mask_type,
             "mask_mode": mask_mode,
             "search_dir": search_dir,
@@ -251,6 +259,8 @@ def print_report(report: dict[str, Any]) -> None:
     print(f"  - Num Chains: {cfg['num_chains']}")
     if cfg["expected_entries_per_sample"] is not None:
         print(f"  - Expected Entries/Sample: {cfg['expected_entries_per_sample']}")
+    if cfg.get("filler_type"):
+        print(f"  - Filler Type: {cfg['filler_type']}")
     print(f"  - Search Dir: {cfg['search_dir']}")
     print(f"  - Base Filename: {cfg['base_filename']}")
 
@@ -302,6 +312,13 @@ def main() -> int:
         default="self",
         choices=["self", "mistral"],
     )
+    parser.add_argument(
+        "--filler-type",
+        type=str,
+        default=None,
+        choices=["dots", "lorem"],
+        help="Filler type (mandatory for filler text experiments): 'dots' or 'lorem'.",
+    )
     parser.add_argument("--mask-type", type=str, default=None)
     parser.add_argument("--mask-mode", type=str, default=None)
     parser.add_argument(
@@ -315,6 +332,13 @@ def main() -> int:
         if not args.mask_type or not args.mask_mode:
             parser.error("audio_masking requires --mask-type and --mask-mode.")
 
+    # Filler type is mandatory for filler text experiments
+    if "filler" in args.experiment and not args.filler_type:
+        parser.error(
+            f"--filler-type is mandatory for filler text experiments "
+            f"(experiment='{args.experiment}'). Use --filler-type dots or --filler-type lorem."
+        )
+
     report = validate_parallel_completeness(
         model=args.model,
         experiment=args.experiment,
@@ -325,6 +349,7 @@ def main() -> int:
         num_chains=args.num_chains,
         expected_entries_per_sample=args.expected_entries_per_sample,
         perturbation_source=args.perturbation_source,
+        filler_type=args.filler_type,
         mask_type=args.mask_type,
         mask_mode=args.mask_mode,
     )

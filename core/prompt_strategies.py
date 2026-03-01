@@ -90,8 +90,6 @@ def run_reasoning_trial(
             audio_path,
             max_new_tokens=768,
             do_sample=True,
-            temperature=1.0,
-            top_p=0.9,
         )
         sanitized_cot = model_utils.sanitize_cot(generated_cot)
 
@@ -103,8 +101,6 @@ def run_reasoning_trial(
             audio_path,
             max_new_tokens=50,
             do_sample=False,
-            temperature=1.0,
-            top_p=0.9,
         )
 
         return {

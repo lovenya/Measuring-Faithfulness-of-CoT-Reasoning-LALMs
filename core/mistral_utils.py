@@ -155,9 +155,6 @@ Sentence with mistake added:"""
     response = run_mistral_inference(
         model, messages,
         max_new_tokens=max_new_tokens,
-        do_sample=True,
-        temperature=0.7,
-        top_p=0.9
     )
     
     if not response or not response.strip():
@@ -192,9 +189,6 @@ def paraphrase_text(
     response = run_mistral_inference(
         model, messages,
         max_new_tokens=max_new_tokens,
-        do_sample=True,
-        temperature=0.7,
-        top_p=0.9
     )
     
     if not response or not response.strip():
