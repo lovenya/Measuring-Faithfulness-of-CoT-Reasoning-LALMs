@@ -10,21 +10,22 @@
 - [x] Smoke test baseline + early answering for `flamingo_hf` ✓
 - [ ] **MANDATORY**: Make `run_conditioned_inference` and `run_no_reasoning_inference` required in ALL model_utils (remove fallback)
 
-## 2. Full-Scale Baseline + Early Answering Runs (CURRENT PRIORITY)
+## 2. Full-Scale Baseline + Parallelized Experiments (CURRENT PRIORITY)
 
-- [ ] Submit baseline `flamingo_hf` — all 5 datasets (mmar, sakura-animal/emotion/gender/language)
-- [ ] Submit baseline `qwen_omni` — all 5 datasets
-- [ ] Submit early answering `flamingo_hf` — all 5 datasets (after baseline completes)
-- [ ] Submit early answering `qwen_omni` — all 5 datasets (after baseline completes)
-- [ ] Validate output schema + prompt consistency across all runs
+## 2. Full-Scale Baseline + Parallelized Experiments (CURRENT PRIORITY)
+
+## 2. Full-Scale Baseline + Early Answering & Filler Text (CURRENT PRIORITY)
+
+- [x] Submit baseline `flamingo_hf` — all 5 datasets (mmar, sakura-animal/emotion/gender/language) -> **(Submitted jobs 25177439-44)**
+- [x] Submit early answering `flamingo_hf` — all 5 datasets (1 standalone script per dataset, 3.5h, `rrg-ravanelm`)
+- [x] Submit random partial filler text `flamingo_hf` — all 5 datasets (1 standalone script per dataset, 3.5h, `rrg-csubakan`)
+- [ ] Submit baseline `qwen_omni` — all 5 datasets (pending demo completion)
 
 ## 3. Filler Text CoT Intervention
 
 - [x] Migrated `run_filler_trial()` to `run_conditioned_trial`
 - [x] Removed `no_reasoning` dependency — 0% runs actual conditioned inference with full original CoT
 - [x] Fixed `create_word_level_masked_cot` input (was passing spaces, now passes actual CoT text)
-- [ ] Smoke test filler text for both models (5 samples)
-- [ ] Full-scale filler text runs
 
 ## 4. Paraphrasing Experiment
 

@@ -83,9 +83,7 @@ while sleep 1200; do
   CPU_USAGE=$(ps -u $USER -o %cpu= | awk '{s+=$1} END {printf "%.1f", s}')
   echo "║   Total CPU Usage: ${CPU_USAGE}%"
   echo "║ GPU:"
-  nvidia-smi --query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits 2>/dev/null | while IFS=',' read -r NAME UTIL MEM_USED MEM_TOTAL TEMP; do
-    echo "║   $(echo $NAME | xargs) | Util: $(echo $UTIL | xargs)% | VRAM: $(echo $MEM_USED | xargs)/${MEM_TOTAL} MiB | Temp: $(echo $TEMP | xargs)°C"
-  done
+  nvidia-smi --query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits | awk -F',' '{printf "║   %s | Util: %s%% | VRAM: %s/%s MiB | Temp: %s°C\n", $1, $2, $3, $4, $5}'
   echo "╚══════════════════════════════════════════════════════════════════╝"
 done &
 MONITOR_PID=$!

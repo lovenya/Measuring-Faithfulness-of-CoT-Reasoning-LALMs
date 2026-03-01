@@ -488,7 +488,9 @@ def run_reasoning_inference(
         reasoning_text = raw_output
         final_text = raw_output
 
-    sanitized = sanitize_cot(reasoning_text)
+    # NOTE: reasoning_text already has the final-answer sentence stripped above.
+    # Do NOT call sanitize_cot() again — that would double-strip.
+    sanitized = reasoning_text
 
     parsed_choice = _parse_conditioned_output(
         final_text,
