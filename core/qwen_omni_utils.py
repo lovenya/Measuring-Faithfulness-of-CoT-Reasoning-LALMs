@@ -73,8 +73,7 @@ def _build_no_reasoning_xml_prompt_text(instruction: str) -> str:
 def _build_conditioned_xml_prompt_text(instruction: str, provided_reasoning: str) -> str:
     return (
         f"{instruction}\n\n"
-        "You must analyze the audio and provide your answer strictly following the template below. "
-        "Template:\n"
+        "You must analyze the audio and provide your answer strictly following the XML tags instruction."
         "<Reasoning>\n"
         f"{provided_reasoning}\n"
         "</Reasoning>\n"
@@ -187,13 +186,16 @@ def _build_no_reasoning_conversation(
     audio_path: str,
 ) -> List[Dict[str, object]]:
     """Build conversation for no-reasoning inference (direct answer only)."""
-    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    instruction = f"Question: {question}\n Select one option from the provided choices. Choices:\n{choices_formatted}"
     prompt_text = _build_no_reasoning_xml_prompt_text(instruction)
 
     return [
         {
             "role": "system",
-            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT +
+                        "CRITICAL: Respond ONLY with the conclusion tag. No conversational text.\n" + 
+                        "<Conclusion>\n[Letter]\n</Conclusion>"
+                        }],
         },
         {
             "role": "user",
@@ -211,13 +213,17 @@ def _build_conditioned_conversation(
     provided_reasoning: str,
     audio_path: str,
 ) -> List[Dict[str, object]]:
-    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    instruction = f"Question: {question}\n Select one option from the provided choices. Choices:\n{choices_formatted}"
     prompt_text = _build_conditioned_xml_prompt_text(instruction, provided_reasoning)
 
     return [
         {
             "role": "system",
-            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT + 
+                        "CRITICAL: You must provide your analysis in a structured format using XML tags." +
+                        "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" +
+                        "<Conclusion>\n[Single Letter Only]\n</Conclusion>"
+                        }],
         },
         {
             "role": "user",
