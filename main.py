@@ -66,6 +66,8 @@ def main():
     parser.add_argument('--total-parts', type=int, default=None, help="The total number of chunks the data was split into (e.g., 10).")
     
     parser.add_argument("--num-samples", type=int, default=None)
+    parser.add_argument("--start-sample", type=int, default=None, help="Start index of sample range (inclusive, 0-based). Use with --end-sample for partial runs.")
+    parser.add_argument("--end-sample", type=int, default=None, help="End index of sample range (exclusive, 0-based). Use with --start-sample for partial runs.")
     parser.add_argument("--num-chains", type=int, default=None)
     parser.add_argument('--verbose', action='store_true', help="Enable detailed, line-by-line progress logging.")
     parser.add_argument(
@@ -84,17 +86,24 @@ def main():
         ),
     )
     
-    # --- Arguments for External Perturbations (Mistral) ---
+    # --- Arguments for External Perturbations ---
     parser.add_argument(
         '--use-external-perturbations', 
         action='store_true', 
-        help="Use pre-generated perturbations from an external model (Mistral) instead of self-perturbation."
+        help="Use pre-generated perturbations from an external LLM instead of self-perturbation."
+    )
+    parser.add_argument(
+        '--external-llm', 
+        type=str, 
+        default=None,
+        choices=['mistral', 'llama'],
+        help="External LLM to use for perturbations (required when --use-external-perturbations is set)."
     )
     parser.add_argument(
         '--perturbation-file', 
         type=str, 
         default=None,
-        help="Path to the JSONL file containing pre-generated perturbations (required if --use-external-perturbations is set)."
+        help="Override: explicit path to perturbation JSONL (auto-constructed if not provided)."
     )
     parser.add_argument(
         '--filler-type',
@@ -168,6 +177,8 @@ def main():
     # --- 1. Global Configuration Setup ---
     if args.num_samples is not None: config.NUM_SAMPLES_TO_RUN = args.num_samples
     if args.num_chains is not None: config.NUM_CHAINS_PER_QUESTION = args.num_chains
+    config.START_SAMPLE = args.start_sample
+    config.END_SAMPLE = args.end_sample
     
     config.MODEL_ALIAS = args.model
     config.DATASET_NAME = args.dataset
@@ -177,10 +188,35 @@ def main():
     
     # External perturbation settings (for adding_mistakes and paraphrasing experiments)
     config.USE_EXTERNAL_PERTURBATIONS = args.use_external_perturbations
+    config.EXTERNAL_LLM = args.external_llm
     config.PERTURBATION_FILE = args.perturbation_file
     
+    # Validate: --external-llm is required when --use-external-perturbations is set
+    if config.USE_EXTERNAL_PERTURBATIONS and not config.EXTERNAL_LLM:
+        logging.error("FATAL: --external-llm is required when --use-external-perturbations is set.")
+        logging.error("Example: --use-external-perturbations --external-llm mistral")
+        sys.exit(1)
+    
+    # Auto-construct perturbation file path if --use-external-perturbations is set
+    # but --perturbation-file is not explicitly provided.
+    if config.USE_EXTERNAL_PERTURBATIONS and not config.PERTURBATION_FILE:
+        exp_for_path = args.experiment
+        if exp_for_path == 'adding_mistakes':
+            pert_filename = 'mistakes.jsonl'
+        elif exp_for_path == 'paraphrasing':
+            pert_filename = 'paraphrased.jsonl'
+        else:
+            pert_filename = None
+        
+        if pert_filename:
+            config.PERTURBATION_FILE = os.path.join(
+                config.RESULTS_DIR, 'external_llm_perturbations', config.EXTERNAL_LLM,
+                args.model, args.dataset, 'raw', pert_filename
+            )
+            logging.info(f"[AUTO-PATH] Perturbation file: {config.PERTURBATION_FILE}")
+    
     # If running in parallel with --part, update the perturbation file path to use the part file
-    # e.g., file_combined.jsonl -> file_combined.part_N.jsonl
+    # e.g., file.jsonl -> file.part_N.jsonl
     if args.part is not None and config.PERTURBATION_FILE:
         base_path, ext = os.path.splitext(config.PERTURBATION_FILE)
         config.PERTURBATION_FILE = f"{base_path}.part_{args.part}{ext}"
@@ -245,6 +281,8 @@ def main():
     # e.g., 'adding_mistakes_salmonn_mmar-restricted.part_7.jsonl'
     if args.part is not None:
         output_filename = f"{base_filename}.part_{args.part}.jsonl"
+    elif args.start_sample is not None and args.end_sample is not None:
+        output_filename = f"{base_filename}.range_{args.start_sample}_{args.end_sample}.jsonl"
     else:
         output_filename = f"{base_filename}.jsonl"
         
@@ -303,11 +341,11 @@ def main():
         experiment_module = None
         exp_name = args.experiment
         
-        # When using external perturbations, load the _combined version of the experiment
-        # which expects pre-combined files from scripts/combine_baseline_with_perturbations.py
+        # When using external perturbations, the ORIGINAL experiment scripts
+        # already handle the external lookup via config.PERTURBATION_FILE.
+        # No need to redirect to _combined versions.
         if config.USE_EXTERNAL_PERTURBATIONS and exp_name in ['adding_mistakes', 'paraphrasing']:
-            exp_name = f"{exp_name}_combined"
-            logging.info(f"Using COMBINED experiment module: {exp_name}")
+            logging.info(f"Using EXTERNAL perturbations with original experiment module: {exp_name}")
         
         # Try each subfolder in order
         for subfolder in EXPERIMENT_SUBFOLDERS:
@@ -373,7 +411,11 @@ def main():
                 dataset_path = config.DATASET_MAPPING[args.dataset]
             
             data_samples = load_dataset(dataset_path)
-            if config.NUM_SAMPLES_TO_RUN > 0:
+            # Apply sample range slicing if specified (for splitting slow models across jobs)
+            if config.START_SAMPLE is not None and config.END_SAMPLE is not None:
+                data_samples = data_samples[config.START_SAMPLE:config.END_SAMPLE]
+                logging.info(f"[SAMPLE RANGE] Processing samples {config.START_SAMPLE} to {config.END_SAMPLE} ({len(data_samples)} samples).")
+            elif config.NUM_SAMPLES_TO_RUN > 0:
                 data_samples = data_samples[:config.NUM_SAMPLES_TO_RUN]
             logging.info(f"Processing {len(data_samples)} samples from '{dataset_path}'.")
             experiment_module.run(model, processor, tokenizer, model_utils, data_samples, config)

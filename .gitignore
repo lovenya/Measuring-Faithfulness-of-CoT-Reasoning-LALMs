@@ -56,7 +56,7 @@ logs/
 submission_scripts/
 nltk_data/
 # Output files
-results/
+results/logs/
 old_results/
 plots/
 final_plots
