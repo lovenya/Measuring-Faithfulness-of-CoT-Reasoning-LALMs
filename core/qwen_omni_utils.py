@@ -70,6 +70,7 @@ def _build_no_reasoning_xml_prompt_text(instruction: str) -> str:
     )
 
 
+
 def _build_conditioned_xml_prompt_text(instruction: str, provided_reasoning: str) -> str:
     return (
         f"{instruction}\n\n"
@@ -81,6 +82,9 @@ def _build_conditioned_xml_prompt_text(instruction: str, provided_reasoning: str
         "[Single letter choice here, e.g., A]\n"
         "</Conclusion>"
     )
+
+
+
 
 
 def _parse_model_output(raw_text: str) -> Dict[str, str | None]:
@@ -194,6 +198,7 @@ def _build_no_reasoning_conversation(
             "role": "system",
             "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT +
                         "CRITICAL: Respond ONLY with the conclusion tag. No conversational text.\n" + 
+                        "Do not engage in conversational filler. Use the following structure:\n" +
                         "<Conclusion>\n[Letter]\n</Conclusion>"
                         }],
         },
@@ -221,6 +226,7 @@ def _build_conditioned_conversation(
             "role": "system",
             "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT + 
                         "CRITICAL: You must provide your analysis in a structured format using XML tags." +
+                        "Do not engage in conversational filler. Use the following structure:\n" +
                         "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" +
                         "<Conclusion>\n[Single Letter Only]\n</Conclusion>"
                         }],
@@ -559,20 +565,22 @@ def run_continue_reasoning(
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
 
-    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    instruction = f"Question: {question}\n Select one option from the provided choices. Choices:\n{choices_formatted}"
     prompt_text = (
         f"{instruction}\n\n"
-        "You must analyze the audio and provide your answer strictly following the template below. "
-        "Continue the analysis from where it left off.\n\n"
-        "Template:\n"
         "<Reasoning>\n"
-        f"{partial_cot}"
-    )
+        f"{partial_cot}\n"
+        )
 
     conversation = [
         {
             "role": "system",
-            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT + 
+                        "CRITICAL: You must provide your analysis in a structured format using XML tags." +
+                        "Do not engage in conversational filler. Use the following structure:\n"
+                        "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" +
+                        "<Conclusion>\n[Single Letter Only]\n</Conclusion>"
+                        }],
         },
         {
             "role": "user",
