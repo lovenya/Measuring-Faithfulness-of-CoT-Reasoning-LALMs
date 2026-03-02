@@ -49,8 +49,9 @@ def load_external_perturbations(perturbation_path: str) -> dict:
         for line in f:
             try:
                 data = json.loads(line)
-                # sentence_idx in paraphrase mode = num_sentences_paraphrased
-                key = (data['id'], data['chain_id'], data['sentence_idx'])
+                # Support both old (sentence_idx) and new (num_sentences_paraphrased) field names
+                num_paraphrased = data.get('num_sentences_paraphrased', data.get('sentence_idx'))
+                key = (data['id'], data['chain_id'], num_paraphrased)
                 perturbations[key] = data['paraphrased_text']
             except (json.JSONDecodeError, KeyError) as e:
                 logging.warning(f"Skipping malformed perturbation line: {e}")

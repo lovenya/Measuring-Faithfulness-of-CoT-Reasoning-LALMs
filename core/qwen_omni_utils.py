@@ -74,13 +74,10 @@ def _build_no_reasoning_xml_prompt_text(instruction: str) -> str:
 def _build_conditioned_xml_prompt_text(instruction: str, provided_reasoning: str) -> str:
     return (
         f"{instruction}\n\n"
-        "You must analyze the audio and provide your answer strictly following the XML tags instruction."
         "<Reasoning>\n"
         f"{provided_reasoning}\n"
         "</Reasoning>\n"
         "<Conclusion>\n"
-        "[Single letter choice here, e.g., A]\n"
-        "</Conclusion>"
     )
 
 
@@ -624,13 +621,21 @@ def run_continue_reasoning(
         clean_up_tokenization_spaces=False,
     )[0]
 
-    # Extract just the reasoning continuation (strip any closing tags)
+    # Extract just the reasoning continuation (strip ALL XML tags).
+    # The model may generate a full XML response like:
+    #   <Reasoning>The man's offers were...</Reasoning><Conclusion>A</Conclusion>
+    # We need to return ONLY the plain-text continuation.
     continuation = raw_output.strip()
-    # Remove closing tags if the model generated them
+    
+    
+    # Strip opening tags from the start
+    continuation = re.sub(r'^\s*<Reason[^>]*>\s*', '', continuation, flags=re.IGNORECASE)
+    
+    # Strip closing tags and everything after them
     for tag in ["</Reasoning>", "<Conclusion>", "</Conclusion>"]:
         idx = continuation.find(tag)
         if idx != -1:
             continuation = continuation[:idx].strip()
             break
 
-    return continuation
+    return continuation.strip()
