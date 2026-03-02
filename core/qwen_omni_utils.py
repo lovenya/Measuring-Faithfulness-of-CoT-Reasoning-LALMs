@@ -19,7 +19,7 @@ import config as framework_config
 
 _DEFAULT_SYSTEM_PROMPT = (
     "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, "
-    "capable of perceiving auditory and visual inputs, as well as generating text and speech."
+    "capable of perceiving auditory and visual inputs"
 )
 
 _SINGLE_TURN_SUFFIX = (
@@ -59,15 +59,7 @@ def _extract_instruction_from_messages(messages: List[Dict[str, str]]) -> str:
 def _build_xml_prompt_text(instruction: str) -> str:
     return (
         f"{instruction}\n\n"
-        "You must analyze the audio and provide your answer strictly following the template below. "
-        "Do not include any other text outside of these tags.\n\n"
-        "Template:\n"
-        "<Reasoning>\n"
-        "[Your step-by-step thinking here]\n"
-        "</Reasoning>\n"
-        "<Conclusion>\n"
-        "[Single letter choice here, e.g., A]\n"
-        "</Conclusion>"
+        "Please think and reason about the input audio before you respond using the XML template."
     )
 
 
@@ -75,12 +67,6 @@ def _build_no_reasoning_xml_prompt_text(instruction: str) -> str:
     """Build XML prompt that asks for a direct answer without reasoning."""
     return (
         f"{instruction}\n\n"
-        "Based on the audio, provide your answer directly using the template below. "
-        "Do not include any reasoning or analysis.\n\n"
-        "Template:\n"
-        "<Conclusion>\n"
-        "[Single letter choice here, e.g., A]\n"
-        "</Conclusion>"
     )
 
 
@@ -88,7 +74,6 @@ def _build_conditioned_xml_prompt_text(instruction: str, provided_reasoning: str
     return (
         f"{instruction}\n\n"
         "You must analyze the audio and provide your answer strictly following the template below. "
-        "The analysis has been provided for you; use it to reach the conclusion.\n\n"
         "Template:\n"
         "<Reasoning>\n"
         f"{provided_reasoning}\n"
@@ -315,13 +300,17 @@ def run_reasoning_inference(
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
 
-    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    instruction = f"Question: {question}\n Select one option from the provided choices. Choices:\n{choices_formatted}"
     prompt_text = _build_xml_prompt_text(instruction)
 
     conversation = [
         {
             "role": "system",
-            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT +
+                         "CRITICAL: You must provide your analysis in a structured format using XML tags." +
+                         "Do not engage in conversational filler. Use the following structure:\n" + 
+                         "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" + 
+                         "<Conclusion>\n[Single Letter Only]\n</Conclusion>"}],
         },
         {
             "role": "user",
