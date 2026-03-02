@@ -78,6 +78,7 @@ def _build_conditioned_xml_prompt_text(instruction: str, provided_reasoning: str
         f"{provided_reasoning}\n"
         "</Reasoning>\n"
         "<Conclusion>\n"
+        "The answer is:"
     )
 
 
@@ -196,7 +197,7 @@ def _build_no_reasoning_conversation(
             "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT +
                         "CRITICAL: Respond ONLY with the conclusion tag. No conversational text.\n" + 
                         "Do not engage in conversational filler. Use the following structure:\n" +
-                        "<Conclusion>\n[Letter]\n</Conclusion>"
+                        "<Conclusion> \nThe answer is:[Single Letter Only]\n</Conclusion>"
                         }],
         },
         {
@@ -212,11 +213,14 @@ def _build_no_reasoning_conversation(
 def _build_conditioned_conversation(
     question: str,
     choices_formatted: str,
-    provided_reasoning: str,
     audio_path: str,
 ) -> List[Dict[str, object]]:
     instruction = f"Question: {question}\n Select one option from the provided choices. Choices:\n{choices_formatted}"
-    prompt_text = _build_conditioned_xml_prompt_text(instruction, provided_reasoning)
+    
+    prompt_text = (
+        f"{instruction}\n\n"
+        "Please think and reason about the input audio before you respond using the XML template."
+    )
 
     return [
         {
@@ -389,7 +393,6 @@ def run_conditioned_inference(
     conversation = _build_conditioned_conversation(
         question=question,
         choices_formatted=choices_formatted,
-        provided_reasoning=provided_reasoning,
         audio_path=audio_path,
     )
 
@@ -398,6 +401,11 @@ def run_conditioned_inference(
         add_generation_prompt=True,
         tokenize=False,
     )
+    
+    # Force the model to continue from the conclusion block
+    appended_reasoning = f"<Reasoning>\n{provided_reasoning}\n</Reasoning>\n<Conclusion>\n"
+    text += appended_reasoning
+
     process_mm_info = _ensure_process_mm_info()
     audios, images, videos = process_mm_info(conversation, use_audio_in_video=False)
 
@@ -426,10 +434,12 @@ def run_conditioned_inference(
         clean_up_tokenization_spaces=False,
     )[0]
 
+    logged_conversation = conversation + [{"role": "assistant", "content": appended_reasoning}]
+
     return {
         "predicted_choice": parse_answer(raw_output),
         "final_answer_raw": raw_output,
-        "final_prompt_messages": conversation,
+        "final_prompt_messages": logged_conversation,
     }
 
 

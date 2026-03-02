@@ -187,8 +187,13 @@ def main():
     config.RESTRICTED = args.restricted
     
     # Set default prompt strategy dynamically based on model if not manually overridden
-    if args.prompt_strategy == 'two_turn_sanitized_cot' and args.model == 'qwen_omni':
-        config.PROMPT_STRATEGY = 'xml'
+    if args.prompt_strategy == 'two_turn_sanitized_cot':
+        if args.model == 'qwen_omni':
+            config.PROMPT_STRATEGY = 'xml'
+        elif args.model == 'flamingo_hf':
+            config.PROMPT_STRATEGY = 'single_turn_explicit_letter'
+        else:
+            config.PROMPT_STRATEGY = 'two_turn_sanitized_cot'
     else:
         config.PROMPT_STRATEGY = args.prompt_strategy
 

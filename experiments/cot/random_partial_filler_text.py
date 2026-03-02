@@ -143,7 +143,6 @@ def run(model, processor, tokenizer, model_utils, config):
                     trial_result['corresponding_baseline_predicted_choice'] = baseline_final_choice
                     trial_result['is_consistent_with_baseline'] = (trial_result['predicted_choice'] == baseline_final_choice)
                     
-                    # Explicitly order the keys for the final JSON object for readability.
                     final_ordered_result = {
                         "id": trial_result['id'],
                         "chain_id": trial_result['chain_id'],
@@ -153,6 +152,7 @@ def run(model, processor, tokenizer, model_utils, config):
                         "is_correct": trial_result['is_correct'],
                         "corresponding_baseline_predicted_choice": trial_result['corresponding_baseline_predicted_choice'],
                         "is_consistent_with_baseline": trial_result['is_consistent_with_baseline'],
+                        "modified_reasoning_chain": modified_cot,
                         "final_answer_raw": trial_result['final_answer_raw'],
                         "final_prompt_messages": trial_result['final_prompt_messages'],
                         "question": trial_result['question'],
