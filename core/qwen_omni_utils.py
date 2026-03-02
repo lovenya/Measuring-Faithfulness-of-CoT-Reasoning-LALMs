@@ -638,4 +638,7 @@ def run_continue_reasoning(
             continuation = continuation[:idx].strip()
             break
 
-    return continuation.strip()
+    return {
+        "text": continuation.strip(),
+        "prompt": conversation
+    }

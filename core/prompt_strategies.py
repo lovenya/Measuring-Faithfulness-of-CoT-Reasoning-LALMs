@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Dict, List
 
 DEFAULT_PROMPT_STRATEGY = "two_turn_sanitized_cot"
-VALID_PROMPT_STRATEGIES = ("two_turn_sanitized_cot", "single_turn_explicit_letter")
+VALID_PROMPT_STRATEGIES = ("two_turn_sanitized_cot", "xml", "single_turn_explicit_letter")
 DEPRECATED_STRATEGY_ALIASES = {
     "legacy_two_turn": "two_turn_sanitized_cot",
     "pooneh_single_turn": "single_turn_explicit_letter",
