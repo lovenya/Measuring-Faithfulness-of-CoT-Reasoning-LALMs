@@ -225,10 +225,10 @@ def _build_conditioned_conversation(
         {
             "role": "system",
             "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT + 
-                        "CRITICAL: You must provide your analysis in a structured format using XML tags." +
-                        "Do not engage in conversational filler. Use the following structure:\n" +
-                        "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" +
-                        "<Conclusion>\n[Single Letter Only]\n</Conclusion>"
+                        "\n CRITICAL: You must provide your analysis in a structured format using XML tags." +
+                        " Do not engage in conversational filler. Use the following structure:\n" +
+                        " <Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" +
+                        " <Conclusion>\n[Single Letter Only]\n</Conclusion>"
                         }],
         },
         {
