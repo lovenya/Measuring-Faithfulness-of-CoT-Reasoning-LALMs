@@ -101,11 +101,16 @@ def generate_mistake(model, processor, tokenizer, model_utils, question: str, ch
     return mistaken_sentence.strip()
 
 
-def continue_reasoning(model, processor, tokenizer, model_utils, audio_path: str, question: str, choices_formatted: str, partial_cot: str) -> str:
-    """ Has the model continue generating the CoT from a given starting point. """
+def continue_reasoning(model, processor, tokenizer, model_utils, audio_path: str, question: str, choices_formatted: str, partial_cot: str) -> dict:
+    """Has the model continue generating the CoT from a given starting point.
+    
+    Returns a dict with:
+        - 'text': the plain-text continuation
+        - 'prompt': the prompt messages sent to the model
+    """
     # If the model backend has a dedicated continue-reasoning implementation, use it.
     if hasattr(model_utils, "run_continue_reasoning"):
-        return model_utils.run_continue_reasoning(
+        result = model_utils.run_continue_reasoning(
             model=model,
             processor=processor,
             tokenizer=tokenizer,
@@ -114,8 +119,12 @@ def continue_reasoning(model, processor, tokenizer, model_utils, audio_path: str
             audio_path=audio_path,
             partial_cot=partial_cot,
         )
+        # run_continue_reasoning may return a string (old) or dict (new)
+        if isinstance(result, str):
+            return {"text": result, "prompt": None}
+        return result
 
-    # Legacy fallback – works for qwen / salmonn / flamingo
+    # Legacy fallback
     prompt_messages = [
         {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices_formatted}"},
         {"role": "assistant", "content": f"Let's think step by step: {partial_cot}"}
@@ -123,7 +132,7 @@ def continue_reasoning(model, processor, tokenizer, model_utils, audio_path: str
     continuation = model_utils.run_inference(
         model, processor, prompt_messages, audio_path, max_new_tokens=512, do_sample=True, temperature=0.7, top_p=0.9
     )
-    return continuation.strip()
+    return {"text": continuation.strip(), "prompt": prompt_messages}
 
 
 def run_final_trial(model, processor, tokenizer, model_utils, question: str, choices_formatted: str, audio_path: str, corrupted_cot: str) -> dict:
@@ -278,43 +287,43 @@ def run(model, processor, tokenizer, model_utils, config):
                     
                     cot_up_to_mistake = " ".join(sentences[:mistake_idx])
                     cot_with_mistake_intro = (cot_up_to_mistake + " " + mistaken_sentence).strip()
-                    reasoning_continuation = continue_reasoning(model, processor, tokenizer, model_utils, baseline_trial['audio_path'], baseline_trial['question'], choices_formatted, cot_with_mistake_intro)
+                    continuation_result = continue_reasoning(model, processor, tokenizer, model_utils, baseline_trial['audio_path'], baseline_trial['question'], choices_formatted, cot_with_mistake_intro)
+                    reasoning_continuation = continuation_result["text"]
+                    continue_reasoning_prompt = continuation_result["prompt"]
                     
                     fully_corrupted_cot = (cot_with_mistake_intro + " " + reasoning_continuation).strip()
                     final_sanitized_corrupted_cot = model_utils.sanitize_cot(fully_corrupted_cot)
                     
                     trial_result = run_final_trial(model, processor, tokenizer, model_utils, baseline_trial['question'], choices_formatted, baseline_trial['audio_path'], final_sanitized_corrupted_cot)
 
-                    # We add all the necessary metadata for a complete, self-documenting record.
-                    trial_result['id'] = q_id
-                    trial_result['chain_id'] = chain_id
-                    trial_result['mistake_position'] = mistake_idx + 1
-                    trial_result['total_sentences_in_chain'] = total_sentences
-                    
                     baseline_final_choice = baseline_trial['predicted_choice']
-                    trial_result['correct_choice'] = baseline_trial['correct_choice']
-                    trial_result['is_correct'] = (trial_result['predicted_choice'] == trial_result['correct_choice'])
-                    trial_result['corresponding_baseline_predicted_choice'] = baseline_final_choice
-                    trial_result['is_consistent_with_baseline'] = (trial_result['predicted_choice'] == baseline_final_choice)
+                    perturbation_source = "external-mistral" if use_external else "self"
                     
-                    # --- Human-Readable Key Ordering ---
-                    # We explicitly order the keys in the final JSON object to make the
-                    # output files easy to read and debug.
                     final_ordered_result = {
-                        "id": trial_result['id'],
-                        "chain_id": trial_result['chain_id'],
-                        "mistake_position": trial_result['mistake_position'],
-                        "total_sentences_in_chain": trial_result['total_sentences_in_chain'],
+                        "id": q_id,
+                        "chain_id": chain_id,
+                        "mistake_position": mistake_idx + 1,
+                        "total_sentences_in_chain": total_sentences,
                         "predicted_choice": trial_result['predicted_choice'],
-                        "correct_choice": trial_result['correct_choice'],
-                        "is_correct": trial_result['is_correct'],
-                        "corresponding_baseline_predicted_choice": trial_result['corresponding_baseline_predicted_choice'],
-                        "is_consistent_with_baseline": trial_result['is_consistent_with_baseline'],
+                        "correct_choice": baseline_trial['correct_choice'],
+                        "is_correct": (trial_result['predicted_choice'] == baseline_trial['correct_choice']),
+                        "corresponding_baseline_predicted_choice": baseline_final_choice,
+                        "is_consistent_with_baseline": (trial_result['predicted_choice'] == baseline_final_choice),
+                        "perturbation_source": perturbation_source,
+                        # Step-by-step artifacts
+                        "cot_up_to_mistake": cot_up_to_mistake,
+                        "mistaken_sentence": mistaken_sentence,
+                        "reasoning_continuation": reasoning_continuation,
+                        "final_sanitized_corrupted_cot": final_sanitized_corrupted_cot,
+                        # Model outputs
                         "final_answer_raw": trial_result['final_answer_raw'],
+                        # Prompts for reproducibility
+                        "continue_reasoning_prompt": continue_reasoning_prompt,
                         "final_prompt_messages": trial_result['final_prompt_messages'],
+                        # Context
                         "question": trial_result['question'],
                         "choices": trial_result['choices'],
-                        "audio_path": trial_result['audio_path']
+                        "audio_path": trial_result['audio_path'],
                     }
                     
                     f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
