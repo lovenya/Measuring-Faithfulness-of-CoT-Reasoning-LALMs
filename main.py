@@ -86,17 +86,24 @@ def main():
         ),
     )
     
-    # --- Arguments for External Perturbations (Mistral) ---
+    # --- Arguments for External Perturbations ---
     parser.add_argument(
         '--use-external-perturbations', 
         action='store_true', 
-        help="Use pre-generated perturbations from an external model (Mistral) instead of self-perturbation."
+        help="Use pre-generated perturbations from an external LLM instead of self-perturbation."
+    )
+    parser.add_argument(
+        '--external-llm', 
+        type=str, 
+        default=None,
+        choices=['mistral', 'llama'],
+        help="External LLM to use for perturbations (required when --use-external-perturbations is set)."
     )
     parser.add_argument(
         '--perturbation-file', 
         type=str, 
         default=None,
-        help="Path to the JSONL file containing pre-generated perturbations (required if --use-external-perturbations is set)."
+        help="Override: explicit path to perturbation JSONL (auto-constructed if not provided)."
     )
     parser.add_argument(
         '--filler-type',
@@ -181,7 +188,14 @@ def main():
     
     # External perturbation settings (for adding_mistakes and paraphrasing experiments)
     config.USE_EXTERNAL_PERTURBATIONS = args.use_external_perturbations
+    config.EXTERNAL_LLM = args.external_llm
     config.PERTURBATION_FILE = args.perturbation_file
+    
+    # Validate: --external-llm is required when --use-external-perturbations is set
+    if config.USE_EXTERNAL_PERTURBATIONS and not config.EXTERNAL_LLM:
+        logging.error("FATAL: --external-llm is required when --use-external-perturbations is set.")
+        logging.error("Example: --use-external-perturbations --external-llm mistral")
+        sys.exit(1)
     
     # Auto-construct perturbation file path if --use-external-perturbations is set
     # but --perturbation-file is not explicitly provided.
@@ -196,7 +210,7 @@ def main():
         
         if pert_filename:
             config.PERTURBATION_FILE = os.path.join(
-                config.RESULTS_DIR, 'external_llm_perturbations', 'mistral',
+                config.RESULTS_DIR, 'external_llm_perturbations', config.EXTERNAL_LLM,
                 args.model, args.dataset, 'raw', pert_filename
             )
             logging.info(f"[AUTO-PATH] Perturbation file: {config.PERTURBATION_FILE}")

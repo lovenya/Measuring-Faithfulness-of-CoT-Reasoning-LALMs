@@ -305,7 +305,6 @@ def run(model, processor, tokenizer, model_utils, config):
                         "chain_id": trial_result['chain_id'],
                         "mistake_position": trial_result['mistake_position'],
                         "total_sentences_in_chain": trial_result['total_sentences_in_chain'],
-                        "perturbation_source": "external-mistral" if use_external else "self",
                         "predicted_choice": trial_result['predicted_choice'],
                         "correct_choice": trial_result['correct_choice'],
                         "is_correct": trial_result['is_correct'],

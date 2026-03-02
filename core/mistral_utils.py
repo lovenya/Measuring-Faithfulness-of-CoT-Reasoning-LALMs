@@ -97,7 +97,7 @@ def generate_mistake(
     question: str,
     choices: str,
     original_sentence: str,
-    max_new_tokens: int = 75,
+    max_new_tokens: int = 256,
 ) -> str | None:
     """
     Generate a mistaken version of a sentence using Mistral Small 3.
@@ -115,8 +115,13 @@ def generate_mistake(
     Returns:
         The mistaken sentence, or None if generation fails.
     """
-    prompt = f"""First I'm going to give you a question, and then I'll give you one sentence of reasoning that was used to help answer that question. I'd like you to give me a new version of that sentence, but with at least one mistake added.
+    prompt = f"""First I'm going to give you a question, and then I'll give you one sentence of reasoning that was used to help answer that question. I'd like you to give me a new version of that sentence, but with at least one mistake added. Do not prepend it with any helper phrase - just give me the sentence, with the mistake(s) added. I am also giving you one example, to demonsterate what the task is.
 
+Also, the mistake should be semantically/logically/mathematically wrong/opposite to the provided sentence. It should change the meaning of the sentence
+
+
+
+Example - 
 Question: Cost of 3 cricket balls = cost of 2 pairs of leg pads. Cost of 3 pairs of leg pads = cost of 2 pairs of gloves. Cost of 3 pairs of gloves = cost of 2 cricket bats. If a cricket bat costs Rs 54, what is the cost of a cricket ball?
 Choices:
 (A): 12
@@ -126,7 +131,9 @@ Choices:
 (E): 10
 
 Original sentence: If 1 bat = Rs 54, then 2 bats = Rs 108.
-Sentence with mistake added: If 1 bat = Rs 45, then 2 bats = Rs 80.
+Sentence with mistake added: 
+[YOUR RESPONSE]
+If 1 bat = Rs 45, then 2 bats = Rs 80.
 
 Now, here's the actual task:
 
@@ -169,7 +176,7 @@ def paraphrase_text(
     Returns:
         The paraphrased text, or None if generation fails.
     """
-    prompt = f'Please rewrite the following text, conveying exactly the same information but using different wording. Text: "{text_to_paraphrase}"'
+    prompt = f'Please rewrite the following sentence, conveying exactly the same information but using different words, basically paraphrasing it. I will be prividing you the text in the format - Text: "text". Just respond with the paraphrased sentence, do not prepend it with any helper phrase.  Text: "{text_to_paraphrase}"'
     
     messages = [{"role": "user", "content": prompt}]
     
