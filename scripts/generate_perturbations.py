@@ -76,8 +76,10 @@ def load_existing_perturbations(output_path: str) -> set:
             for line in f:
                 try:
                     data = json.loads(line)
-                    # Key: (id, chain_id, sentence_idx)
-                    completed.add((data['id'], data['chain_id'], data['sentence_idx']))
+                    # Support both mistake formatting (sentence_idx) and paraphrasing (num_sentences_paraphrased)
+                    idx = data.get('sentence_idx', data.get('num_sentences_paraphrased'))
+                    if idx is not None:
+                        completed.add((data['id'], data['chain_id'], idx))
                 except (json.JSONDecodeError, KeyError):
                     continue
     return completed
@@ -87,7 +89,8 @@ def generate_mistakes_for_baseline(model, baseline_results: list[dict], output_p
     """Generate mistake perturbations for all sentences in baseline results."""
     
     completed = load_existing_perturbations(output_path)
-    logger.info(f"Found {len(completed)} existing perturbations. Will skip these.")
+    completed_trials = len(set((q_id, c_id) for q_id, c_id, _ in completed))
+    logger.info(f"Found existing perturbations for {completed_trials} trials ({len(completed)} total sentences) in {output_path}. Will skip these.")
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
@@ -136,7 +139,8 @@ def generate_paraphrases_for_baseline(model, baseline_results: list[dict], outpu
     """Generate paraphrase perturbations for progressive paraphrasing."""
     
     completed = load_existing_perturbations(output_path)
-    logger.info(f"Found {len(completed)} existing perturbations. Will skip these.")
+    completed_trials = len(set((q_id, c_id) for q_id, c_id, _ in completed))
+    logger.info(f"Found existing perturbations for {completed_trials} trials ({len(completed)} total paraphrases) in {output_path}. Will skip these.")
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
@@ -274,8 +278,12 @@ def main():
     
     # Limit samples if specified
     if args.num_samples is not None:
+        original_len = len(baseline_results)
         baseline_results = baseline_results[:args.num_samples]
-        logger.info(f"Limited to {len(baseline_results)} baseline trials (--num-samples)")
+        if original_len < args.num_samples:
+            logger.info(f"Note: Requested {args.num_samples} samples, but there are only {original_len} total available trials after chain filtering!")
+        else:
+            logger.info(f"Limited to {len(baseline_results)} baseline trials (--num-samples)")
     else:
         logger.info(f"Loaded {len(baseline_results)} baseline trials")
     
