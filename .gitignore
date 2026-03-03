@@ -101,3 +101,6 @@ advadversarial_aug_data.tar.gz
 adverserial_sythetic_data.tar.gz
 
 local_readme.md
+
+
+results/
