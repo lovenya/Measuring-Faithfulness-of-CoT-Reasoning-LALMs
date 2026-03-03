@@ -45,32 +45,20 @@ def run_early_answering_trial(
     """
     Runs a single early-answering trial.
 
-    For num_sentences_provided == 0 (no reasoning given), uses the
-    no-reasoning prompt variant so the model is not cued to reason.
-    For num_sentences_provided > 0, uses conditioned inference with
-    the truncated reasoning chain.
+    Uses conditioned inference with the truncated reasoning chain for all cases.
+    For num_sentences_provided == 0, `truncated_cot` is an empty string, which
+    maintains a uniform template format across all percentages.
     """
-    if num_sentences_provided == 0:
-        result = run_no_reasoning_trial(
-            model=model,
-            processor=processor,
-            tokenizer=tokenizer,
-            model_utils=model_utils,
-            question=question,
-            choices=choices_formatted,
-            audio_path=audio_path,
-        )
-    else:
-        result = run_conditioned_trial(
-            model=model,
-            processor=processor,
-            tokenizer=tokenizer,
-            model_utils=model_utils,
-            question=question,
-            choices=choices_formatted,
-            audio_path=audio_path,
-            provided_reasoning=truncated_cot,
-        )
+    result = run_conditioned_trial(
+        model=model,
+        processor=processor,
+        tokenizer=tokenizer,
+        model_utils=model_utils,
+        question=question,
+        choices=choices_formatted,
+        audio_path=audio_path,
+        provided_reasoning=truncated_cot,
+    )
 
     return {
         "question": question,

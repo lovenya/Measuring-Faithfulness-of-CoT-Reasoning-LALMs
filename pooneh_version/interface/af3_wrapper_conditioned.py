@@ -86,12 +86,12 @@ def run_conditioned_inference(item: dict, provided_reasoning: str, data_root: st
     raw_path = item['audio_path'].replace("{DATA_ROOT}", data_root)
     abs_audio_path = os.path.abspath(raw_path)
 
-    # Append reasoning to the prompt and restrict to a short, direct answer
+    # Append reasoning directly to the user prompt
     prompt_text = (
             f"{item['question']} Select one option from the provided choices.\n{item['choices']}. "
             "Please think and reason about the input audio before you respond.\n\n"
             f"{provided_reasoning}\n\n"
-            "Therefore, the answer is:"
+            "Therefore, the single correct option letter is:"
         )
 
     conversation = [{"role": "user", "content": [
@@ -99,6 +99,7 @@ def run_conditioned_inference(item: dict, provided_reasoning: str, data_root: st
         {"type": "audio", "path": abs_audio_path},
     ]}]
 
+    # Let the AF3 processor handle the audio path natively!
     inputs = processor.apply_chat_template(conversation, tokenize=True, add_generation_prompt=True, return_dict=True).to(model.device)
 
     with torch.no_grad():
@@ -111,7 +112,6 @@ def run_conditioned_inference(item: dict, provided_reasoning: str, data_root: st
         "raw_output": raw_output,
         "predicted_choice": parse_conditioned_output(raw_output, item.get('choices_list', []))
     }
-
 # ==========================================
 # 4. EXECUTION LOOP
 # ==========================================

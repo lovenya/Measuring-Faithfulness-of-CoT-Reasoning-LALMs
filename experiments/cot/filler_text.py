@@ -142,6 +142,7 @@ def run(model, processor, tokenizer, model_utils, config):
                         "predicted_choice": trial_result['predicted_choice'],
                         "correct_choice": trial_result['correct_choice'],
                         "is_correct": trial_result['is_correct'],
+                        "modified_reasoning_chain": modified_cot,
                         "final_answer_raw": trial_result['final_answer_raw'],
                         "final_prompt_messages": trial_result['final_prompt_messages'],
                         "question": trial_result['question'],

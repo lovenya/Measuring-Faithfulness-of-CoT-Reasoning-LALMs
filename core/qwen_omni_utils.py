@@ -19,7 +19,7 @@ import config as framework_config
 
 _DEFAULT_SYSTEM_PROMPT = (
     "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, "
-    "capable of perceiving auditory and visual inputs, as well as generating text and speech."
+    "capable of perceiving auditory and visual inputs"
 )
 
 _SINGLE_TURN_SUFFIX = (
@@ -59,15 +59,7 @@ def _extract_instruction_from_messages(messages: List[Dict[str, str]]) -> str:
 def _build_xml_prompt_text(instruction: str) -> str:
     return (
         f"{instruction}\n\n"
-        "You must analyze the audio and provide your answer strictly following the template below. "
-        "Do not include any other text outside of these tags.\n\n"
-        "Template:\n"
-        "<Reasoning>\n"
-        "[Your step-by-step thinking here]\n"
-        "</Reasoning>\n"
-        "<Conclusion>\n"
-        "[Single letter choice here, e.g., A]\n"
-        "</Conclusion>"
+        "Please think and reason about the input audio before you respond using the XML template."
     )
 
 
@@ -75,28 +67,22 @@ def _build_no_reasoning_xml_prompt_text(instruction: str) -> str:
     """Build XML prompt that asks for a direct answer without reasoning."""
     return (
         f"{instruction}\n\n"
-        "Based on the audio, provide your answer directly using the template below. "
-        "Do not include any reasoning or analysis.\n\n"
-        "Template:\n"
-        "<Conclusion>\n"
-        "[Single letter choice here, e.g., A]\n"
-        "</Conclusion>"
     )
+
 
 
 def _build_conditioned_xml_prompt_text(instruction: str, provided_reasoning: str) -> str:
     return (
         f"{instruction}\n\n"
-        "You must analyze the audio and provide your answer strictly following the template below. "
-        "The analysis has been provided for you; use it to reach the conclusion.\n\n"
-        "Template:\n"
         "<Reasoning>\n"
         f"{provided_reasoning}\n"
         "</Reasoning>\n"
         "<Conclusion>\n"
-        "[Single letter choice here, e.g., A]\n"
-        "</Conclusion>"
+        "The answer is:"
     )
+
+
+
 
 
 def _parse_model_output(raw_text: str) -> Dict[str, str | None]:
@@ -202,13 +188,17 @@ def _build_no_reasoning_conversation(
     audio_path: str,
 ) -> List[Dict[str, object]]:
     """Build conversation for no-reasoning inference (direct answer only)."""
-    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    instruction = f"Question: {question}\n Select one option from the provided choices. Choices:\n{choices_formatted}"
     prompt_text = _build_no_reasoning_xml_prompt_text(instruction)
 
     return [
         {
             "role": "system",
-            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT +
+                        "CRITICAL: Respond ONLY with the conclusion tag. No conversational text.\n" + 
+                        "Do not engage in conversational filler. Use the following structure:\n" +
+                        "<Conclusion> \nThe answer is:[Single Letter Only]\n</Conclusion>"
+                        }],
         },
         {
             "role": "user",
@@ -223,16 +213,24 @@ def _build_no_reasoning_conversation(
 def _build_conditioned_conversation(
     question: str,
     choices_formatted: str,
-    provided_reasoning: str,
     audio_path: str,
 ) -> List[Dict[str, object]]:
-    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
-    prompt_text = _build_conditioned_xml_prompt_text(instruction, provided_reasoning)
+    instruction = f"Question: {question}\n Select one option from the provided choices. Choices:\n{choices_formatted}"
+    
+    prompt_text = (
+        f"{instruction}\n\n"
+        "Please think and reason about the input audio before you respond using the XML template."
+    )
 
     return [
         {
             "role": "system",
-            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT + 
+                        "\n CRITICAL: You must provide your analysis in a structured format using XML tags." +
+                        " Do not engage in conversational filler. Use the following structure:\n" +
+                        " <Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" +
+                        " <Conclusion>\n[Single Letter Only]\n</Conclusion>"
+                        }],
         },
         {
             "role": "user",
@@ -315,13 +313,17 @@ def run_reasoning_inference(
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
 
-    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    instruction = f"Question: {question}\n Select one option from the provided choices. Choices:\n{choices_formatted}"
     prompt_text = _build_xml_prompt_text(instruction)
 
     conversation = [
         {
             "role": "system",
-            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT +
+                         "CRITICAL: You must provide your analysis in a structured format using XML tags." +
+                         "Do not engage in conversational filler. Use the following structure:\n" + 
+                         "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" + 
+                         "<Conclusion>\n[Single Letter Only]\n</Conclusion>"}],
         },
         {
             "role": "user",
@@ -391,7 +393,6 @@ def run_conditioned_inference(
     conversation = _build_conditioned_conversation(
         question=question,
         choices_formatted=choices_formatted,
-        provided_reasoning=provided_reasoning,
         audio_path=audio_path,
     )
 
@@ -400,6 +401,11 @@ def run_conditioned_inference(
         add_generation_prompt=True,
         tokenize=False,
     )
+    
+    # Force the model to continue from the conclusion block
+    appended_reasoning = f"<Reasoning>\n{provided_reasoning}\n</Reasoning>\n<Conclusion>\n"
+    text += appended_reasoning
+
     process_mm_info = _ensure_process_mm_info()
     audios, images, videos = process_mm_info(conversation, use_audio_in_video=False)
 
@@ -428,10 +434,12 @@ def run_conditioned_inference(
         clean_up_tokenization_spaces=False,
     )[0]
 
+    logged_conversation = conversation + [{"role": "assistant", "content": appended_reasoning}]
+
     return {
         "predicted_choice": parse_answer(raw_output),
         "final_answer_raw": raw_output,
-        "final_prompt_messages": conversation,
+        "final_prompt_messages": logged_conversation,
     }
 
 
@@ -564,20 +572,22 @@ def run_continue_reasoning(
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
 
-    instruction = f"Question: {question}\nChoices:\n{choices_formatted}"
+    instruction = f"Question: {question}\n Select one option from the provided choices. Choices:\n{choices_formatted}"
     prompt_text = (
         f"{instruction}\n\n"
-        "You must analyze the audio and provide your answer strictly following the template below. "
-        "Continue the analysis from where it left off.\n\n"
-        "Template:\n"
         "<Reasoning>\n"
-        f"{partial_cot}"
-    )
+        f"{partial_cot}\n"
+        )
 
     conversation = [
         {
             "role": "system",
-            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT}],
+            "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT + 
+                        "CRITICAL: You must provide your analysis in a structured format using XML tags." +
+                        "Do not engage in conversational filler. Use the following structure:\n"
+                        "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" +
+                        "<Conclusion>\n[Single Letter Only]\n</Conclusion>"
+                        }],
         },
         {
             "role": "user",
@@ -621,13 +631,24 @@ def run_continue_reasoning(
         clean_up_tokenization_spaces=False,
     )[0]
 
-    # Extract just the reasoning continuation (strip any closing tags)
+    # Extract just the reasoning continuation (strip ALL XML tags).
+    # The model may generate a full XML response like:
+    #   <Reasoning>The man's offers were...</Reasoning><Conclusion>A</Conclusion>
+    # We need to return ONLY the plain-text continuation.
     continuation = raw_output.strip()
-    # Remove closing tags if the model generated them
+    
+    
+    # Strip opening tags from the start
+    continuation = re.sub(r'^\s*<Reason[^>]*>\s*', '', continuation, flags=re.IGNORECASE)
+    
+    # Strip closing tags and everything after them
     for tag in ["</Reasoning>", "<Conclusion>", "</Conclusion>"]:
         idx = continuation.find(tag)
         if idx != -1:
             continuation = continuation[:idx].strip()
             break
 
-    return continuation
+    return {
+        "text": continuation.strip(),
+        "prompt": conversation
+    }

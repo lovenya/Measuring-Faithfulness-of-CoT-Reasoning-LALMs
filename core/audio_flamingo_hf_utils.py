@@ -21,34 +21,7 @@ from transformers import AutoModelForSeq2SeqLM, AutoProcessor
 import config as framework_config
 
 _STOPWORDS = {
-    "the",
-    "a",
-    "an",
-    "is",
-    "are",
-    "was",
-    "were",
-    "to",
-    "of",
-    "and",
-    "or",
-    "in",
-    "on",
-    "it",
-    "this",
-    "that",
-    "for",
-    "with",
-    "as",
-    "by",
-    "at",
-    "but",
-    "not",
-    "be",
-    "about",
-    "which",
-    "they",
-    "i",
+    "the", "a", "an", "is", "are", "was", "were", "to", "of", "and", "or", "in", "on", "it", "this", "that", "for", "with", "as", "by", "at", "but", "not", "be", "about", "which", "they", "i", 
 }
 
 
@@ -441,8 +414,7 @@ def run_reasoning_inference(
 ) -> Dict[str, object]:
     """AF3 HF model-specific baseline reasoning prompt.
 
-    Matches Pooneh's af3_wrapper.py ``use_reasoning=True`` pattern:
-    single-turn, "Please think and reason about the input audio before you respond.",
+    Single-turn, "Please think and reason about the input audio before you respond.",
     512 max tokens, no do_sample override (model default = greedy).
     """
     if not os.path.exists(audio_path):

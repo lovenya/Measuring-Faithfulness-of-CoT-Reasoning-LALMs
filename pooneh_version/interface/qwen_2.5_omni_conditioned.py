@@ -32,10 +32,18 @@ processor = Qwen2_5OmniProcessor.from_pretrained("Qwen/Qwen2.5-Omni-7B")
 # ==========================================
 def parse_conditioned_output(raw_text: str) -> str:
     cleaned = raw_text.strip()
-    # Look for the last standalone letter in the response
+    
+    # Priority 1: Look for a letter immediately followed by a closing tag (e.g., "A</Conclusion>")
+    # or sitting right at the beginning of the string.
+    direct_match = re.search(r'^([A-J])\b|([A-J])\s*</Conclusion>', cleaned, re.IGNORECASE)
+    if direct_match:
+        return (direct_match.group(1) or direct_match.group(2)).upper()
+        
+    # Priority 2: Fallback to the last standalone letter in the response
     matches = re.findall(r'\b([A-J])\b', cleaned.upper())
     if matches:
         return matches[-1]
+        
     return None
 
 # ==========================================
@@ -44,21 +52,32 @@ def parse_conditioned_output(raw_text: str) -> str:
 def run_conditioned_inference(item_info: dict, provided_reasoning: str, data_root: str) -> dict:
     raw_path = item_info['audio_path'].replace("{DATA_ROOT}", data_root)
     abs_audio_path = os.path.abspath(raw_path)
-            
-    # Step 4 logic: Inject the reasoning into the prompt
+    
+    if not os.path.exists(abs_audio_path):
+        raise FileNotFoundError(f"Missing file: {abs_audio_path}")
+
+    # --- EXACT PROMPT INJECTION ---
+    base_identity = "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs."
+
+    system_text = (
+        f"{base_identity}\n\n"
+        "CRITICAL: You must provide your analysis in a structured format using XML tags. "
+        "Do not engage in conversational filler. Use the following structure:\n"
+        "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n"
+        "<Conclusion>\n[Single Letter Only]\n</Conclusion>"
+    )
+
+    # 1. Keep the reasoning OUT of the user prompt
     prompt_text = (
-            f"{item_info['question']} Select one option from the provided choices.\n{item_info['choices']}. "
-            "Please think and reason about the input audio before you respond.\n\n"
-            "Template:\n"
-            "<Reasoning>\n"
-            f"{provided_reasoning}\n"
-            "</Reasoning>\n"
-            "<Conclusion>\n"
-        )
+        f"{item_info['question']} Select one option from the provided choices.\n"
+        f"{item_info['choices']}.\n"
+        "Please think and reason about the input audio before you respond using the XML template."
+    )
+
     conversation = [
         {
             "role": "system", 
-            "content": [{"type": "text", "text": "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech."}]
+            "content": [{"type": "text", "text": system_text}]
         },
         {
             "role": "user", 
@@ -69,9 +88,17 @@ def run_conditioned_inference(item_info: dict, provided_reasoning: str, data_roo
         }
     ]
 
+    # 2. Apply the chat template (this automatically adds the <|im_start|>assistant token at the end)
     text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
+    
+    # 3. Manually string-append the pre-filled reasoning to the end of the template
+    prefilled_assistant_text = f"<Reasoning>\n{provided_reasoning}\n</Reasoning>\n<Conclusion>\n"
+    text += prefilled_assistant_text
+
+    # 4. Extract media info from the original conversation list
     audios, images, videos = process_mm_info(conversation, use_audio_in_video=False)
     
+    # 5. Pass the newly combined text string into the processor
     inputs = processor(text=text, audio=audios, images=images, videos=videos, return_tensors="pt", padding=True).to(model.device)
     
     # Flash Attention 16-bit casting
@@ -80,7 +107,7 @@ def run_conditioned_inference(item_info: dict, provided_reasoning: str, data_roo
             inputs[k] = v.to(torch.bfloat16)
 
     with torch.no_grad():
-        # Short max_tokens because we only want the final letter
+        # Short max_tokens because we only expect a single letter + maybe a closing tag
         text_ids, _ = model.generate(
             **inputs, 
             max_new_tokens=32, 
@@ -109,23 +136,19 @@ if __name__ == "__main__":
 
     # Load original manifest for audio paths/questions
     manifest_map = {}
-    with open(args.manifest, 'r') as f:
+    with open(args.manifest, 'r', encoding='utf-8') as f:
         for line in f:
             if line.strip():
                 d = json.loads(line)
                 manifest_map[d['id']] = d
 
-    # Load reasoning results from Step 3
-    with open(args.results_in, 'r') as f:
+    # Load Step 3 Reasoning Results
+    with open(args.results_in, 'r', encoding='utf-8') as f:
         prev_results = [json.loads(line) for line in f if line.strip()]
 
     print(f"Starting Step 4: Conditioned Inference on {len(prev_results)} items...")
 
-# 1. Load Step 3 Reasoning Results
-    with open(args.results_in, 'r', encoding='utf-8') as f:
-        prev_results = [json.loads(line) for line in f if line.strip()]
-
-    # 2. CHECK FOR EXISTING PROGRESS
+    # CHECK FOR EXISTING PROGRESS
     processed_ids = set()
     if os.path.exists(args.output):
         with open(args.output, 'r', encoding='utf-8') as f_check:
@@ -137,10 +160,10 @@ if __name__ == "__main__":
                     continue
         print(f"Resuming: {len(processed_ids)} items already conditioned. Skipping...")
 
-    # 3. Filter to only process new items
+    # Filter to only process new items
     to_process = [res for res in prev_results if res['id'] not in processed_ids]
 
-    # 4. Open in APPEND mode ('a')
+    # Open in APPEND mode ('a')
     with open(args.output, 'a', encoding='utf-8') as f_out:
         for res in tqdm(to_process, desc="Conditioning"):
             item_id = res['id']
@@ -174,4 +197,4 @@ if __name__ == "__main__":
                 f_out.flush() # Forces write to disk in case of crash
                 
             except Exception as e:
-                print(f"Error on {item_id}: {e}")
+                print(f"\nError on {item_id}: {e}")

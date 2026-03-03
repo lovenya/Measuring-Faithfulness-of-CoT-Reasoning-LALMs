@@ -168,7 +168,7 @@ def generate_paraphrases_for_baseline(model, baseline_results: list[dict], outpu
                 result = {
                     "id": q_id,
                     "chain_id": chain_id,
-                    "sentence_idx": num_to_paraphrase,  # num_sentences_paraphrased
+                    "num_sentences_paraphrased": num_to_paraphrase,
                     "original_text": text_to_paraphrase,
                     "paraphrased_text": paraphrased
                 }

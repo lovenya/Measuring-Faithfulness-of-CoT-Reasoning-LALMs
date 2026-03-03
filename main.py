@@ -76,6 +76,7 @@ def main():
         default='two_turn_sanitized_cot',
         choices=[
             'two_turn_sanitized_cot',
+            'xml',
             'single_turn_explicit_letter',
             'legacy_two_turn',
             'pooneh_single_turn',
@@ -184,8 +185,18 @@ def main():
     config.DATASET_NAME = args.dataset
     config.VERBOSE = args.verbose
     config.RESTRICTED = args.restricted
-    config.PROMPT_STRATEGY = args.prompt_strategy
     
+    # Set default prompt strategy dynamically based on model if not manually overridden
+    if args.prompt_strategy == 'two_turn_sanitized_cot':
+        if args.model == 'qwen_omni':
+            config.PROMPT_STRATEGY = 'xml'
+        elif args.model == 'flamingo_hf':
+            config.PROMPT_STRATEGY = 'single_turn_explicit_letter'
+        else:
+            config.PROMPT_STRATEGY = 'two_turn_sanitized_cot'
+    else:
+        config.PROMPT_STRATEGY = args.prompt_strategy
+
     # External perturbation settings (for adding_mistakes and paraphrasing experiments)
     config.USE_EXTERNAL_PERTURBATIONS = args.use_external_perturbations
     config.EXTERNAL_LLM = args.external_llm
