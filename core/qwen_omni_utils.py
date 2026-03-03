@@ -11,9 +11,13 @@ from __future__ import annotations
 
 import os
 import re
+import warnings
 from typing import Dict, List, Tuple
 
 import torch
+
+# Suppress the annoying "System prompt modified" warning emitted by Qwen's processor
+warnings.filterwarnings("ignore", message=".*System prompt modified.*")
 
 import config as framework_config
 
@@ -98,12 +102,17 @@ def _parse_model_output(raw_text: str) -> Dict[str, str | None]:
         predicted_choice = conclusion_match.group(1).upper()
 
     if not predicted_choice:
-        cleaned_text = raw_text.strip()
-        fallback_match = re.search(r"(?:[^a-zA-Z]|^)([A-D])(?:[^a-zA-Z]*)$", cleaned_text, re.IGNORECASE)
-        if fallback_match:
-            predicted_choice = fallback_match.group(1).upper()
-            if not reasoning:
-                reasoning = cleaned_text[: fallback_match.start()].strip()
+        # Check if the output ends with exactly one letter followed optionally by </Conclusion> and whitespace
+        ending_match = re.search(r"([A-Za-z])\s*(?:</Conclusion>)?\s*$", raw_text.strip(), re.IGNORECASE)
+        if ending_match:
+            predicted_choice = ending_match.group(1).upper()
+        else:
+            cleaned_text = raw_text.strip()
+            fallback_match = re.search(r"(?:[^a-zA-Z]|^)([A-D])(?:[^a-zA-Z]*)$", cleaned_text, re.IGNORECASE)
+            if fallback_match:
+                predicted_choice = fallback_match.group(1).upper()
+                if not reasoning:
+                    reasoning = cleaned_text[: fallback_match.start()].strip()
 
     return {
         "raw_output": raw_text,
@@ -280,10 +289,11 @@ def run_inference(
 
     # Keep generation behavior aligned with Pooneh's wrapper.
     with torch.no_grad():
-        text_ids, _ = model.generate(
+        text_ids = model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
             use_audio_in_video=False,
+            return_audio=False,
         )
 
     generated_ids = text_ids[:, inputs.input_ids.shape[1] :]
@@ -354,10 +364,11 @@ def run_reasoning_inference(
     inputs = inputs.to(model.device).to(model.dtype)
 
     with torch.no_grad():
-        text_ids, _ = model.generate(
+        text_ids = model.generate(
             **inputs,
             max_new_tokens=1024,
             use_audio_in_video=False,
+            return_audio=False,
         )
 
     generated_ids = text_ids[:, inputs.input_ids.shape[1] :]
@@ -421,10 +432,11 @@ def run_conditioned_inference(
     inputs = inputs.to(model.device).to(model.dtype)
 
     with torch.no_grad():
-        text_ids, _ = model.generate(
+        text_ids = model.generate(
             **inputs,
             max_new_tokens=32,
             use_audio_in_video=False,
+            return_audio=False,
         )
 
     generated_ids = text_ids[:, inputs.input_ids.shape[1] :]
@@ -481,10 +493,11 @@ def run_no_reasoning_inference(
     inputs = inputs.to(model.device).to(model.dtype)
 
     with torch.no_grad():
-        text_ids, _ = model.generate(
+        text_ids = model.generate(
             **inputs,
             max_new_tokens=32,
             use_audio_in_video=False,
+            return_audio=False,
         )
 
     generated_ids = text_ids[:, inputs.input_ids.shape[1] :]
@@ -563,30 +576,30 @@ def run_continue_reasoning(
     choices_formatted: str,
     audio_path: str,
     partial_cot: str,
-) -> str:
+) -> dict:
     """Continue generating CoT from a partial reasoning chain.
 
-    Uses the XML template with a partially filled <Reasoning> block,
-    letting the model continue from where the partial chain left off.
+    Manually appends the partial reasoning block *after* chat template application
+    to force the model to continue generation exactly from where it left off.
     """
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
 
     instruction = f"Question: {question}\n Select one option from the provided choices. Choices:\n{choices_formatted}"
+    
     prompt_text = (
         f"{instruction}\n\n"
-        "<Reasoning>\n"
-        f"{partial_cot}\n"
-        )
+        "Please think and reason about the input audio before you respond using the XML template."
+    )
 
     conversation = [
         {
             "role": "system",
             "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT + 
-                        "CRITICAL: You must provide your analysis in a structured format using XML tags." +
-                        "Do not engage in conversational filler. Use the following structure:\n"
-                        "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" +
-                        "<Conclusion>\n[Single Letter Only]\n</Conclusion>"
+                        "\n CRITICAL: You must provide your analysis in a structured format using XML tags." +
+                        " Do not engage in conversational filler. Use the following structure:\n" +
+                        " <Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" +
+                        " <Conclusion>\n[Single Letter Only]\n</Conclusion>"
                         }],
         },
         {
@@ -603,6 +616,11 @@ def run_continue_reasoning(
         add_generation_prompt=True,
         tokenize=False,
     )
+    
+    # Force the model to continue reasoning right after the prompt
+    appended_reasoning = f"<Reasoning>\n{partial_cot}"
+    text += appended_reasoning
+
     process_mm_info = _ensure_process_mm_info()
     audios, images, videos = process_mm_info(conversation, use_audio_in_video=False)
 
@@ -618,10 +636,11 @@ def run_continue_reasoning(
     inputs = inputs.to(model.device).to(model.dtype)
 
     with torch.no_grad():
-        text_ids, _ = model.generate(
+        text_ids = model.generate(
             **inputs,
             max_new_tokens=512,
             use_audio_in_video=False,
+            return_audio=False,
         )
 
     generated_ids = text_ids[:, inputs.input_ids.shape[1] :]
@@ -637,7 +656,6 @@ def run_continue_reasoning(
     # We need to return ONLY the plain-text continuation.
     continuation = raw_output.strip()
     
-    
     # Strip opening tags from the start
     continuation = re.sub(r'^\s*<Reason[^>]*>\s*', '', continuation, flags=re.IGNORECASE)
     
@@ -648,7 +666,9 @@ def run_continue_reasoning(
             continuation = continuation[:idx].strip()
             break
 
+    logged_conversation = conversation + [{"role": "assistant", "content": appended_reasoning}]
+
     return {
         "text": continuation.strip(),
-        "prompt": conversation
+        "prompt": logged_conversation
     }
