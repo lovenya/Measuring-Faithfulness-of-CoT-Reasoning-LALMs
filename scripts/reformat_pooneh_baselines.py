@@ -21,12 +21,16 @@ def process_baselines():
     
     for source_model, target_model in models_to_map.items():
         for track in tracks:
-            pooneh_file = base_dir / f"pooneh_version/result/baseline/{source_model}/{track}/baseline_{track}_REAS.jsonl"
+            if source_model == 'af3':
+                pooneh_file = base_dir / f"pooneh_version/result/baseline/{source_model}/{track}/baseline_{track}_REAS_post_process.jsonl"
+            else:
+                pooneh_file = base_dir / f"pooneh_version/result/baseline/{source_model}/{track}/baseline_{track}_REAS.jsonl"
+                
             dataset_file = base_dir / f"data/sakura/{track}/sakura_{track}_test_standardized.jsonl"
             
             out_dir = base_dir / f"results/{target_model}/baseline"
             out_dir.mkdir(parents=True, exist_ok=True)
-            out_file = out_dir / f"baseline_{target_model}_{track}.jsonl"
+            out_file = out_dir / f"baseline_{target_model}_sakura-{track}.jsonl"
 
             if not pooneh_file.exists():
                 print(f"Skipping {pooneh_file} - not found.")
