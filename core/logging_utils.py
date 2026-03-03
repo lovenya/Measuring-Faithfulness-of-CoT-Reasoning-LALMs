@@ -22,16 +22,24 @@ def setup_logger(log_dir: str, model_alias: str, experiment_name: str, dataset_n
     logger = logging.getLogger()
     logger.setLevel(logging.INFO) # Set the minimum level to log.
 
+    class FilterSystemPromptModified(logging.Filter):
+        def filter(self, record):
+            return "System prompt modified" not in record.getMessage()
+            
+    system_prompt_filter = FilterSystemPromptModified()
+
     # --- File Handler ---
     # This handler writes all logs (INFO and above) to our dedicated log file.
     file_handler = logging.FileHandler(log_filepath, mode='a') # Append mode
     file_handler.setFormatter(formatter)
+    file_handler.addFilter(system_prompt_filter)
     logger.addHandler(file_handler)
 
     # --- Console Handler ---
     # This handler prints logs to the console (stdout).
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
+    console_handler.addFilter(system_prompt_filter)
     logger.addHandler(console_handler)
 
     logging.info("Logger initialized successfully.")

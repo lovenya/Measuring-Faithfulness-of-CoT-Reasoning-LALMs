@@ -27,9 +27,11 @@ import json
 import collections
 import nltk
 import logging
+from tqdm import tqdm
 
 # This is a 'dependent' experiment, as it requires the CoTs from a baseline run.
 EXPERIMENT_TYPE = "dependent"
+
 
 # The few-shot prompt is a core part of the methodology, teaching the model
 # how to generate a plausible mistake.
@@ -240,14 +242,14 @@ def run(model, processor, tokenizer, model_utils, config):
     
     skipped_trials_count = 0
     with open(output_path, 'a') as f:
-        for i, baseline_trial in enumerate(samples_to_process):
+        for i, baseline_trial in enumerate(tqdm(samples_to_process, desc="Adding Mistakes")):
             try:
                 q_id, chain_id = baseline_trial['id'], baseline_trial['chain_id']
                 if (q_id, chain_id) in completed_chains:
                     continue
 
                 if config.VERBOSE:
-                    logging.info(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
+                    logging.debug(f"Processing trial {i+1}/{len(samples_to_process)}: ID {q_id}, Chain {chain_id}")
 
                 # We correctly trust that the 'choices' field is the pre-formatted string.
                 choices_formatted = baseline_trial['choices']
