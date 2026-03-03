@@ -365,12 +365,11 @@ def run_conditioned_inference(
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
 
+    # Build conversation WITHOUT the provided_reasoning
     prompt_text = (
         f"{question} Select one option from the provided choices.\n"
         f"{choices_formatted}. "
-        "Please think and reason about the input audio before you respond.\n\n"
-        f"{provided_reasoning}\n\n"
-        "Therefore, the answer is:"
+        "Please think and reason about the input audio before you respond."
     )
 
     conversation = [
@@ -383,6 +382,7 @@ def run_conditioned_inference(
         }
     ]
 
+    # Tokenize the conversation normally (with audio features)
     inputs = processor.apply_chat_template(
         conversation,
         tokenize=True,
@@ -391,17 +391,32 @@ def run_conditioned_inference(
     )
     inputs = _move_inputs_to_model_dtype(inputs, model)
 
+    # Append the provided reasoning + answer prompt after the chat template
+    # so the model sees it as its own partial response
+    suffix_text = f"{provided_reasoning}\n\nTherefore, the answer is:"
+    suffix_ids = tokenizer.encode(suffix_text, add_special_tokens=False, return_tensors="pt")
+    suffix_ids = suffix_ids.to(inputs["input_ids"].device)
+    inputs["input_ids"] = torch.cat([inputs["input_ids"], suffix_ids], dim=1)
+    if "attention_mask" in inputs:
+        suffix_mask = torch.ones_like(suffix_ids)
+        inputs["attention_mask"] = torch.cat([inputs["attention_mask"], suffix_mask], dim=1)
+
     with torch.no_grad():
         outputs = model.generate(**inputs, max_new_tokens=20)
 
     generated_ids = outputs[:, inputs["input_ids"].shape[1] :]
     raw_output = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
+    # Log what was sent (conversation + reasoning as assistant message)
+    logged_conversation = conversation + [
+        {"role": "assistant", "content": f"{provided_reasoning}\n\nTherefore, the answer is:"}
+    ]
+
     parsed = _parse_conditioned_output(raw_output, _parse_choices_from_formatted(choices_formatted))
     return {
         "predicted_choice": parsed,
         "final_answer_raw": raw_output,
-        "final_prompt_messages": conversation,
+        "final_prompt_messages": logged_conversation,
     }
 
 def run_reasoning_inference(
@@ -538,20 +553,21 @@ def run_continue_reasoning(
     choices_formatted: str,
     audio_path: str,
     partial_cot: str,
-) -> str:
+) -> dict:
     """Continue generating CoT from a partial reasoning chain.
 
-    The model receives the question, choices, and partial reasoning, and is
-    asked to continue reasoning from where the partial chain left off.
+    Appends the partial reasoning *after* chat template tokenisation so the
+    model sees it as its own partial output and continues in-flow, rather
+    than treating it as part of the user's question.
     """
     if not os.path.exists(audio_path):
         raise FileNotFoundError(f"Audio file not found at: {audio_path}")
 
+    # Build conversation WITHOUT the partial_cot
     prompt_text = (
         f"{question} Select one option from the provided choices.\n"
         f"{choices_formatted}. "
-        "Please think and reason about the input audio before you respond.\n\n"
-        f"{partial_cot}"
+        "Please think and reason about the input audio before you respond."
     )
 
     conversation = [
@@ -564,6 +580,7 @@ def run_continue_reasoning(
         }
     ]
 
+    # Tokenize the conversation normally (with audio features)
     inputs = processor.apply_chat_template(
         conversation,
         tokenize=True,
@@ -572,9 +589,27 @@ def run_continue_reasoning(
     )
     inputs = _move_inputs_to_model_dtype(inputs, model)
 
+    # Tokenize the partial_cot separately and append to input_ids
+    # This forces the model to treat it as the start of its own response
+    cot_ids = tokenizer.encode(partial_cot, add_special_tokens=False, return_tensors="pt")
+    cot_ids = cot_ids.to(inputs["input_ids"].device)
+    inputs["input_ids"] = torch.cat([inputs["input_ids"], cot_ids], dim=1)
+    if "attention_mask" in inputs:
+        cot_mask = torch.ones_like(cot_ids)
+        inputs["attention_mask"] = torch.cat([inputs["attention_mask"], cot_mask], dim=1)
+
     with torch.no_grad():
         outputs = model.generate(**inputs, max_new_tokens=512)
 
     generated_ids = outputs[:, inputs["input_ids"].shape[1] :]
     raw_output = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-    return raw_output.strip()
+
+    # Log what was sent (conversation + partial cot as assistant message)
+    logged_conversation = conversation + [
+        {"role": "assistant", "content": partial_cot}
+    ]
+
+    return {
+        "text": raw_output.strip(),
+        "prompt": logged_conversation,
+    }
