@@ -1,94 +1,142 @@
-# Experiments Status Tracker
+# Experiments Guidelines & Status Tracker
 
-> Last updated: 2026-02-13
+## Models
+- **Audio Flamingo 3** (`flamingo_hf`) → env: `af3_new_hf_env`, modules: `StdEnv/2023 cuda rust gcc arrow`
+- **Qwen Omni** (`qwen_omni`) → env: `qwen_omni_env`, modules: `StdEnv/2023 cuda rust gcc arrow`
+- **Mistral** (perturbation generation only) → env: `mistral_env`, modules: `StdEnv/2023 cuda rust gcc arrow opencv`
 
----
+## Datasets
+`mmar`, `sakura-animal`, `sakura-emotion`, `sakura-gender`, `sakura-language`
+(MMAU to be added later)
 
-## ✅ Completed Experiments
+## GPU Requirements
+| Task | GPU |
+|------|-----|
+| All model experiments (AF3/Qwen) | `nvidia_h100_80gb_hbm3_3g.40gb:1` (40GB MIG) |
+| Mistral perturbation generation | `h100:1` (full 80GB) |
 
-### Qwen — Audio Masking (start + end modes)
-
-These experiments exist in `results/qwen/audio_masking/{silence,noise}/{start,end}/` but most did **not finish** within
-their original 15h time limit. They will be **re-submitted** with increased times (see Ready to Submit below).
-
----
-
-## 🟡 Ready to Submit (Scripts Created, NOT Yet Submitted)
-
-### Qwen — Audio Masking
-
-**Resources (all jobs):** `--gpus=nvidia_h100_80gb_hbm3_3g.40gb:1`, `--cpus-per-task=3`, `--mem=64G`, `--account=rrg-ravanelm`
-
-> [!IMPORTANT]
-> **Scattered mode** requires generating masked audio first via `sbatch submission_scripts/data_processing/generate_masked_datasets.sh`
-> Start/end modes already have masked audio data generated.
-
-#### Noise + End
-
-| Dataset         | Time | Script                                                                        |
-| --------------- | ---- | ----------------------------------------------------------------------------- |
-| mmar            | 15h  | `submission_scripts/qwen/audio_masking/noise/end/run_qwen_mmar.sh`            |
-| sakura-animal   | 30h  | `submission_scripts/qwen/audio_masking/noise/end/run_qwen_sakura_animal.sh`   |
-| sakura-emotion  | 30h  | `submission_scripts/qwen/audio_masking/noise/end/run_qwen_sakura_emotion.sh`  |
-| sakura-gender   | 40h  | `submission_scripts/qwen/audio_masking/noise/end/run_qwen_sakura_gender.sh`   |
-| sakura-language | 40h  | `submission_scripts/qwen/audio_masking/noise/end/run_qwen_sakura_language.sh` |
-
-#### Noise + Scattered
-
-| Dataset         | Time | Script                                                                              |
-| --------------- | ---- | ----------------------------------------------------------------------------------- |
-| mmar            | 25h  | `submission_scripts/qwen/audio_masking/noise/scattered/run_qwen_mmar.sh`            |
-| sakura-animal   | 25h  | `submission_scripts/qwen/audio_masking/noise/scattered/run_qwen_sakura_animal.sh`   |
-| sakura-emotion  | 25h  | `submission_scripts/qwen/audio_masking/noise/scattered/run_qwen_sakura_emotion.sh`  |
-| sakura-gender   | 25h  | `submission_scripts/qwen/audio_masking/noise/scattered/run_qwen_sakura_gender.sh`   |
-| sakura-language | 25h  | `submission_scripts/qwen/audio_masking/noise/scattered/run_qwen_sakura_language.sh` |
-
-#### Noise + Start
-
-| Dataset         | Time | Script                                                                          |
-| --------------- | ---- | ------------------------------------------------------------------------------- |
-| mmar            | 10h  | `submission_scripts/qwen/audio_masking/noise/start/run_qwen_mmar.sh`            |
-| sakura-animal   | 30h  | `submission_scripts/qwen/audio_masking/noise/start/run_qwen_sakura_animal.sh`   |
-| sakura-emotion  | 30h  | `submission_scripts/qwen/audio_masking/noise/start/run_qwen_sakura_emotion.sh`  |
-| sakura-gender   | 8h   | `submission_scripts/qwen/audio_masking/noise/start/run_qwen_sakura_gender.sh`   |
-| sakura-language | 20h  | `submission_scripts/qwen/audio_masking/noise/start/run_qwen_sakura_language.sh` |
-
-#### Silence + End
-
-| Dataset         | Time | Script                                                                          |
-| --------------- | ---- | ------------------------------------------------------------------------------- |
-| mmar            | 10h  | `submission_scripts/qwen/audio_masking/silence/end/run_qwen_mmar.sh`            |
-| sakura-animal   | 20h  | `submission_scripts/qwen/audio_masking/silence/end/run_qwen_sakura_animal.sh`   |
-| sakura-emotion  | 20h  | `submission_scripts/qwen/audio_masking/silence/end/run_qwen_sakura_emotion.sh`  |
-| sakura-gender   | 12h  | `submission_scripts/qwen/audio_masking/silence/end/run_qwen_sakura_gender.sh`   |
-| sakura-language | 20h  | `submission_scripts/qwen/audio_masking/silence/end/run_qwen_sakura_language.sh` |
-
-#### Silence + Scattered
-
-| Dataset         | Time | Script                                                                                |
-| --------------- | ---- | ------------------------------------------------------------------------------------- |
-| mmar            | 25h  | `submission_scripts/qwen/audio_masking/silence/scattered/run_qwen_mmar.sh`            |
-| sakura-animal   | 25h  | `submission_scripts/qwen/audio_masking/silence/scattered/run_qwen_sakura_animal.sh`   |
-| sakura-emotion  | 25h  | `submission_scripts/qwen/audio_masking/silence/scattered/run_qwen_sakura_emotion.sh`  |
-| sakura-gender   | 25h  | `submission_scripts/qwen/audio_masking/silence/scattered/run_qwen_sakura_gender.sh`   |
-| sakura-language | 25h  | `submission_scripts/qwen/audio_masking/silence/scattered/run_qwen_sakura_language.sh` |
-
-#### Silence + Start
-
-| Dataset         | Time | Script                                                                            |
-| --------------- | ---- | --------------------------------------------------------------------------------- |
-| mmar            | 10h  | `submission_scripts/qwen/audio_masking/silence/start/run_qwen_mmar.sh`            |
-| sakura-animal   | 20h  | `submission_scripts/qwen/audio_masking/silence/start/run_qwen_sakura_animal.sh`   |
-| sakura-emotion  | 20h  | `submission_scripts/qwen/audio_masking/silence/start/run_qwen_sakura_emotion.sh`  |
-| sakura-gender   | 12h  | `submission_scripts/qwen/audio_masking/silence/start/run_qwen_sakura_gender.sh`   |
-| sakura-language | 20h  | `submission_scripts/qwen/audio_masking/silence/start/run_qwen_sakura_language.sh` |
-
-**Total: 30 jobs**
+## Global Flags (all experiments)
+- `--verbose`
+- `--num-chains 1`
 
 ---
 
-## 🔲 In Pipeline (Not Yet Implemented)
+## Phase 0: Baseline (MMAR only — both models)
 
-- [ ] SALMONN audio masking experiments (all mask types and modes)
-- [ ] Audio Flamingo audio masking experiments
-- [ ] Analysis and final plots for all audio masking results
+| Model | Dataset | Account | Splits | Time per part |
+|-------|---------|---------|--------|---------------|
+| `flamingo_hf` | `mmar` | `rrg-csubakan` | 5 parts (`--start-sample`/`--end-sample`) | `01:15:00` |
+| `qwen_omni` | `mmar` | `rrg-csubakan` | 5 parts (`--start-sample`/`--end-sample`) | `01:15:00` |
+
+**Note:** Baseline also needed for MMAU later (same account, same split strategy).
+
+**CLI:** `python main.py --model {MODEL} --experiment baseline --dataset mmar --start-sample S --end-sample E --num-chains 1 --verbose`
+
+---
+
+## Phase 1: Mistral Perturbation Generation (depends on Phase 0)
+
+**Dependency:** Requires baseline results to exist first.
+
+| Model | Dataset | Mode | Account | Time |
+|-------|---------|------|---------|------|
+| both | all 5 | `mistakes` | `rrg-ravanelm` | `01:00:00` |
+| both | all 5 | `paraphrase` | `rrg-ravanelm` | `01:40:00` |
+
+**GPU:** `h100:1` (full 80GB)
+
+**CLI:** `python scripts/generate_perturbations.py --model {MODEL} --dataset {DATASET} --mode {mistakes|paraphrase}`
+
+---
+
+## Phase 2: CoT Intervention Experiments
+
+*Datasets: all 5 — mmar, sakura-animal, sakura-emotion, sakura-gender, sakura-language*
+*All per-dataset, per-model scripts*
+
+### Early Answering (no splits needed — single job per dataset)
+
+| Model | Account | Time per dataset |
+|-------|---------|------------------|
+| `flamingo_hf` | `def-csubakan-ab` | `01:20:00` |
+| `qwen_omni` | `def-csubakan-ab` | `01:20:00` |
+
+**CLI:** `python main.py --model {MODEL} --experiment early_answering --dataset {DATASET} --num-chains 1 --verbose`
+
+### Adding Mistakes — 5 parts per dataset (`--part`/`--total-parts`)
+
+| Model | Account | Time per part |
+|-------|---------|---------------|
+| `flamingo_hf` | `rrg-ravanelm` | `00:55:00` |
+| `qwen_omni` | `rrg-csubakan` | `01:00:00` |
+
+**Requires:** Splitting baseline first + Mistral `mistakes` perturbations done
+
+**CLI:** `python main.py --model {MODEL} --experiment adding_mistakes --dataset {DATASET} --use-external-perturbations --external-llm mistral --part P --total-parts 5 --num-chains 1 --verbose`
+
+### Random Partial Filler Text (lorem) — 5 parts per dataset (`--part`/`--total-parts`)
+
+| Model | Account | Time per part |
+|-------|---------|---------------|
+| `flamingo_hf` | `rrg-csubakan` | `01:00:00` |
+| `qwen_omni` | `rrg-csubakan` | `01:00:00` |
+
+**CLI:** `python main.py --model {MODEL} --experiment random_partial_filler_text --dataset {DATASET} --filler-type lorem --part P --total-parts 5 --num-chains 1 --verbose`
+
+### Paraphrasing (no splits needed — single job per dataset)
+
+| Model | Account | Time per dataset |
+|-------|---------|------------------|
+| `flamingo_hf` | `rrg-csubakan` | `01:30:00` |
+| `qwen_omni` | `rrg-csubakan` | `02:00:00` |
+
+**Requires:** Mistral `paraphrase` perturbations done
+
+**CLI:** `python main.py --model {MODEL} --experiment paraphrasing --dataset {DATASET} --use-external-perturbations --external-llm mistral --num-chains 1 --verbose`
+
+---
+
+## Phase 3: Future — MMAU
+- Baseline + all intervention experiments for both models on MMAU dataset.
+
+---
+
+## SLURM Account Summary
+
+| Experiment | AF3 Account | Qwen Account |
+|------------|-------------|--------------|
+| Baseline (mmar) | `rrg-csubakan` | `rrg-csubakan` |
+| Mistral Generation | `rrg-ravanelm` | `rrg-ravanelm` |
+| Early Answering | `def-csubakan-ab` | `def-csubakan-ab` |
+| Adding Mistakes | `rrg-ravanelm` | `rrg-csubakan` |
+| Random Partial Filler | `rrg-csubakan` | `rrg-csubakan` |
+| Paraphrasing | `rrg-csubakan` | `rrg-csubakan` |
+
+---
+
+## Script Requirements
+
+### Resource Monitoring (background, every 20 min)
+Must report: RAM (total/used/available), CPU (cores allocated, usage %), GPU (utilization %, VRAM used/total, temperature °C), plus any other useful metrics.
+
+### Runtime Summary (end of script)
+Must report: **Start Time** (with timezone), **End Time** (with timezone), **Duration** in `HH:MM:SS` format.
+
+---
+
+## Dependency Chain
+
+```
+Phase 0: Baseline (mmar)
+    ├──→ Phase 1: Mistral Perturbations (all 5 datasets × both models × 2 modes)
+    │        ├──→ Phase 2: Adding Mistakes
+    │        └──→ Phase 2: Paraphrasing
+    ├──→ Phase 2: Early Answering (depends only on baseline)
+    └──→ Phase 2: Random Partial Filler Text (depends only on baseline)
+```
+
+---
+
+## Pre-Submission TODO
+- [ ] Split baseline results for dependent experiments: `python data_processing/split_dataset_for_parallel_runs.py --model {MODEL} --dataset {DATASET} --num-parts 5`
+- [ ] Create log directories: `mkdir -p logs/{model}/{experiment}`

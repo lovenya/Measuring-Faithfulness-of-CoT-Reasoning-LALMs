@@ -63,7 +63,7 @@ def _extract_instruction_from_messages(messages: List[Dict[str, str]]) -> str:
 def _build_xml_prompt_text(instruction: str) -> str:
     return (
         f"{instruction}\n\n"
-        "Please think and reason about the input audio before you respond using the XML template."
+        "\n Please think and reason about the input audio before you respond using the XML template."
     )
 
 
@@ -204,8 +204,8 @@ def _build_no_reasoning_conversation(
         {
             "role": "system",
             "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT +
-                        "CRITICAL: Respond ONLY with the conclusion tag. No conversational text.\n" + 
-                        "Do not engage in conversational filler. Use the following structure:\n" +
+                        "\n CRITICAL: Respond ONLY with the conclusion tag. No conversational text.\n" + 
+                        " Do not engage in conversational filler. Use the following structure:\n" +
                         "<Conclusion> \nThe answer is:[Single Letter Only]\n</Conclusion>"
                         }],
         },
@@ -330,10 +330,11 @@ def run_reasoning_inference(
         {
             "role": "system",
             "content": [{"type": "text", "text": _DEFAULT_SYSTEM_PROMPT +
-                         "CRITICAL: You must provide your analysis in a structured format using XML tags." +
-                         "Do not engage in conversational filler. Use the following structure:\n" + 
-                         "<Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" + 
-                         "<Conclusion>\n[Single Letter Only]\n</Conclusion>"}],
+                        "\n CRITICAL: You must provide your analysis in a structured format using XML tags." +
+                        " Do not engage in conversational filler. Use the following structure:\n" +
+                        " <Reasoning>\n[Describe the acoustic features and your logic]\n</Reasoning>\n" +
+                        " <Conclusion>\n[Single Letter Only]\n</Conclusion>"
+                        }],
         },
         {
             "role": "user",

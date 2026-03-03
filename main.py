@@ -226,12 +226,10 @@ def main():
             )
             logging.info(f"[AUTO-PATH] Perturbation file: {config.PERTURBATION_FILE}")
     
-    # If running in parallel with --part, update the perturbation file path to use the part file
-    # e.g., file.jsonl -> file.part_N.jsonl
-    if args.part is not None and config.PERTURBATION_FILE:
-        base_path, ext = os.path.splitext(config.PERTURBATION_FILE)
-        config.PERTURBATION_FILE = f"{base_path}.part_{args.part}{ext}"
-        logging.info(f"[PARALLEL] Using part file: {config.PERTURBATION_FILE}")
+    # NOTE: External perturbation files (Mistral-generated) are NOT split by --part.
+    # They are loaded as dictionaries keyed by (id, chain_id, sentence_idx), so the
+    # full file works correctly — the experiment only looks up keys matching the
+    # baseline trials in the current part.
     
     # Filler type setting (for filler text experiments)
     config.FILLER_TYPE = args.filler_type
