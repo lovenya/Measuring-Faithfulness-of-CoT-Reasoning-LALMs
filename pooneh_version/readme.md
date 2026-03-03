@@ -150,6 +150,21 @@ for s in "${snrs[@]}"; do
   echo "Done ${s}"
 done
   ```
+
+  ## CoT Consistency Evaluation
+  Use this module to evaluate the semantic consistency between a clean baseline and corrupted intervention (e.g., masked or noisy) reasoning outputs. The script uses a model-as-a-judge (Mistral 24B) to rank the similarity on a 1–5 scale.
+  
+
+```bash 
+MODEL="mistralai/Mistral-Small-3.1-24B-Instruct-2503"
+BASE="pooneh_version/result/baseline/af3/mmar/baseline_mmar_REAS_post_process.jsonl"
+INTERV="pooneh_version/result/baseline/af3/mmar/mask/p20/baseline_mmar_REAS_post_process.jsonl"
+OUTPUT="pooneh_version/result/baseline/af3/mmar/mask/p20/consistency_analysis.jsonl"
+
+# Run the script
+python compare_reasoning.py "$MODEL" "$BASE" "$INTERV" "$OUTPUT"
+```
+
 # 📊Result
 
 ## AF3 -baseline
