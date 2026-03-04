@@ -28,7 +28,7 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, filler_type: str = 'dots'):
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, filler_type: str = 'dots', restricted: bool = False):
     """
     Orchestrates the data loading, processing, and plotting for the Random Partial Filler experiment.
     """
@@ -50,14 +50,14 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     for dataset in dataset_names:
         # Load baseline
         try:
-            baseline_df = load_results(model_name, results_dir, 'baseline', dataset)
+            baseline_df = load_results(model_name, results_dir, 'baseline', dataset, restricted=restricted)
         except FileNotFoundError:
             completeness_summary.append((dataset, "NO BASELINE", 0, 0, 0))
             continue
         
         # Load experiment results
         try:
-            df = load_results(model_name, results_dir, experiment_name, dataset, filler_type=filler_type)
+            df = load_results(model_name, results_dir, experiment_name, dataset, filler_type=filler_type, restricted=restricted)
         except FileNotFoundError:
             completeness_summary.append((dataset, "NOT FOUND", len(set(zip(baseline_df['id'], baseline_df['chain_id']))), 0, 0))
             continue
@@ -96,6 +96,8 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     
     filler_suffix = f"_{filler_type}" if filler_type != 'dots' else ""
     base_filename = f"cross_dataset_{experiment_name}_{model_name}{filler_suffix}"
+    if restricted:
+        base_filename += "_restricted"
     
     # --- Statistical Analysis & Optional Output ---
     if print_line_data or save_stats:
@@ -164,7 +166,8 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     title_prefix = "Random Partial Filler"
     if filler_type == 'lorem':
         title_prefix += " (Lorem Ipsum)"
-    ax.set_title(f'{title_prefix}, {model_name.upper()}', fontsize=fontsize)
+    restricted_label = " [Restricted]" if restricted else ""
+    ax.set_title(f'{title_prefix}{restricted_label}, {model_name.upper()}', fontsize=fontsize)
     ax.set_xlabel('Percentage % of Words Replaced', fontsize=fontsize)
     ax.set_ylabel('Consistency (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
@@ -202,6 +205,7 @@ if __name__ == "__main__":
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
     parser.add_argument('--show-ci', action='store_true', help="Show the 95% confidence interval as a shaded region.")
     parser.add_argument('--filler-type', type=str, default='dots', choices=['dots', 'lorem'], help="Type of filler to analyze.")
+    parser.add_argument('--restricted', action='store_true', help="Use restricted dataset (1-7 sentence CoTs).")
     args = parser.parse_args()
     
-    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.filler_type)
+    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.filler_type, args.restricted)

@@ -32,7 +32,7 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, perturbation_source: str = 'self'):
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, perturbation_source: str = 'self', restricted: bool = False):
     experiment_name = "adding_mistakes"
     perturbation_label = f" [{perturbation_source.upper()}]" if perturbation_source != 'self' else ""
     print(f"\n--- Generating 0% Baseline Plot for: ADDING_MISTAKES{perturbation_label} ({model_name.upper()}) ---")
@@ -48,7 +48,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
 
     for dataset in dataset_names:
         try:
-            df = load_results(model_name, results_dir, experiment_name, dataset, perturbation_source=perturbation_source)
+            df = load_results(model_name, results_dir, experiment_name, dataset, perturbation_source=perturbation_source, restricted=restricted)
         except FileNotFoundError:
             continue
             
@@ -80,6 +80,8 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     output_dir = os.path.join(plots_dir, model_name, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
     base_filename = f"cross_dataset_{experiment_name}_0pct_{model_name}"
+    if restricted:
+        base_filename += "_restricted"
     if perturbation_source != 'self':
         base_filename += f"-{perturbation_source}"
     
@@ -134,7 +136,8 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
                      legend=False)
         
     title_suffix = " [Mistral]" if perturbation_source == 'mistral' else ""
-    ax.set_title(f'Adding Mistakes (0% Ref){title_suffix}, {model_name.upper()}', fontsize=fontsize)
+    restricted_label = " [Restricted]" if restricted else ""
+    ax.set_title(f'Adding Mistakes (0% Ref){title_suffix}{restricted_label}, {model_name.upper()}', fontsize=fontsize)
     ax.set_xlabel('Percentage % of Chain Without Mistake', fontsize=fontsize)
     ax.set_ylabel('Consistency with 0% Clean CoT (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
@@ -171,6 +174,7 @@ if __name__ == "__main__":
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
     parser.add_argument('--show-ci', action='store_true')
     parser.add_argument('--perturbation-source', type=str, default='self', choices=['self', 'mistral'])
+    parser.add_argument('--restricted', action='store_true', help="Use restricted dataset (1-7 sentence CoTs).")
     args = parser.parse_args()
     
-    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.perturbation_source)
+    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.perturbation_source, args.restricted)
