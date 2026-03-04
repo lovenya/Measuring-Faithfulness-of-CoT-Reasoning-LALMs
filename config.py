@@ -108,10 +108,13 @@ DATASET_MAPPING = {
     "sakura-language-noisy": "data/sakura_noisy/language/language_noisy_standardized.jsonl",
 
     "jasco": "data/jasco/jasco_masked_standardized.jsonl",
+
+    "mmau": "data/mmau/mmau_test_standardized.jsonl",
 }
 
 MMAR_DATASET_PATH = "data/mmar"
 SAKURA_DATASET_PATH = "data/sakura"
+MMAU_DATASET_PATH = "data/mmau"
 
 # --- Experiment Default Parameters ---
 NUM_SAMPLES_TO_RUN = 0
