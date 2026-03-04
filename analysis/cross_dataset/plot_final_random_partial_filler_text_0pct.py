@@ -1,12 +1,12 @@
-# analysis/cross_dataset/plot_final_paraphrasing_0pct.py
+# analysis/cross_dataset/plot_final_random_partial_filler_text_0pct.py
 
 """
 This script generates an alternative cross-dataset plot for the
-'Paraphrasing' experiment.
+'Random Partial Filler Text' experiment.
 
 Unlike the standard plot which measures consistency against a separate
-baseline run, this script measures consistency against the 0% paraphrase
-trial from within the paraphrasing experiment itself.
+baseline run, this script measures consistency against the 0% replaced
+trial from within the filler experiment itself.
 """
 
 import os
@@ -28,14 +28,14 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, perturbation_source: str = 'self', restricted: bool = False):
-    experiment_name = "paraphrasing"
-    perturbation_label = f" [{perturbation_source.upper()}]" if perturbation_source != 'self' else ""
-    print(f"\n--- Generating 0% Baseline Plot for: PARAPHRASING{perturbation_label} ({model_name.upper()}) ---")
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, filler_type: str = 'dots', restricted: bool = False):
+    experiment_name = "random_partial_filler_text"
+    filler_label = f" [{filler_type.upper()}]" if filler_type != 'dots' else ""
+    print(f"\n--- Generating 0% Baseline Plot for: {experiment_name.upper()}{filler_label} ({model_name.upper()}) ---")
     
     try:
         dataset_names = discover_datasets(model_name, results_dir)
-        print(f"Found datasets to process{perturbation_label}: {dataset_names}")
+        print(f"Found datasets to process{filler_label}: {dataset_names}")
     except FileNotFoundError:
         print(f"Could not find baseline directory for model '{model_name}'.")
         return
@@ -45,7 +45,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
 
     for dataset in dataset_names:
         try:
-            df = load_results(model_name, results_dir, experiment_name, dataset, perturbation_source=perturbation_source, restricted=restricted)
+            df = load_results(model_name, results_dir, experiment_name, dataset, filler_type=filler_type, restricted=restricted)
         except FileNotFoundError:
             continue
             
@@ -54,11 +54,10 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
             
         # Add basic info
         df['dataset'] = dataset
-        df['percent_paraphrased'] = (df['num_sentences_paraphrased'] / df['total_sentences_in_chain']) * 100
-        df['percent_binned'] = (df['percent_paraphrased'] / 5).round() * 5
+        df['percent_binned'] = (df['percent_replaced'] / 5).round() * 5
 
         # 1. Isolate the 0% rows to form our new "truth"
-        zero_pct_df = df[df['num_sentences_paraphrased'] == 0]
+        zero_pct_df = df[df['percent_replaced'] == 0]
         
         # Create a mapping dictionary: (id, chain_id) -> predicted_choice
         zero_pct_truth = dict(zip(zip(zero_pct_df['id'], zero_pct_df['chain_id']), zero_pct_df['predicted_choice']))
@@ -69,7 +68,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
         missing_samples = all_samples - samples_with_0pct
         
         if missing_samples:
-            missing_0pct_report.append(f"\n[{dataset}] WARNING: Dropping {len(missing_samples)} question(s) missing a 0% paraphrase run!")
+            missing_0pct_report.append(f"\n[{dataset}] WARNING: Dropping {len(missing_samples)} question(s) missing a 0% replaced run!")
             for q_id, chain_id in sorted(list(missing_samples)):
                 missing_0pct_report.append(f"  -> Missing 0%: id={q_id}, chain_id={chain_id}")
             
@@ -94,7 +93,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
             print(line)
         print("="*70 + "\n")
     else:
-        print("\nAll processed questions successfully found a 0% paraphrase run. None dropped.")
+        print("\nAll processed questions successfully found a 0% replacement run. None dropped.")
 
     if not all_dfs:
         print("No valid data remaining for any dataset. Halting analysis.")
@@ -104,11 +103,11 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
 
     output_dir = os.path.join(plots_dir, model_name, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
-    base_filename = f"cross_dataset_{experiment_name}_0pct_{model_name}"
+    
+    filler_suffix = f"_{filler_type}" if filler_type != 'dots' else ""
+    base_filename = f"cross_dataset_{experiment_name}_0pct_{model_name}{filler_suffix}"
     if restricted:
         base_filename += "_restricted"
-    if perturbation_source != 'self':
-        base_filename += f"-{perturbation_source}"
     
     # --- Convert to Percentage Scale for Plotting ---
     super_df['consistency_pct'] = super_df['is_consistent_with_0pct'].astype(int) * 100
@@ -119,7 +118,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
             group_df = super_df[super_df['dataset'] == dataset_name]
             
             stats_output.append("="*60)
-            stats_output.append(f"Dataset: {dataset_name} (Using 0% un-paraphrased CoT as truth)")
+            stats_output.append(f"Dataset: {dataset_name} (Using 0% un-replaced CoT as truth)")
             stats_output.append("="*60)
             
             consistency_curve = group_df.groupby('percent_binned')['is_consistent_with_0pct'].mean() * 100
@@ -160,11 +159,13 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
                      ax=ax,
                      legend=False)
         
-    title_suffix = " [Mistral]" if perturbation_source == 'mistral' else ""
+    title_prefix = "Random Partial Filler (0% Ref)"
+    if filler_type == 'lorem':
+        title_prefix += " (Lorem)"
     restricted_label = " [Restricted]" if restricted else ""
-    ax.set_title(f'Paraphrasing (0% Ref){title_suffix}{restricted_label}, {model_name.upper()}', fontsize=fontsize)
-    ax.set_xlabel('Percentage % of Sentences Paraphrased', fontsize=fontsize)
-    ax.set_ylabel('Consistency with 0% Paraphrase (%)', fontsize=fontsize)
+    ax.set_title(f'{title_prefix}{restricted_label}, {model_name.upper()}', fontsize=fontsize)
+    ax.set_xlabel('Percentage % of Words Replaced', fontsize=fontsize)
+    ax.set_ylabel('Consistency with 0% Replacement (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
     
     if y_zoom:
@@ -193,7 +194,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate 0% baseline cross-dataset plots for the Paraphrasing experiment.")
+    parser = argparse.ArgumentParser(description="Generate 0% baseline cross-dataset plots for the Random Partial Filler experiment.")
     parser.add_argument('--model', type=str, required=True, help="The name of the model to analyze (e.g., 'qwen_omni', 'flamingo_hf').")
     parser.add_argument('--results_dir', type=str, default='./results')
     parser.add_argument('--plots_dir', type=str, default='plots/cross_dataset_plots')
@@ -202,8 +203,9 @@ if __name__ == "__main__":
     parser.add_argument('--save-stats', action='store_true', help="Save a detailed statistical summary.")
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
     parser.add_argument('--show-ci', action='store_true')
-    parser.add_argument('--perturbation-source', type=str, default='self', choices=['self', 'mistral'])
+    parser.add_argument('--filler-type', type=str, default='dots', choices=['dots', 'lorem'])
     parser.add_argument('--restricted', action='store_true', help="Use restricted dataset (1-7 sentence CoTs).")
     args = parser.parse_args()
     
-    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.perturbation_source, args.restricted)
+    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.filler_type, args.restricted)
+

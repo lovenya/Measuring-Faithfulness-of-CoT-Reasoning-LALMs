@@ -180,6 +180,10 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     ax.set_xlim(-5, 105)
 
     ax.grid(True)
+    
+    # Add a small legend
+    ax.legend(title='Dataset', title_fontsize=fontsize-14, fontsize=fontsize-18, loc='best')
+    
     fig.tight_layout()
 
     png_path = os.path.join(output_dir, f"{base_filename}.png")
