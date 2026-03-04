@@ -4,20 +4,17 @@ import os
 import json
 import pandas as pd
 
-def load_results(model_name: str, results_dir: str, experiment_name: str, dataset_name: str, is_restricted: bool, filler_type: str = 'dots', perturbation_source: str = 'self') -> pd.DataFrame:
+def load_results(model_name: str, results_dir: str, experiment_name: str, dataset_name: str, filler_type: str = 'dots', perturbation_source: str = 'self') -> pd.DataFrame:
     """
     Loads experiment results from a model-specific JSONL file into a Pandas DataFrame.
 
-    This function is the single source of truth for constructing file paths. It now
-    correctly handles the distinction between 'full' and 'restricted' datasets,
-    filler types, and perturbation sources.
+    This function is the single source of truth for constructing file paths.
 
     Args:
-        model_name (str): The name of the model (e.g., 'qwen', 'salmonn').
+        model_name (str): The name of the model (e.g., 'qwen_omni', 'flamingo_hf').
         results_dir (str): The root directory for all results (e.g., './results').
         experiment_name (str): The name of the experiment (e.g., 'baseline').
         dataset_name (str): The short name of the dataset (e.g., 'mmar').
-        is_restricted (bool): If True, loads the '-restricted.jsonl' version of the file.
         filler_type (str): Type of filler used (e.g., 'dots', 'lorem'). Defaults to 'dots'.
         perturbation_source (str): Source of perturbations ('self' or 'mistral'). Defaults to 'self'.
 
@@ -27,17 +24,12 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
     Returns:
         pd.DataFrame: A DataFrame containing the loaded results.
     """
-    # Construct the model-specific path, e.g., 'results/qwen/baseline/'
+    # Construct the model-specific path, e.g., 'results/qwen_omni/baseline/'
     experiment_path = os.path.join(results_dir, model_name, experiment_name)
     
     # --- FILENAME CONSTRUCTION ---
-    # Build filename with appropriate suffixes based on flags
-    if is_restricted:
-        # e.g., 'baseline_qwen_mmar-restricted'
-        base_name = f"{experiment_name}_{model_name}_{dataset_name}-restricted"
-    else:
-        # e.g., 'baseline_qwen_mmar'
-        base_name = f"{experiment_name}_{model_name}_{dataset_name}"
+    # e.g., 'baseline_qwen_omni_mmar'
+    base_name = f"{experiment_name}_{model_name}_{dataset_name}"
     
     # Append suffix for lorem filler type
     if filler_type == 'lorem':
@@ -53,8 +45,19 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
     full_path = os.path.join(experiment_path, filename)
 
     try:
-        # Use a list comprehension for efficient line-by-line reading of the JSONL file.
-        data = [json.loads(line) for line in open(full_path, 'r')]
+        # Read line-by-line, skipping any corrupted lines gracefully.
+        data = []
+        skipped = 0
+        with open(full_path, 'r') as f:
+            for line_num, line in enumerate(f, 1):
+                try:
+                    data.append(json.loads(line))
+                except json.JSONDecodeError:
+                    skipped += 1
+                    continue
+        
+        if skipped > 0:
+            print(f"  - WARNING: Skipped {skipped} corrupted line(s) in {full_path}")
         
         if not data:
             # Handle the case of an empty results file.
@@ -69,3 +72,51 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
         print(f"  - Searched for: {full_path}")
         # Re-raise the exception to halt the calling script, preventing partial analysis.
         raise
+
+
+def discover_datasets(model_name: str, results_dir: str) -> list:
+    """
+    Discovers available datasets by scanning the baseline directory for combined JSONL files.
+    Excludes .part_ files.
+
+    Returns:
+        list: Sorted list of dataset names (e.g., ['mmar', 'sakura-animal', ...]).
+    """
+    baseline_dir = os.path.join(results_dir, model_name, 'baseline')
+    return sorted(list(set([
+        f.replace(f'baseline_{model_name}_', '').replace('.jsonl', '')
+        for f in os.listdir(baseline_dir)
+        if f.endswith('.jsonl') and '.part_' not in f
+    ])))
+
+
+def check_completeness(model_name: str, results_dir: str, experiment_name: str, dataset_name: str, 
+                        baseline_df: pd.DataFrame, experiment_df: pd.DataFrame) -> dict:
+    """
+    Checks if experiment results are complete by comparing unique (id, chain_id) pairs
+    against the baseline.
+
+    Args:
+        model_name: Model name.
+        results_dir: Results root directory.
+        experiment_name: Experiment name.
+        dataset_name: Dataset name.
+        baseline_df: DataFrame with baseline results.
+        experiment_df: DataFrame with experiment results.
+
+    Returns:
+        dict with keys: 'baseline_count', 'experiment_count', 'pct_complete', 'is_complete'.
+    """
+    baseline_pairs = set(zip(baseline_df['id'], baseline_df['chain_id']))
+    experiment_pairs = set(zip(experiment_df['id'], experiment_df['chain_id']))
+    
+    baseline_count = len(baseline_pairs)
+    experiment_count = len(experiment_pairs & baseline_pairs)
+    pct = (experiment_count / baseline_count * 100) if baseline_count > 0 else 0
+    
+    return {
+        'baseline_count': baseline_count,
+        'experiment_count': experiment_count,
+        'pct_complete': pct,
+        'is_complete': experiment_count >= baseline_count
+    }
