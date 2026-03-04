@@ -4,7 +4,7 @@ import os
 import json
 import pandas as pd
 
-def load_results(model_name: str, results_dir: str, experiment_name: str, dataset_name: str, filler_type: str = 'dots', perturbation_source: str = 'self') -> pd.DataFrame:
+def load_results(model_name: str, results_dir: str, experiment_name: str, dataset_name: str, filler_type: str = 'dots', perturbation_source: str = 'self', restricted: bool = False) -> pd.DataFrame:
     """
     Loads experiment results from a model-specific JSONL file into a Pandas DataFrame.
 
@@ -17,6 +17,7 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
         dataset_name (str): The short name of the dataset (e.g., 'mmar').
         filler_type (str): Type of filler used (e.g., 'dots', 'lorem'). Defaults to 'dots'.
         perturbation_source (str): Source of perturbations ('self' or 'mistral'). Defaults to 'self'.
+        restricted (bool): If True, load the restricted version (-restricted suffix). Defaults to False.
 
     Raises:
         FileNotFoundError: If the specified results file does not exist.
@@ -30,6 +31,10 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
     # --- FILENAME CONSTRUCTION ---
     # e.g., 'baseline_qwen_omni_mmar'
     base_name = f"{experiment_name}_{model_name}_{dataset_name}"
+    
+    # Append -restricted suffix (comes right after dataset name, before other suffixes)
+    if restricted:
+        base_name += "-restricted"
     
     # Append suffix for lorem filler type
     if filler_type == 'lorem':
@@ -86,7 +91,7 @@ def discover_datasets(model_name: str, results_dir: str) -> list:
     return sorted(list(set([
         f.replace(f'baseline_{model_name}_', '').replace('.jsonl', '')
         for f in os.listdir(baseline_dir)
-        if f.endswith('.jsonl') and '.part_' not in f
+        if f.endswith('.jsonl') and '.part_' not in f and '-restricted' not in f
     ])))
 
 

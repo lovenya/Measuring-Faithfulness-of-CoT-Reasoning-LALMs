@@ -31,7 +31,7 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool):
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, restricted: bool = False):
     experiment_name = "early_answering"
     print(f"\n--- Generating 100% Baseline Plot for: EARLY_ANSWERING ({model_name.upper()}) ---")
     
@@ -47,7 +47,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
 
     for dataset in dataset_names:
         try:
-            df = load_results(model_name, results_dir, experiment_name, dataset)
+            df = load_results(model_name, results_dir, experiment_name, dataset, restricted=restricted)
         except FileNotFoundError:
             continue
             
@@ -114,6 +114,8 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     output_dir = os.path.join(plots_dir, model_name, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
     base_filename = f"cross_dataset_{experiment_name}_100pct_{model_name}"
+    if restricted:
+        base_filename += "_restricted"
     
     # --- Convert to Percentage Scale for Plotting ---
     super_df['consistency_pct'] = super_df['is_consistent_with_100pct'].astype(int) * 100
@@ -165,7 +167,8 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
                      ax=ax,
                      legend=False)
         
-    ax.set_title(f'Early Answering (100% Ref), {model_name.upper()}', fontsize=fontsize)
+    restricted_label = " [Restricted]" if restricted else ""
+    ax.set_title(f'Early Answering (100% Ref){restricted_label}, {model_name.upper()}', fontsize=fontsize)
     ax.set_xlabel('Percentage % of Sentences Kept', fontsize=fontsize)
     ax.set_ylabel('Consistency with 100% Full CoT (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
@@ -201,6 +204,7 @@ if __name__ == "__main__":
     parser.add_argument('--save-stats', action='store_true', help="Save a detailed statistical summary.")
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
     parser.add_argument('--show-ci', action='store_true')
+    parser.add_argument('--restricted', action='store_true', help="Use restricted dataset (1-7 sentence CoTs).")
     args = parser.parse_args()
     
-    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci)
+    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.restricted)
