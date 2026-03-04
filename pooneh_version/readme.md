@@ -162,7 +162,7 @@ INTERV="pooneh_version/result/baseline/af3/mmar/mask/p20/baseline_mmar_REAS_post
 OUTPUT="pooneh_version/result/baseline/af3/mmar/mask/p20/consistency_analysis.jsonl"
 
 # Run the script
-python compare_reasoning.py "$MODEL" "$BASE" "$INTERV" "$OUTPUT"
+python cot_consistency.py "$MODEL" "$BASE" "$INTERV" "$OUTPUT"
 ```
 
 # 📊Result
