@@ -191,29 +191,31 @@ python data_processing/merge_parallel_results.py \
 
 ## Experiment Status Tracker
 
+_Last verified: 2026-03-04 02:17 PST (ID coverage check)_
+
 ### Audio Flamingo 3 (`flamingo_hf`)
 
-| Experiment               | MMAR       | Animal    | Emotion   | Gender     | Language   | MMAU  |
-| ------------------------ | ---------- | --------- | --------- | ---------- | ---------- | ----- |
-| Early Answering          | ✅ 4084    | ✅ 4366   | ✅ 3779   | 🔄 1580    | ❌         | 🔄 22 |
-| Random Filler (lorem)    | ✅ P:20916 | 🔄 P:9738 | 🔄 P:4503 | 🔄 P:12021 | ✅ P:21000 | ❌    |
-| Mistral Gen (mistakes)   | ✅ 1380    | ✅ 3366   | ✅ 2778   | ✅ 2741    | ✅ 3038    | ❌    |
-| Mistral Gen (paraphrase) | ✅ 2775    | ✅ 3366   | ✅ 2779   | ✅ 2741    | ✅ 3042    | ❌    |
-| Adding Mistakes          | 🔄 1/5     | ✅ P:3159 | ✅ P:2778 | ✅ P:2741  | ✅ P:3038  | ❌    |
-| Paraphrasing             | ❌         | 🔄 247    | ❌        | ❌         | ❌         | ❌    |
+| Experiment               | MMAR       | Animal      | Emotion     | Gender       | Language     | MMAU         |
+| ------------------------ | ---------- | ----------- | ----------- | ------------ | ------------ | ------------ |
+| Early Answering          | ✅ 4084    | ✅ 4366     | ✅ 3779     | ✅ 3741      | ✅ 4042      | ✅ 4478      |
+| Random Filler (lorem)    | ✅ M:20916 | ✅ M:17849  | ✅ M:10395  | ✅ 1000/1000 | ✅ 1000/1000 | ✅ 1000/1000 |
+| Mistral Gen (mistakes)   | ✅ 3593    | ✅ 3366     | ✅ 2778     | ✅ 2741      | ✅ 3038      | ✅ 3283      |
+| Mistral Gen (paraphrase) | ✅ 2775    | ✅ 3366     | ✅ 2779     | ✅ 2741      | ✅ 3042      | ✅ 3478      |
+| Adding Mistakes          | 🔄 502/996 | 🔄 941/1000 | 🔄 982/1000 | 🔄 996/1000  | 🔄 990/1000  | ❌ 0/500     |
+| Paraphrasing             | ❌         | ✅ 4344     | ✅ 3761     | ✅ 3737      | ✅ 4032      | ❌           |
 
 ### Qwen Omni (`qwen_omni`)
 
-| Experiment               | MMAR    | Animal     | Emotion    | Gender     | Language   | MMAU |
-| ------------------------ | ------- | ---------- | ---------- | ---------- | ---------- | ---- |
-| Early Answering          | ✅ 4247 | ✅ 4583    | ✅ 4732    | ✅ 3868    | ✅ 4121    | ❌   |
-| Random Filler (lorem)    | 🔄 1050 | ✅ P:21000 | ✅ P:21000 | ✅ P:21000 | ✅ P:21000 | ❌   |
-| Mistral Gen (mistakes)   | ✅ 3244 | ✅ 3580    | ✅ 3729    | ✅ 2867    | ✅ 3117    | ❌   |
-| Mistral Gen (paraphrase) | ✅ 3251 | ✅ 3583    | ✅ 3732    | ✅ 2868    | ✅ 3121    | ❌   |
-| Adding Mistakes          | ❌      | ❌         | ❌         | ❌         | ❌         | ❌   |
-| Paraphrasing             | ❌      | ❌         | ❌         | ❌         | ❌         | ❌   |
+| Experiment               | MMAR       | Animal       | Emotion      | Gender       | Language    | MMAU         |
+| ------------------------ | ---------- | ------------ | ------------ | ------------ | ----------- | ------------ |
+| Early Answering          | ✅ 4247    | ✅ 4583      | ✅ 4732      | ✅ 3868      | ✅ 4121     | ✅ 4300      |
+| Random Filler (lorem)    | ✅ M:20916 | ✅ M:21000   | ✅ M:21000   | ✅ M:21000   | ✅ M:21000  | ✅ 1000/1000 |
+| Mistral Gen (mistakes)   | ✅ 3244    | ✅ 3580      | ✅ 3729      | ✅ 2867      | ✅ 3117     | ✅ 3294      |
+| Mistral Gen (paraphrase) | ✅ 3251    | ✅ 3583      | ✅ 3732      | ✅ 2868      | ✅ 3121     | ✅ 3300      |
+| Adding Mistakes          | ✅ M:3222  | ✅ 1000/1000 | ✅ 1000/1000 | ✅ 1000/1000 | 🔄 997/1000 | ❌ 0/500     |
+| Paraphrasing             | ❌         | ✅ 4583      | ✅ 4732      | ✅ 3868      | ✅ 4121     | ❌           |
 
-> **Legend:** ✅ = Complete | 🔄 = In progress / partial | ❌ = Not started | P: = Parts (not yet merged)
+> **Legend:** ✅ = Complete (all IDs covered) | 🔄 = Partial (X/Y = covered/total IDs) | ❌ = Not started | M: = Merged file
 
 ---
 

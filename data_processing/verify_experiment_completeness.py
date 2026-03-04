@@ -99,6 +99,25 @@ def count_baseline_trials(baseline_part_path: str, num_chains: int) -> tuple[int
     return trial_count, malformed_lines
 
 
+def extract_ids(filepath: str, num_chains: int) -> set[tuple]:
+    """
+    Extract unique (id, chain_id) tuples from a JSONL file.
+    Only includes entries where chain_id < num_chains.
+    """
+    ids: set[tuple] = set()
+    with open(filepath, "r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                data = json.loads(line)
+                sample_id = data.get("id")
+                chain_id = data.get("chain_id")
+                if sample_id is not None and isinstance(chain_id, int) and chain_id < num_chains:
+                    ids.add((sample_id, chain_id))
+            except json.JSONDecodeError:
+                pass
+    return ids
+
+
 def validate_parallel_completeness(
     model: str,
     experiment: str,
@@ -143,6 +162,10 @@ def validate_parallel_completeness(
     expected_total = 0
     actual_total = 0
 
+    total_baseline_ids = 0
+    total_output_ids = 0
+    total_missing_ids = 0
+
     for part_num in range(1, expected_parts + 1):
         output_part_path = build_output_part_path(search_dir, base_filename, part_num)
         baseline_part_path = build_baseline_part_path(
@@ -158,6 +181,10 @@ def validate_parallel_completeness(
             "output_part_path": output_part_path,
             "baseline_part_path": baseline_part_path,
             "baseline_trials": None,
+            "baseline_ids": 0,
+            "output_ids": 0,
+            "missing_ids": 0,
+            "missing_id_list": [],
             "expected_lines": None,
             "actual_lines": None,
             "status": "FAIL",
@@ -182,6 +209,11 @@ def validate_parallel_completeness(
             part_results.append(row)
             continue
 
+        # Extract baseline IDs for this part
+        baseline_id_set = extract_ids(baseline_part_path, num_chains)
+        row["baseline_ids"] = len(baseline_id_set)
+        total_baseline_ids += len(baseline_id_set)
+
         if expected_entries_per_sample is not None:
             expected_lines = baseline_trials * expected_entries_per_sample
             row["expected_lines"] = expected_lines
@@ -189,6 +221,9 @@ def validate_parallel_completeness(
 
         if not os.path.exists(output_part_path):
             row["reason"] = "missing_output_part"
+            row["missing_ids"] = len(baseline_id_set)
+            row["missing_id_list"] = sorted(baseline_id_set)
+            total_missing_ids += len(baseline_id_set)
             missing_count += 1
             fail_count += 1
             part_results.append(row)
@@ -198,18 +233,29 @@ def validate_parallel_completeness(
         row["actual_lines"] = actual_lines
         actual_total += actual_lines
 
-        if expected_entries_per_sample is None:
+        # ID coverage check (always-on, determines pass/fail)
+        output_id_set = extract_ids(output_part_path, num_chains)
+        row["output_ids"] = len(output_id_set)
+        total_output_ids += len(output_id_set)
+
+        missing = baseline_id_set - output_id_set
+        row["missing_ids"] = len(missing)
+        total_missing_ids += len(missing)
+        if missing:
+            row["missing_id_list"] = sorted(missing)
+
+        # Supplementary line-count check (advisory only)
+        line_count_note = ""
+        if expected_entries_per_sample is not None and actual_lines != row["expected_lines"]:
+            line_count_note = f" (line_count: {actual_lines}/{row['expected_lines']})"
+
+        if len(missing) == 0:
             row["status"] = "PASS"
-            row["reason"] = "exists"
+            row["reason"] = f"all_ids_covered{line_count_note}"
             pass_count += 1
         else:
-            if actual_lines == row["expected_lines"]:
-                row["status"] = "PASS"
-                row["reason"] = "counts_match"
-                pass_count += 1
-            else:
-                row["reason"] = "count_mismatch"
-                fail_count += 1
+            row["reason"] = f"missing_{len(missing)}_ids{line_count_note}"
+            fail_count += 1
 
         part_results.append(row)
 
@@ -236,6 +282,9 @@ def validate_parallel_completeness(
             "pass_parts": pass_count,
             "fail_parts": fail_count,
             "missing_parts": missing_count,
+            "total_baseline_ids": total_baseline_ids,
+            "total_output_ids": total_output_ids,
+            "total_missing_ids": total_missing_ids,
             "expected_total_lines": expected_total,
             "actual_total_lines": actual_total,
             "all_pass": fail_count == 0,
@@ -264,27 +313,56 @@ def print_report(report: dict[str, Any]) -> None:
     print(f"  - Search Dir: {cfg['search_dir']}")
     print(f"  - Base Filename: {cfg['base_filename']}")
 
-    header = (
-        f"\n{'part':>4}  {'baseline_trials':>15}  {'expected_lines':>14}  "
-        f"{'actual_lines':>12}  {'status':>6}  reason"
-    )
+    # Determine if we have line-count info to show
+    has_line_counts = cfg["expected_entries_per_sample"] is not None
+
+    if has_line_counts:
+        header = (
+            f"\n{'part':>4}  {'baseline_ids':>12}  {'output_ids':>10}  {'missing':>7}  "
+            f"{'exp_lines':>9}  {'act_lines':>9}  {'status':>6}  reason"
+        )
+    else:
+        header = (
+            f"\n{'part':>4}  {'baseline_ids':>12}  {'output_ids':>10}  {'missing':>7}  "
+            f"{'act_lines':>9}  {'status':>6}  reason"
+        )
     print(header)
     print("-" * len(header))
+
     for row in part_rows:
-        bt = row["baseline_trials"] if row["baseline_trials"] is not None else "-"
-        ex = row["expected_lines"] if row["expected_lines"] is not None else "-"
+        bi = row.get("baseline_ids", "-")
+        oi = row.get("output_ids", "-")
+        mi = row.get("missing_ids", "-")
         ac = row["actual_lines"] if row["actual_lines"] is not None else "-"
-        print(
-            f"{row['part']:>4}  {str(bt):>15}  {str(ex):>14}  "
-            f"{str(ac):>12}  {row['status']:>6}  {row['reason']}"
-        )
+        if has_line_counts:
+            ex = row["expected_lines"] if row["expected_lines"] is not None else "-"
+            print(
+                f"{row['part']:>4}  {str(bi):>12}  {str(oi):>10}  {str(mi):>7}  "
+                f"{str(ex):>9}  {str(ac):>9}  {row['status']:>6}  {row['reason']}"
+            )
+        else:
+            print(
+                f"{row['part']:>4}  {str(bi):>12}  {str(oi):>10}  {str(mi):>7}  "
+                f"{str(ac):>9}  {row['status']:>6}  {row['reason']}"
+            )
+
+    # Show missing IDs if any
+    for row in part_rows:
+        if row.get("missing_id_list"):
+            print(f"\n  Part {row['part']} missing IDs (first 10):")
+            for mid in row["missing_id_list"][:10]:
+                print(f"    id={mid[0]}, chain_id={mid[1]}")
+            if len(row["missing_id_list"]) > 10:
+                print(f"    ... and {len(row['missing_id_list']) - 10} more")
 
     print("\nSummary:")
     print(f"  - Total parts: {summary['total_parts']}")
     print(f"  - PASS: {summary['pass_parts']}")
     print(f"  - FAIL: {summary['fail_parts']}")
     print(f"  - Missing: {summary['missing_parts']}")
-    if cfg["expected_entries_per_sample"] is not None:
+    print(f"  - ID Coverage: {summary['total_output_ids']}/{summary['total_baseline_ids']} "
+          f"({summary['total_baseline_ids'] - summary['total_missing_ids']}/{summary['total_baseline_ids']} covered)")
+    if has_line_counts:
         print(f"  - Expected lines (sum): {summary['expected_total_lines']}")
         print(f"  - Actual lines (sum):   {summary['actual_total_lines']}")
     print(f"  - Overall: {'PASS' if summary['all_pass'] else 'FAIL'}")
@@ -339,27 +417,41 @@ def main() -> int:
             f"(experiment='{args.experiment}'). Use --filler-type dots or --filler-type lorem."
         )
 
-    report = validate_parallel_completeness(
-        model=args.model,
-        experiment=args.experiment,
-        dataset=args.dataset,
-        results_dir=args.results_dir,
-        restricted=args.restricted,
-        expected_parts=args.expected_parts,
-        num_chains=args.num_chains,
-        expected_entries_per_sample=args.expected_entries_per_sample,
-        perturbation_source=args.perturbation_source,
-        filler_type=args.filler_type,
-        mask_type=args.mask_type,
-        mask_mode=args.mask_mode,
-    )
+    datasets = ["mmar", "sakura-animal", "sakura-emotion", "sakura-gender", "sakura-language", "mmau"] if args.dataset == "all" else [args.dataset]
 
-    print_report(report)
-    if args.json:
-        print("\nJSON report:")
-        print(json.dumps(report, indent=2))
+    all_pass = True
+    for ds in datasets:
+        if args.dataset == "all":
+            print(f"\n{'='*60}\nVERIFYING DATASET: {ds.upper()}\n{'='*60}")
+        
+        try:
+            report = validate_parallel_completeness(
+                model=args.model,
+                experiment=args.experiment,
+                dataset=ds,
+                results_dir=args.results_dir,
+                restricted=args.restricted,
+                expected_parts=args.expected_parts,
+                num_chains=args.num_chains,
+                expected_entries_per_sample=args.expected_entries_per_sample,
+                perturbation_source=args.perturbation_source,
+                filler_type=args.filler_type,
+                mask_type=args.mask_type,
+                mask_mode=args.mask_mode,
+            )
 
-    return 0 if report["summary"]["all_pass"] else 1
+            print_report(report)
+            if args.json:
+                print("\nJSON report:")
+                print(json.dumps(report, indent=2))
+            
+            if not report["summary"]["all_pass"]:
+                all_pass = False
+        except Exception as e:
+            print(f"\nError verifying dataset {ds}: {e}")
+            all_pass = False
+
+    return 0 if all_pass else 1
 
 
 if __name__ == "__main__":
