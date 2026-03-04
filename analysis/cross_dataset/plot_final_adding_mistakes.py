@@ -1,4 +1,4 @@
-# analysis/cross_dataset_aggregated_scripts/plot_final_adding_mistakes.py
+# analysis/cross_dataset/plot_final_adding_mistakes.py
 
 """
 This script generates the final cross-dataset plot for the
@@ -7,9 +7,6 @@ This script generates the final cross-dataset plot for the
 The scientific goal is to test faithfulness by inserting a mistake into a
 reasoning chain and observing if the model's answer changes. This plot
 visualizes consistency as a function of where the mistake was introduced.
-
-This script is hard-coded to run on the 'restricted' data subset (1-6 step CoTs)
-and produces a single, cross-dataset aggregated plot.
 """
 
 import os
@@ -21,7 +18,7 @@ import seaborn as sns
 
 # Add the parent directory to the path to allow importing 'utils'
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils import load_results
+from utils import load_results, discover_datasets, check_completeness
 
 # --- Final Plot Style Guide (Consistent across all scripts) ---
 FINAL_PLOT_STYLES = {
@@ -32,89 +29,74 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, is_restricted: bool = True, perturbation_source: str = 'self'):
-    
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, perturbation_source: str = 'self'):
     """
     Orchestrates the data loading, processing, and plotting for the Adding Mistakes experiment.
-
-    Args:
-        model_name (str): The name of the model to analyze.
-        results_dir (str): The root directory for the results.
-        plots_dir (str): The root directory where plots will be saved.
-        y_zoom (list | None): A list of two floats for the y-axis range, or None.
-        print_line_data (bool): Flag to print aggregated line data to the console.
-        save_stats (bool): Flag to save a detailed statistical summary to a file.
-        save_pdf (bool): Flag to save a PDF copy of the plot.
-        show_ci (bool): Flag to show the 95% confidence interval on the plot.
-        is_restricted (bool): If True, use restricted dataset versions (1-6 step CoTs).
-        perturbation_source (str): Source of perturbations ('self' or 'mistral').
     """
     
-    # Use _combined experiment directory for Mistral perturbations
-    experiment_name = "adding_mistakes_combined" if perturbation_source == 'mistral' else "adding_mistakes"
-    print(f"\n--- Generating Final Cross-Dataset Plot for: ADDING_MISTAKES ({model_name.upper()}) ---")
+    experiment_name = "adding_mistakes"
+    perturbation_label = f" [{perturbation_source.upper()}]" if perturbation_source != 'self' else ""
+    print(f"\n--- Generating Final Cross-Dataset Plot for: ADDING_MISTAKES{perturbation_label} ({model_name.upper()}) ---")
     
-    # --- Data Loading and Preparation ---
-    all_dfs = []
+    # --- Dataset Discovery ---
     try:
-        baseline_dir = os.path.join(results_dir, model_name, 'baseline')
-        suffix = '-restricted.jsonl' if is_restricted else '.jsonl'
-        dataset_names = sorted(list(set([
-            f.replace(f'baseline_{model_name}_', '').replace('-restricted.jsonl', '').replace('.jsonl', '')
-            for f in os.listdir(baseline_dir) 
-            if f.endswith(suffix) and (not f.endswith('-restricted.jsonl') or is_restricted)
-        ])))
-        dataset_type = "restricted" if is_restricted else "full"
-        perturbation_type = f" [{perturbation_source.upper()} perturbation]" if perturbation_source != 'self' else ""
-        print(f"Found {dataset_type} datasets to process{perturbation_type}: {dataset_names}")
-
-        for dataset in dataset_names:
-            try:
-                df = load_results(model_name, results_dir, experiment_name, dataset, is_restricted=is_restricted, perturbation_source=perturbation_source)
-                df = df[df['total_sentences_in_chain'] > 0].copy()
-                if not df.empty:
-                    # Experiment-specific X-axis calculation
-                    df['percent_before_mistake'] = ((df['mistake_position'] - 1) / df['total_sentences_in_chain']) * 100
-                    df['dataset'] = dataset
-                    all_dfs.append(df)
-                else:
-                    print(f"  - WARNING: No valid data for '{dataset}' in {experiment_name} results. Skipping.")
-            except FileNotFoundError:
-                print(f"  - WARNING: '{experiment_name}' results for dataset '{dataset}' not found. Skipping.")
-                continue
-        
-        if not all_dfs:
-            print("No data found for any dataset. Halting analysis.")
-            return
-            
-        super_df = pd.concat(all_dfs, ignore_index=True)
-        # Binning is based on the experiment-specific percentage column
-        super_df['percent_binned'] = (super_df['percent_before_mistake'] / 10).round() * 10
-
+        dataset_names = discover_datasets(model_name, results_dir)
+        print(f"Found datasets to process{perturbation_label}: {dataset_names}")
     except FileNotFoundError:
-        print(f"Could not find baseline directory for model '{model_name}' at {baseline_dir}.")
+        print(f"Could not find baseline directory for model '{model_name}'.")
         return
-    
-    baseline_df = pd.concat([load_results(model_name, results_dir, 'baseline', ds, is_restricted=is_restricted) for ds in dataset_names])
-    baseline_df = baseline_df[baseline_df['id'].isin(super_df['id'].unique())] # Ensure we only use relevant baseline data
-    
-    hundred_percent_df = baseline_df.copy()
-    hundred_percent_df['percent_binned'] = 100
-    # The baseline is, by definition, 100% consistent with itself.
-    hundred_percent_df['is_consistent_with_baseline'] = True
-    # Add the 'dataset' column by merging with a unique id-dataset map from super_df
-    id_to_dataset = super_df[['id', 'dataset']].drop_duplicates()
-    hundred_percent_df = pd.merge(hundred_percent_df, id_to_dataset, on='id')
 
-    # Append this to our main DataFrame before any plotting or stats.
-    super_df = pd.concat([super_df, hundred_percent_df], ignore_index=True)
+    # --- Completeness Check & Data Loading ---
+    all_dfs = []
+    completeness_summary = []
+    for dataset in dataset_names:
+        # Load baseline
+        try:
+            baseline_df = load_results(model_name, results_dir, 'baseline', dataset)
+        except FileNotFoundError:
+            completeness_summary.append((dataset, "NO BASELINE", 0, 0, 0))
+            continue
+        
+        # Load experiment results
+        try:
+            df = load_results(model_name, results_dir, experiment_name, dataset, perturbation_source=perturbation_source)
+        except FileNotFoundError:
+            completeness_summary.append((dataset, "NOT FOUND", len(set(zip(baseline_df['id'], baseline_df['chain_id']))), 0, 0))
+            continue
+        
+        # Check completeness
+        status = check_completeness(model_name, results_dir, experiment_name, dataset, baseline_df, df)
+        label = "COMPLETE" if status['is_complete'] else "INCOMPLETE"
+        completeness_summary.append((dataset, label, status['baseline_count'], status['experiment_count'], status['pct_complete']))
+        
+        # Process data for plotting
+        df = df[df['total_sentences_in_chain'] > 0].copy()
+        if not df.empty:
+            df['percent_before_mistake'] = ((df['mistake_position'] - 1) / df['total_sentences_in_chain']) * 100
+            df['dataset'] = dataset
+            all_dfs.append(df)
+    
+    # --- Print Completeness Summary ---
+    print(f"\n{'='*70}")
+    print(f"  COMPLETENESS CHECK: {experiment_name.upper()}{perturbation_label} — {model_name.upper()}")
+    print(f"{'='*70}")
+    print(f"  {'Dataset':<20} {'Status':<12} {'Baseline':<10} {'Experiment':<12} {'Complete %':<10}")
+    print(f"  {'-'*20} {'-'*12} {'-'*10} {'-'*12} {'-'*10}")
+    for ds, label, bl, ex, pct in completeness_summary:
+        print(f"  {ds:<20} {label:<12} {bl:<10} {ex:<12} {pct:>8.1f}%")
+    print(f"{'='*70}\n")
+    
+    if not all_dfs:
+        print("No data found for any dataset. Halting analysis.")
+        return
+        
+    super_df = pd.concat(all_dfs, ignore_index=True)
+    super_df['percent_binned'] = (super_df['percent_before_mistake'] / 10).round() * 10
 
     # --- Prepare Output Path ---
     output_dir = os.path.join(plots_dir, model_name, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
     base_filename = f"cross_dataset_{experiment_name}_{model_name}"
-    if is_restricted:
-        base_filename += "-restricted"
     if perturbation_source != 'self':
         base_filename += f"-{perturbation_source}"
     
@@ -182,7 +164,6 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
                      ax=ax,
                      legend=False)
         
-    # Update plot titles and labels for this specific experiment
     title_suffix = " [Mistral]" if perturbation_source == 'mistral' else ""
     ax.set_title(f'Adding Mistakes{title_suffix}, {model_name.upper()}', fontsize=fontsize)
     ax.set_xlabel('Percentage % of Chain Without Mistake', fontsize=fontsize)
@@ -194,15 +175,6 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     else:
         ax.set_ylim(0, 105)
     ax.set_xlim(-5, 105)
-    
-    # legend = ax.legend(
-    #     title='Dataset', 
-    #     fontsize=(fontsize - 4),
-    #     title_fontsize=(fontsize - 2),
-    #     frameon=True, 
-    #     facecolor='white', 
-    #     framealpha=0.8
-    # )
 
     ax.grid(True)
     fig.tight_layout()
@@ -222,7 +194,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate final cross-dataset plots for the Adding Mistakes experiment.")
-    parser.add_argument('--model', type=str, required=True, help="The name of the model to analyze (e.g., 'qwen', 'salmonn').")
+    parser.add_argument('--model', type=str, required=True, help="The name of the model to analyze (e.g., 'qwen_omni', 'flamingo_hf').")
     parser.add_argument('--results_dir', type=str, default='./results')
     parser.add_argument('--plots_dir', type=str, default='./plots/cross_dataset_plots')
     parser.add_argument('--y-zoom', nargs=2, type=float, default=None, help="Set a custom Y-axis range (e.g., --y-zoom 45 100.5).")
@@ -230,10 +202,7 @@ if __name__ == "__main__":
     parser.add_argument('--save-stats', action='store_true', help="Save a detailed statistical summary to a .txt file.")
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
     parser.add_argument('--show-ci', action='store_true', help="Show the 95% confidence interval as a shaded region.")
-    parser.add_argument('--restricted', action='store_true', default=True, help="Use restricted dataset versions (1-6 step CoTs). Default: True.")
-    parser.add_argument('--no-restricted', action='store_true', help="Use full dataset versions instead of restricted.")
     parser.add_argument('--perturbation-source', type=str, default='self', choices=['self', 'mistral'], help="Source of perturbations ('self' or 'mistral').")
     args = parser.parse_args()
     
-    is_restricted = not args.no_restricted
-    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, is_restricted, args.perturbation_source)
+    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.perturbation_source)

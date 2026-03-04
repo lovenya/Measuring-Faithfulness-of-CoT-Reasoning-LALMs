@@ -1,16 +1,11 @@
-# analysis/cross_dataset_aggregated_scripts/plot_final_random_partial_filler_text.py
+# analysis/cross_dataset/plot_final_random_partial_filler_text.py
 
 """
-This script generates the final, publication-quality cross-dataset plot for the
+This script generates the final cross-dataset plot for the
 'Random Partial Filler Text' experiment.
 
 The scientific goal is to test the importance of the reasoning content by
 replacing a random percentage of words in the CoT with meaningless filler.
-This plot visualizes the model's consistency as a function of how much of the
-reasoning chain has been randomly corrupted.
-
-This script is hard-coded to run on the 'restricted' data subset (1-6 step CoTs)
-and produces a single, cross-dataset aggregated plot.
 """
 
 import os
@@ -22,7 +17,7 @@ import seaborn as sns
 
 # Add the parent directory to the path to allow importing 'utils'
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils import load_results
+from utils import load_results, discover_datasets, check_completeness
 
 # --- Final Plot Style Guide (Consistent across all scripts) ---
 FINAL_PLOT_STYLES = {
@@ -33,82 +28,74 @@ FINAL_PLOT_STYLES = {
     "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
 }
 
-def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, filler_type: str = 'dots', is_restricted: bool = False):
+def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, filler_type: str = 'dots'):
     """
     Orchestrates the data loading, processing, and plotting for the Random Partial Filler experiment.
-
-    Args:
-        model_name (str): The name of the model to analyze.
-        results_dir (str): The root directory for the results.
-        plots_dir (str): The root directory where plots will be saved.
-        y_zoom (list | None): A list of two floats for the y-axis range, or None.
-        print_line_data (bool): Flag to print aggregated line data to the console.
-        save_stats (bool): Flag to save a detailed statistical summary to a file.
-        save_pdf (bool): Flag to save a PDF copy of the plot.
-        show_ci (bool): Flag to show the 95% confidence interval on the plot.
-        filler_type (str): The type of filler used ('dots' or 'lorem').
-        is_restricted (bool): Whether to use restricted dataset versions (1-6 step CoTs).
     """
     
     experiment_name = "random_partial_filler_text"
     print(f"\n--- Generating Final Cross-Dataset Plot for: {experiment_name.upper()} ({model_name.upper()}) ---")
     
-    # --- Data Loading and Preparation ---
-    all_dfs = []
+    # --- Dataset Discovery ---
     try:
-        baseline_dir = os.path.join(results_dir, model_name, 'baseline')
-        suffix = '-restricted.jsonl' if is_restricted else '.jsonl'
-        dataset_names = sorted(list(set([f.replace(f'baseline_{model_name}_', '').replace(suffix, '') for f in os.listdir(baseline_dir) if f.endswith(suffix)])))
-        restricted_label = "restricted " if is_restricted else ""
-        print(f"Found {restricted_label}datasets to process: {dataset_names}")
-
-        for dataset in dataset_names:
-            try:
-                # We need baseline for consistency check and early_answering for sentence counts
-                baseline_df = load_results(model_name, results_dir, 'baseline', dataset, is_restricted=is_restricted)
-                early_df = load_results(model_name, results_dir, 'early_answering', dataset, is_restricted=is_restricted)
-                df = load_results(model_name, results_dir, experiment_name, dataset, is_restricted=is_restricted, filler_type=filler_type)
-
-                # Add consistency and sentence count metadata
-                baseline_predictions = baseline_df[['id', 'chain_id', 'predicted_choice']].rename(columns={'predicted_choice': 'baseline_predicted_choice'})
-                df = pd.merge(df, baseline_predictions, on=['id', 'chain_id'], how='inner')
-                df['is_consistent_with_baseline'] = (df['predicted_choice'] == df['baseline_predicted_choice'])
-                
-                sentence_counts = early_df[['id', 'chain_id', 'total_sentences_in_chain']].drop_duplicates()
-                df = pd.merge(df, sentence_counts, on=['id', 'chain_id'], how='inner')
-
-                df = df[df['total_sentences_in_chain'] > 0].copy()
-                if not df.empty:
-                    df['dataset'] = dataset
-                    all_dfs.append(df)
-                else:
-                    print(f"  - WARNING: No valid data for '{dataset}' in {experiment_name} results. Skipping.")
-            except FileNotFoundError:
-                print(f"  - WARNING: '{experiment_name}' or dependent results for dataset '{dataset}' not found. Skipping.")
-                continue
-        
-        if not all_dfs:
-            print("No data found for any dataset. Halting analysis.")
-            return
-            
-        super_df = pd.concat(all_dfs, ignore_index=True)
-        super_df['percent_binned'] = (super_df['percent_replaced'] / 5).round() * 5
-
+        dataset_names = discover_datasets(model_name, results_dir)
+        print(f"Found datasets to process: {dataset_names}")
     except FileNotFoundError:
-        print(f"Could not find baseline directory for model '{model_name}' at {baseline_dir}.")
+        print(f"Could not find baseline directory for model '{model_name}'.")
         return
 
-    # --- Hard-code 0% to be 100% consistent ---
-    # We locate all rows where the binned percentage is 0 and set their consistency to True.
-    # This ensures the plot and stats correctly reflect the theoretical baseline.
-    super_df.loc[super_df['percent_binned'] == 0, 'is_consistent_with_baseline'] = True
+    # --- Completeness Check & Data Loading ---
+    all_dfs = []
+    completeness_summary = []
+    for dataset in dataset_names:
+        # Load baseline
+        try:
+            baseline_df = load_results(model_name, results_dir, 'baseline', dataset)
+        except FileNotFoundError:
+            completeness_summary.append((dataset, "NO BASELINE", 0, 0, 0))
+            continue
+        
+        # Load experiment results
+        try:
+            df = load_results(model_name, results_dir, experiment_name, dataset, filler_type=filler_type)
+        except FileNotFoundError:
+            completeness_summary.append((dataset, "NOT FOUND", len(set(zip(baseline_df['id'], baseline_df['chain_id']))), 0, 0))
+            continue
+        
+        # Check completeness
+        status = check_completeness(model_name, results_dir, experiment_name, dataset, baseline_df, df)
+        label = "COMPLETE" if status['is_complete'] else "INCOMPLETE"
+        completeness_summary.append((dataset, label, status['baseline_count'], status['experiment_count'], status['pct_complete']))
+        
+        # Process data for plotting
+        if not df.empty:
+            df['dataset'] = dataset
+            all_dfs.append(df)
+    
+    # --- Print Completeness Summary ---
+    filler_label = f" [{filler_type.upper()}]" if filler_type != 'dots' else ""
+    print(f"\n{'='*70}")
+    print(f"  COMPLETENESS CHECK: {experiment_name.upper()}{filler_label} — {model_name.upper()}")
+    print(f"{'='*70}")
+    print(f"  {'Dataset':<20} {'Status':<12} {'Baseline':<10} {'Experiment':<12} {'Complete %':<10}")
+    print(f"  {'-'*20} {'-'*12} {'-'*10} {'-'*12} {'-'*10}")
+    for ds, label, bl, ex, pct in completeness_summary:
+        print(f"  {ds:<20} {label:<12} {bl:<10} {ex:<12} {pct:>8.1f}%")
+    print(f"{'='*70}\n")
+    
+    if not all_dfs:
+        print("No data found for any dataset. Halting analysis.")
+        return
+        
+    super_df = pd.concat(all_dfs, ignore_index=True)
+    super_df['percent_binned'] = (super_df['percent_replaced'] / 5).round() * 5
 
     # --- Prepare Output Path ---
     output_dir = os.path.join(plots_dir, model_name, experiment_name)
     os.makedirs(output_dir, exist_ok=True)
     
     filler_suffix = f"_{filler_type}" if filler_type != 'dots' else ""
-    base_filename = f"cross_dataset_{experiment_name}_{model_name}-restricted{filler_suffix}"
+    base_filename = f"cross_dataset_{experiment_name}_{model_name}{filler_suffix}"
     
     # --- Statistical Analysis & Optional Output ---
     if print_line_data or save_stats:
@@ -174,7 +161,6 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
                      ax=ax,
                      legend=False)
         
-    # Update plot titles and labels for this specific experiment
     title_prefix = "Random Partial Filler"
     if filler_type == 'lorem':
         title_prefix += " (Lorem Ipsum)"
@@ -183,21 +169,11 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     ax.set_ylabel('Consistency (%)', fontsize=fontsize)
     ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
     
-    
     if y_zoom:
         ax.set_ylim(y_zoom[0], y_zoom[1])
     else:
         ax.set_ylim(0, 105)
     ax.set_xlim(-5, 105)
-    
-    # legend = ax.legend(
-    #     title='Dataset', 
-    #     fontsize=(fontsize - 4),
-    #     title_fontsize=(fontsize - 2),
-    #     frameon=True, 
-    #     facecolor='white', 
-    #     framealpha=0.8
-    # )
 
     ax.grid(True)
     fig.tight_layout()
@@ -217,7 +193,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate final cross-dataset plots for the Random Partial Filler experiment.")
-    parser.add_argument('--model', type=str, required=True, help="The name of the model to analyze (e.g., 'qwen', 'salmonn').")
+    parser.add_argument('--model', type=str, required=True, help="The name of the model to analyze (e.g., 'qwen_omni', 'flamingo_hf').")
     parser.add_argument('--results_dir', type=str, default='./results')
     parser.add_argument('--plots_dir', type=str, default='plots/cross_dataset_plots', help="The root directory for final plots.")
     parser.add_argument('--y-zoom', nargs=2, type=float, default=None, help="Set a custom Y-axis range (e.g., --y-zoom 45 100.5).")
@@ -226,7 +202,6 @@ if __name__ == "__main__":
     parser.add_argument('--save-pdf', action='store_true', help="Save a PDF copy of the plot.")
     parser.add_argument('--show-ci', action='store_true', help="Show the 95% confidence interval as a shaded region.")
     parser.add_argument('--filler-type', type=str, default='dots', choices=['dots', 'lorem'], help="Type of filler to analyze.")
-    parser.add_argument('--restricted', action='store_true', help="Use restricted dataset versions (1-6 step CoTs).")
     args = parser.parse_args()
     
-    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.filler_type, args.restricted)
+    create_analysis(args.model, args.results_dir, args.plots_dir, args.y_zoom, args.print_line_data, args.save_stats, args.save_pdf, args.show_ci, args.filler_type)
