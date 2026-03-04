@@ -163,7 +163,7 @@ def main():
     parser.add_argument('--results-dir', type=str, default='./results')
     parser.add_argument('--num-chains', type=int, default=1, help="Only analyze first N chains per question. Default: 1.")
     parser.add_argument('--min-sentences', type=int, default=1, help="Min sentence count for range analysis. Default: 1.")
-    parser.add_argument('--max-sentences', type=int, default=7, help="Max sentence count for range analysis. Default: 7.")
+    parser.add_argument('--max-sentences', type=int, default=5, help="Max sentence count for range analysis. Default: 7.")
     parser.add_argument('--save-plot', action='store_true', help="Save a bar chart PNG.")
     parser.add_argument('--plots-dir', type=str, default='plots/diagnostics', help="Directory for saved plots.")
     args = parser.parse_args()

@@ -212,7 +212,7 @@ def main():
     parser.add_argument('--dataset', type=str, required=True, help="Dataset alias (e.g., 'mmar'), or 'all'.")
     parser.add_argument('--results-dir', type=str, default='./results', help="Root results directory.")
     parser.add_argument('--min-sentences', type=int, default=1, help="Minimum sentence count (inclusive). Default: 1.")
-    parser.add_argument('--max-sentences', type=int, default=6, help="Maximum sentence count (inclusive). Default: 7.")
+    parser.add_argument('--max-sentences', type=int, default=7, help="Maximum sentence count (inclusive). Default: 7.")
     parser.add_argument('--num-chains', type=int, default=1, help="Only process first N chains per question. Default: 1.")
     args = parser.parse_args()
 
