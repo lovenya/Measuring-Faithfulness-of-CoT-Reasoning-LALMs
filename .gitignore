@@ -104,3 +104,5 @@ local_readme.md
 
 
 results/
+
+data_fetch_and_normalisation/test_mini.parquet
