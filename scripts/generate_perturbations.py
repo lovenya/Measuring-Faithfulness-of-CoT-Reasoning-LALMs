@@ -103,13 +103,19 @@ def generate_mistakes_for_baseline(model, baseline_results: list[dict], output_p
             sanitized_cot = trial.get('sanitized_cot', '')
             
             if not sanitized_cot:
+                if (q_id, chain_id, -1) not in completed:
+                    logger.warning(f"Empty sanitized_cot for {q_id}/{chain_id}, writing placeholder.")
+                    result = {"id": q_id, "chain_id": chain_id, "sentence_idx": -1, "original_sentence": "", "mistaken_sentence": ""}
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
                 continue
             
             sentences = nltk.sent_tokenize(sanitized_cot)
+            wrote_any = False
             
             for sentence_idx, original_sentence in enumerate(sentences):
                 # Skip if already done
                 if (q_id, chain_id, sentence_idx) in completed:
+                    wrote_any = True  # already handled in a previous run
                     continue
                 
                 # Skip short/meaningless sentences
@@ -133,6 +139,14 @@ def generate_mistakes_for_baseline(model, baseline_results: list[dict], output_p
                 }
                 f.write(json.dumps(result, ensure_ascii=False) + "\n")
                 f.flush()
+                wrote_any = True
+            
+            if not wrote_any and sentences:
+                if (q_id, chain_id, -1) not in completed:
+                    logger.warning(f"No valid sentences >= 3 words for {q_id}/{chain_id}. Writing placeholder.")
+                    result = {"id": q_id, "chain_id": chain_id, "sentence_idx": -1, "original_sentence": "", "mistaken_sentence": ""}
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                    f.flush()
 
 
 def generate_paraphrases_for_baseline(model, baseline_results: list[dict], output_path: str):
@@ -151,14 +165,20 @@ def generate_paraphrases_for_baseline(model, baseline_results: list[dict], outpu
             sanitized_cot = trial.get('sanitized_cot', '')
             
             if not sanitized_cot:
+                if (q_id, chain_id, 0) not in completed:
+                    logger.warning(f"Empty sanitized_cot for {q_id}/{chain_id}, writing placeholder.")
+                    result = {"id": q_id, "chain_id": chain_id, "num_sentences_paraphrased": 0, "original_text": "", "paraphrased_text": ""}
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
                 continue
             
             sentences = nltk.sent_tokenize(sanitized_cot)
+            wrote_any = False
             
             # For paraphrasing, we paraphrase progressively (1 sentence, 2 sentences, etc.)
             for num_to_paraphrase in range(1, len(sentences) + 1):
                 # Use num_to_paraphrase as sentence_idx for lookup key
                 if (q_id, chain_id, num_to_paraphrase) in completed:
+                    wrote_any = True  # already handled in a previous run
                     continue
                 
                 # Paraphrase first N sentences
@@ -178,6 +198,14 @@ def generate_paraphrases_for_baseline(model, baseline_results: list[dict], outpu
                 }
                 f.write(json.dumps(result, ensure_ascii=False) + "\n")
                 f.flush()
+                wrote_any = True
+                
+            if not wrote_any and sentences:
+                if (q_id, chain_id, 0) not in completed:
+                    logger.warning(f"Failed to paraphrase any sentences for {q_id}/{chain_id}. Writing placeholder.")
+                    result = {"id": q_id, "chain_id": chain_id, "num_sentences_paraphrased": 0, "original_text": "", "paraphrased_text": ""}
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                    f.flush()
 
 
 def main():
