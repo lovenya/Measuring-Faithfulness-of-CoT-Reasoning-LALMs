@@ -58,7 +58,12 @@ nltk_data/
 # Output files
 results/logs/
 old_results/
-plots/
+plots/hop_multi/
+plots/hop_single/
+plots/per_dataset_plots/
+plots/qwen/
+plots/salmonn/
+plots/flamingo/
 final_plots
 old_comparitive_plots/
 old_unused_results/
