@@ -26,11 +26,17 @@ def build_output_location(
     filler_type: str | None = None,
     mask_type: str | None = None,
     mask_mode: str | None = None,
+    external_llm: str | None = None,
 ) -> tuple[str, str]:
     """
-    Build (search_dir, base_filename) for parallel outputs.
-    Mirrors the path construction logic in main.py.
+    Build (search_dir, base_filename) for outputs.
     """
+    if external_llm:
+        # e.g. results/external_llm_perturbations/mistral/qwen_omni/mmau/raw/mistakes.jsonl
+        search_dir = os.path.join(results_dir, "external_llm_perturbations", external_llm, model, dataset, "raw")
+        base_filename = experiment # mistakes or paraphrased
+        return search_dir, base_filename
+
     if experiment == "audio_masking":
         if not mask_type or not mask_mode:
             raise ValueError(
@@ -56,7 +62,9 @@ def build_output_location(
     return search_dir, base_filename
 
 
-def build_output_part_path(search_dir: str, base_filename: str, part_num: int) -> str:
+def build_output_part_path(search_dir: str, base_filename: str, part_num: int | None) -> str:
+    if part_num is None:
+        return os.path.join(search_dir, f"{base_filename}.jsonl")
     return os.path.join(search_dir, f"{base_filename}.part_{part_num}.jsonl")
 
 
@@ -65,11 +73,13 @@ def build_baseline_part_path(
     dataset: str,
     results_dir: str,
     restricted: bool,
-    part_num: int,
+    part_num: int | None,
 ) -> str:
     base = f"baseline_{model}_{dataset}"
     if restricted:
         base += "-restricted"
+    if part_num is None:
+        return os.path.join(results_dir, model, "baseline", f"{base}.jsonl")
     return os.path.join(results_dir, model, "baseline", f"{base}.part_{part_num}.jsonl")
 
 
@@ -124,18 +134,19 @@ def validate_parallel_completeness(
     dataset: str,
     results_dir: str,
     restricted: bool,
-    expected_parts: int,
+    expected_parts: int | None,
     num_chains: int,
     expected_entries_per_sample: int | None = None,
     perturbation_source: str = "self",
     filler_type: str | None = None,
     mask_type: str | None = None,
     mask_mode: str | None = None,
+    external_llm: str | None = None,
 ) -> dict[str, Any]:
     """
-    Validate expected parts [1..expected_parts] and per-part line counts.
+    Validate output files. Check parts [1..expected_parts] if provided, else check single file.
     """
-    if expected_parts <= 0:
+    if expected_parts is not None and expected_parts <= 0:
         raise ValueError("--expected-parts must be a positive integer.")
     if num_chains <= 0:
         raise ValueError("--num-chains must be a positive integer.")
@@ -153,6 +164,7 @@ def validate_parallel_completeness(
         filler_type=filler_type,
         mask_type=mask_type,
         mask_mode=mask_mode,
+        external_llm=external_llm,
     )
 
     part_results: list[dict[str, Any]] = []
@@ -166,7 +178,9 @@ def validate_parallel_completeness(
     total_output_ids = 0
     total_missing_ids = 0
 
-    for part_num in range(1, expected_parts + 1):
+    parts_to_check = [None] if expected_parts is None else list(range(1, expected_parts + 1))
+
+    for part_num in parts_to_check:
         output_part_path = build_output_part_path(search_dir, base_filename, part_num)
         baseline_part_path = build_baseline_part_path(
             model=model,
@@ -177,7 +191,7 @@ def validate_parallel_completeness(
         )
 
         row: dict[str, Any] = {
-            "part": part_num,
+            "part": part_num if part_num is not None else "ALL",
             "output_part_path": output_part_path,
             "baseline_part_path": baseline_part_path,
             "baseline_trials": None,
@@ -297,14 +311,14 @@ def print_report(report: dict[str, Any]) -> None:
     summary = report["summary"]
     part_rows = report["parts"]
 
-    print("\n--- Parallel Completeness Verification ---")
+    print("\n--- Experiment Completeness Verification ---")
     print(f"  - Model: {cfg['model'].upper()}")
     print(f"  - Experiment: {cfg['experiment'].upper()}")
     print(f"  - Dataset: {cfg['dataset'].upper()}")
     print(f"  - Run Mode: {'RESTRICTED' if cfg['restricted'] else 'FULL DATASET'}")
     if cfg["experiment"] == "audio_masking":
         print(f"  - Mask Type/Mode: {cfg['mask_type']}/{cfg['mask_mode']}")
-    print(f"  - Expected Parts: {cfg['expected_parts']}")
+    print(f"  - Expected Parts: {cfg['expected_parts'] if cfg['expected_parts'] is not None else 'N/A (Single File)'}")
     print(f"  - Num Chains: {cfg['num_chains']}")
     if cfg["expected_entries_per_sample"] is not None:
         print(f"  - Expected Entries/Sample: {cfg['expected_entries_per_sample']}")
@@ -371,8 +385,7 @@ def print_report(report: dict[str, Any]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Verify completeness of parallel output files by part index and "
-            "(optionally) expected line counts."
+            "Verify completeness of experiment output files (both single file and parallel parts)."
         ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
@@ -381,7 +394,12 @@ def main() -> int:
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--results-dir", type=str, default="./results")
     parser.add_argument("--restricted", action="store_true")
-    parser.add_argument("--expected-parts", type=int, required=True)
+    parser.add_argument(
+        "--expected-parts",
+        type=int,
+        default=None,
+        help="Number of parts if parallel. If omitted, checks standard single output location.",
+    )
     parser.add_argument("--num-chains", type=int, required=True)
     parser.add_argument("--expected-entries-per-sample", type=int, default=None)
     parser.add_argument(
@@ -399,6 +417,14 @@ def main() -> int:
     )
     parser.add_argument("--mask-type", type=str, default=None)
     parser.add_argument("--mask-mode", type=str, default=None)
+    parser.add_argument(
+        "--external-llm",
+        type=str,
+        default=None,
+        help="External LLM name (e.g. mistral) if verifying external generations. "
+             "If provided, experiment name should be 'mistakes' or 'paraphrased' "
+             "and output paths will point to the raw perturbation directories."
+    )
     parser.add_argument(
         "--json",
         action="store_true",
@@ -438,6 +464,7 @@ def main() -> int:
                 filler_type=args.filler_type,
                 mask_type=args.mask_type,
                 mask_mode=args.mask_mode,
+                external_llm=args.external_llm,
             )
 
             print_report(report)

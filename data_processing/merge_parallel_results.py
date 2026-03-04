@@ -15,14 +15,14 @@ from typing import Any
 
 try:
     # Works when executed as: python data_processing/merge_parallel_results.py
-    from verify_parallel_completeness import (
+    from verify_experiment_completeness import (
         build_output_location,
         validate_parallel_completeness,
         print_report,
     )
 except ImportError:
     # Works when executed from environments that expose project root imports.
-    from data_processing.verify_parallel_completeness import (  # type: ignore
+    from data_processing.verify_experiment_completeness import (  # type: ignore
         build_output_location,
         validate_parallel_completeness,
         print_report,
