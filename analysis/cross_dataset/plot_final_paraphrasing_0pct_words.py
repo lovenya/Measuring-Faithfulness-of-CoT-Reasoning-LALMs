@@ -221,7 +221,7 @@ def create_analysis(
     restricted_label = " [Restricted]" if restricted else ""
     model_display = "Audio Flamingo 3" if model_name == "flamingo_hf" else "Qwen 2.5 Omni" if model_name == "qwen_omni" else model_name.upper()
     plt.title(f'Paraphrasing, {model_display}')
-    plt.xlabel('Percentage (%) of Sentences Paraphrased')
+    plt.xlabel('Percentage (%) of Sentences Paraphrased', fontsize=38)
     plt.ylabel('Consistency (%)')
 
     if y_zoom:

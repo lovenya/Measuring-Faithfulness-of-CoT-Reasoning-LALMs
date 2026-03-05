@@ -21,7 +21,7 @@ from matplotlib.lines import Line2D
 plt.rcParams.update(
     {
         "font.size": 38,
-        "axes.labelsize": 44,
+        "axes.labelsize": 46,
         "axes.titlesize": 50,
         "xtick.labelsize": 38,
         "ytick.labelsize": 38,

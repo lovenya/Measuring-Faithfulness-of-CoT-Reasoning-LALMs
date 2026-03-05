@@ -193,7 +193,7 @@ def create_analysis(
     restricted_label = " [Restricted]" if restricted else ""
     model_display = "Audio Flamingo 3" if model_name == "flamingo_hf" else "Qwen 2.5 Omni" if model_name == "qwen_omni" else model_name.upper()
     plt.title(f'Random filler tokens, {model_display}')
-    plt.xlabel('Percentage (%) of Words Replaced')
+    plt.xlabel('Percentage (%) of Words Replaced', fontsize=38)
     plt.ylabel('Consistency (%)')
 
     if y_zoom:
