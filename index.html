@@ -1,1 +1,302 @@
-index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Paper Title — Anonymous Submission</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f5f0;
+      --ink: #1a1a18;
+      --muted: #6b6b63;
+      --accent: #c84b2f;
+      --rule: #d8d4cc;
+      --card: #ffffff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      padding: 0 1.5rem;
+    }
+
+    /* ── Header ── */
+    header {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 5rem 0 2.5rem;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .venue-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.2rem;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.2;
+      font-weight: 400;
+      margin-bottom: 1.8rem;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .authors {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 1.8rem;
+      font-style: italic;
+    }
+
+    /* ── Buttons ── */
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
+      border-radius: 3px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      border: 1px solid var(--ink);
+      color: var(--ink);
+      background: transparent;
+      transition: background 0.18s, color 0.18s;
+    }
+    .btn:hover { background: var(--ink); color: var(--bg); }
+    .btn.primary { background: var(--ink); color: var(--bg); }
+    .btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 3rem 0 6rem;
+    }
+
+    section { margin-bottom: 3.5rem; }
+
+    h2 {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    p {
+      font-size: 1rem;
+      color: var(--ink);
+      max-width: 65ch;
+    }
+
+    /* ── Teaser figure ── */
+    .teaser {
+      width: 100%;
+      aspect-ratio: 16/7;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+    }
+
+    .caption {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ── Results grid ── */
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .result-card {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 1.4rem 1.6rem;
+    }
+
+    .result-card .metric {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.2rem;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .result-card .label {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* ── BibTeX ── */
+    .bibtex {
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      padding: 1.4rem 1.6rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.8;
+      color: var(--muted);
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 1.5rem 0;
+      border-top: 1px solid var(--rule);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    header, main section {
+      animation: fadeUp 0.5s ease both;
+    }
+    main section:nth-child(1) { animation-delay: 0.05s; }
+    main section:nth-child(2) { animation-delay: 0.10s; }
+    main section:nth-child(3) { animation-delay: 0.15s; }
+    main section:nth-child(4) { animation-delay: 0.20s; }
+    main section:nth-child(5) { animation-delay: 0.25s; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="venue-tag">Anonymous Submission · Conference Name 20XX</div>
+    <h1>Your Paper Title Goes <em>Here</em></h1>
+    <p class="authors">Anonymous Authors</p>
+    <div class="links">
+      <a class="btn primary" href="#">📄 Paper (PDF)</a>
+      <a class="btn" href="YOUR_ANONYMOUS_GITHUB_URL">💻 Code</a>
+      <a class="btn" href="#">🎥 Video</a>
+      <a class="btn" href="#">📊 Slides</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- TEASER FIGURE -->
+    <section>
+      <h2>Teaser</h2>
+      <div class="teaser">[ Teaser figure goes here ]</div>
+      <p class="caption">Figure 1. A short caption describing the main idea or result of the paper.</p>
+    </section>
+
+    <!-- ABSTRACT -->
+    <section>
+      <h2>Abstract</h2>
+      <p>
+        Replace this with your paper abstract. Keep it concise — one paragraph summarizing
+        the problem, your approach, and the key results. This is often the first thing
+        reviewers read, so make it count.
+      </p>
+    </section>
+
+    <!-- METHOD -->
+    <section>
+      <h2>Method</h2>
+      <p>
+        Briefly describe your approach here. You can add figures, diagrams, or an overview
+        of your pipeline. Replace the teaser block below with an architecture figure.
+      </p>
+      <br>
+      <div class="teaser">[ Method / Architecture figure ]</div>
+      <p class="caption">Figure 2. Overview of the proposed method.</p>
+    </section>
+
+    <!-- RESULTS -->
+    <section>
+      <h2>Results</h2>
+      <p>Highlight your key quantitative results. Edit the cards below with your numbers.</p>
+      <div class="result-grid">
+        <div class="result-card">
+          <div class="metric">XX.X%</div>
+          <div class="label">Metric A on Dataset B</div>
+        </div>
+        <div class="result-card">
+          <div class="metric">+X.X</div>
+          <div class="label">Improvement over baseline</div>
+        </div>
+        <div class="result-card">
+          <div class="metric">XX×</div>
+          <div class="label">Speedup / Efficiency gain</div>
+        </div>
+      </div>
+      <br>
+      <div class="teaser">[ Qualitative results / comparison figure ]</div>
+      <p class="caption">Figure 3. Qualitative comparison against prior work.</p>
+    </section>
+
+    <!-- BIBTEX -->
+    <section>
+      <h2>BibTeX</h2>
+      <div class="bibtex">@inproceedings{anonymous20XX,
+  title     = {Your Paper Title Goes Here},
+  author    = {Anonymous},
+  booktitle = {Conference Name},
+  year      = {20XX}
+}</div>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>Anonymous Submission — Do not distribute</span>
+    <span>Conference Name 20XX</span>
+  </footer>
+
+</body>
+</html>index.html
