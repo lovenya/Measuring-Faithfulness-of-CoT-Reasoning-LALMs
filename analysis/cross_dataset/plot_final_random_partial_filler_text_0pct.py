@@ -12,6 +12,7 @@ trial from within the filler experiment itself.
 import os
 import argparse
 import sys
+import seaborn as sns
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -95,6 +96,12 @@ def create_analysis(
             return row["predicted_choice"] == expected
 
         df["is_consistent_with_0pct"] = df.apply(check_consistency, axis=1)
+
+        # Filter out sparse bins (less than 15 samples)
+        bin_counts = df["percent_binned"].value_counts()
+        valid_bins = bin_counts[bin_counts >= 15].index
+        df = df[df["percent_binned"].isin(valid_bins)]
+
         all_dfs.append(df)
 
     if missing_0pct_report:
@@ -146,27 +153,39 @@ def create_analysis(
             with open(stats_path, "w") as f:
                 f.write(full_stats_string)
 
-    if show_ci:
-        print("INFO: --show-ci ignored for paper style parity (no CI bands).")
-
     plt.figure(figsize=(14, 10))
 
     for dataset_name in ordered_present_datasets(super_df["dataset"].unique()):
         dataset_df = super_df[super_df["dataset"] == dataset_name]
         style = dataset_style(dataset_name)
-        consistency_curve = (
-            dataset_df.groupby("percent_binned")["is_consistent_with_0pct"]
-            .mean()
-            .mul(100)
-            .sort_index()
-        )
-        plt.plot(
-            consistency_curve.index.tolist(),
-            consistency_curve.values.tolist(),
-            color=style["color"],
-            marker=style["marker"],
-            linestyle="-",
-        )
+        
+        if show_ci:
+            dataset_df_copy = dataset_df.copy()
+            dataset_df_copy["consistency_pct"] = dataset_df_copy["is_consistent_with_0pct"].astype(int) * 100
+            sns.lineplot(
+                data=dataset_df_copy,
+                x="percent_binned",
+                y="consistency_pct",
+                color=style["color"],
+                marker=style["marker"],
+                linestyle="-",
+                errorbar=("ci", 95),
+                ax=plt.gca(),
+            )
+        else:
+            consistency_curve = (
+                dataset_df.groupby("percent_binned")["is_consistent_with_0pct"]
+                .mean()
+                .mul(100)
+                .sort_index()
+            )
+            plt.plot(
+                consistency_curve.index.tolist(),
+                consistency_curve.values.tolist(),
+                color=style["color"],
+                marker=style["marker"],
+                linestyle="-",
+            )
 
     title_prefix = "Random Partial Filler (0% Ref)"
     if filler_type == 'lorem':

@@ -15,6 +15,7 @@ This tells us: at what point does the model commit to its eventual final answer?
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 import argparse
 import sys
 
@@ -84,6 +85,11 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
         # Drop the helper column
         df = df.drop(columns=['max_sentences'])
         
+        # Filter out sparse bins (less than 15 samples) to remove extreme single-point outliers (e.g., MMAR)
+        bin_counts = df['percent_binned'].value_counts()
+        valid_bins = bin_counts[bin_counts >= 15].index
+        df = df[df['percent_binned'].isin(valid_bins)]
+
         all_dfs.append(df)
 
     if missing_100pct_report:
@@ -135,27 +141,38 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
                 f.write(full_stats_string)
 
     # --- Plotting ---
-    if show_ci:
-        print("INFO: --show-ci ignored for paper style parity (no CI bands).")
-
     plt.figure(figsize=(14, 10))
     for dataset_name in ordered_present_datasets(super_df['dataset'].unique()):
         dataset_df = super_df[super_df['dataset'] == dataset_name]
         style = dataset_style(dataset_name)
 
-        consistency_curve = (
-            dataset_df.groupby('percent_binned')['is_consistent_with_100pct']
-            .mean()
-            .mul(100)
-            .sort_index()
-        )
-        plt.plot(
-            consistency_curve.index.tolist(),
-            consistency_curve.values.tolist(),
-            color=style['color'],
-            marker=style['marker'],
-            linestyle='-',
-        )
+        if show_ci:
+            dataset_df_copy = dataset_df.copy()
+            dataset_df_copy["consistency_pct"] = dataset_df_copy["is_consistent_with_100pct"].astype(int) * 100
+            sns.lineplot(
+                data=dataset_df_copy,
+                x="percent_binned",
+                y="consistency_pct",
+                color=style["color"],
+                marker=style["marker"],
+                linestyle="-",
+                errorbar=("ci", 95),
+                ax=plt.gca(),
+            )
+        else:
+            consistency_curve = (
+                dataset_df.groupby('percent_binned')['is_consistent_with_100pct']
+                .mean()
+                .mul(100)
+                .sort_index()
+            )
+            plt.plot(
+                consistency_curve.index.tolist(),
+                consistency_curve.values.tolist(),
+                color=style['color'],
+                marker=style['marker'],
+                linestyle='-',
+            )
 
     restricted_label = " [Restricted]" if restricted else ""
     model_display = "Audio Flamingo 3" if model_name == "flamingo_hf" else "Qwen 2.5 Omni" if model_name == "qwen_omni" else model_name.upper()
