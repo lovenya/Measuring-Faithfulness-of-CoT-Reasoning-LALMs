@@ -1,8 +1,8 @@
 # Measuring Faithfulness in Chain-of-Thought Reasoning for Large Audio-Language Models
 
-## 🌐 [Our website - results/plots for comparison](https://poonehmousavi.github.io/faithfulness/)
 
-📃 **[Arxiv link - Investigating Faithfulness in Large Audio Language Models](https://arxiv.org/abs/2509.22363v2)**
+
+
 
 [UPDATE]: Website now includes results for **`Audio Flamingo 3 - thinking`** as well, with **`SALMONN 7B`** underway.  
 We also carry out the 'adding mistakes' and 'paraphrasing' experiments - using an **`external LLM - Mistral`**, to avoid any bias from the models while generating perturbations (results included in the website).  
