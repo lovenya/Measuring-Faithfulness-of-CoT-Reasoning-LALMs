@@ -16,19 +16,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 import sys
-import seaborn as sns
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils import load_results, discover_datasets
-
-FINAL_PLOT_STYLES = {
-    "mmar":            {"label": "MMAR",       "color": "#e41a1c", "marker": "X"},
-    "mmau":            {"label": "MMAU",       "color": "#8c564b", "marker": "D"},
-    "sakura-animal":   {"label": "S.Animal",   "color": "#377eb8", "marker": "o"},
-    "sakura-emotion":  {"label": "S.Emotion",  "color": "#4daf4a", "marker": "v"},
-    "sakura-gender":   {"label": "S.Gender",   "color": "#ff7f00", "marker": "s"},
-    "sakura-language": {"label": "S.Language", "color": "#984ea3", "marker": ">"}
-}
+from shared_plot_style import dataset_style, generate_dataset_legend, ordered_present_datasets
 
 def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: list, print_line_data: bool, save_stats: bool, save_pdf: bool, show_ci: bool, perturbation_source: str = 'mistral', restricted: bool = False, rpf_filler_type: str = 'lorem'):
     experiment_name = "adding_mistakes"
@@ -36,7 +27,7 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
     print(f"\n--- Generating Plot for: ADDING_MISTAKES vs RPF@0%{perturbation_label} ({model_name.upper()}) ---")
     
     try:
-        dataset_names = discover_datasets(model_name, results_dir)
+        dataset_names = discover_datasets(model_name, results_dir, restricted=restricted)
         print(f"Found datasets to process{perturbation_label}: {dataset_names}")
     except FileNotFoundError:
         print(f"Could not find baseline directory for model '{model_name}'.")
@@ -90,6 +81,26 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
             return row['predicted_choice'] == expected
 
         df['is_consistent_with_rpf'] = df.apply(check_consistency, axis=1)
+
+        # TASK 1: Add an explicit 100% endpoint by copying the RPF@0% anchor.
+        # This gives a complete x-axis endpoint for adding_mistakes curves.
+        # Since RPF@0% is the consistency truth itself, this endpoint is always 100%.
+        chain_rows = (
+            df[['id', 'chain_id', 'dataset']]
+            .drop_duplicates()
+            .copy()
+        )
+        if not chain_rows.empty:
+            chain_rows['percent_before_mistake'] = 100.0
+            chain_rows['percent_before_mistake_binned'] = 100.0
+            chain_rows['is_consistent_with_rpf'] = True
+            df = pd.concat([df, chain_rows], ignore_index=True, sort=False)
+
+        # Filter out sparse bins (less than 10 samples) to remove extreme single-point outliers (e.g., MMAR)
+        bin_counts = df['percent_before_mistake_binned'].value_counts()
+        valid_bins = bin_counts[bin_counts >= 10].index
+        df = df[df['percent_before_mistake_binned'].isin(valid_bins)]
+
         all_dfs.append(df)
 
     if missing_rpf0_report:
@@ -141,57 +152,58 @@ def create_analysis(model_name: str, results_dir: str, plots_dir: str, y_zoom: l
                 f.write(full_stats_string)
 
     # --- Plotting ---
-    fontsize = 32
-    plt.style.use('seaborn-v0_8-whitegrid')
-    fig, ax = plt.subplots(figsize=(12, 8), dpi=100)
-    
-    for dataset_name, style in FINAL_PLOT_STYLES.items():
-        if dataset_name not in super_df['dataset'].unique():
-            continue
-            
+    if show_ci:
+        print("INFO: --show-ci ignored for paper style parity (no CI bands).")
+
+    plt.figure(figsize=(14, 10))
+    for dataset_name in ordered_present_datasets(super_df['dataset'].unique()):
         dataset_df = super_df[super_df['dataset'] == dataset_name]
-        
-        sns.lineplot(data=dataset_df, 
-                     x='percent_before_mistake_binned', 
-                     y='consistency_pct',
-                     label=style['label'], 
-                     color=style['color'], 
-                     marker=style['marker'], 
-                     linestyle='-',
-                     linewidth=2,
-                     markersize=20,
-                     errorbar=('ci', 95) if show_ci else None,
-                     ax=ax,
-                     legend=False)
-        
+        style = dataset_style(dataset_name)
+
+        consistency_curve = (
+            dataset_df.groupby('percent_before_mistake_binned')['is_consistent_with_rpf']
+            .mean()
+            .mul(100)
+            .sort_index()
+        )
+        plt.plot(
+            consistency_curve.index.tolist(),
+            consistency_curve.values.tolist(),
+            color=style['color'],
+            marker=style['marker'],
+            linestyle='-',
+        )
+
     title_suffix = f" [{perturbation_source.capitalize()}]" if perturbation_source != 'self' else ""
     restricted_label = " [Restricted]" if restricted else ""
-    ax.set_title(f'Adding Mistakes vs RPF@0%{title_suffix}{restricted_label}, {model_name.upper()}', fontsize=fontsize)
-    ax.set_xlabel('Percentage % of Sentences Corrupted', fontsize=fontsize)
-    ax.set_ylabel('Consistency with RPF@0% (%)', fontsize=fontsize)
-    ax.tick_params(axis='both', which='major', labelsize=(fontsize-4))
+    model_display = "Audio Flamingo 3" if model_name == "flamingo_hf" else "Qwen 2.5 Omni" if model_name == "qwen_omni" else model_name.upper()
+    plt.title(f'Adding Mistakes, {model_display}')
+    plt.xlabel('Percentage (%) of Chain Without Mistake')
+    plt.ylabel('Consistency (%)')
     
     if y_zoom:
-        ax.set_ylim(y_zoom[0], y_zoom[1])
+        plt.ylim(y_zoom[0], y_zoom[1])
     else:
-        ax.set_ylim(0, 105)
-    ax.set_xlim(-5, 105)
+        plt.ylim(-5, 105)
+    plt.xlim(-5, 105)
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
 
-    ax.grid(True)
-    ax.legend(title='Dataset', title_fontsize=fontsize-14, fontsize=fontsize-18, loc='best')
-    fig.tight_layout()
+    # Paper style: keep figure clean (no in-plot legend).
+    plt.tight_layout()
 
     # --- File Saving ---
     png_path = os.path.join(output_dir, f"{base_filename}.png")
-    plt.savefig(png_path, dpi=300)
+    plt.savefig(png_path, dpi=300, bbox_inches='tight')
     print(f"  - Plot saved successfully to: {png_path}")
 
-    if save_pdf:
-        pdf_path = os.path.join(output_dir, f"{base_filename}.pdf")
-        plt.savefig(pdf_path, format='pdf')
-        print(f"  - PDF copy saved to: {pdf_path}")
+    pdf_path = os.path.join(output_dir, f"{base_filename}.pdf")
+    plt.savefig(pdf_path, format='pdf', bbox_inches='tight')
+    print(f"  - PDF copy saved to: {pdf_path}")
     
     plt.close()
+
+    legend_path = generate_dataset_legend(output_dir, super_df['dataset'].unique())
+    print(f"  - Standalone dataset legend saved to: {legend_path}")
 
 
 if __name__ == "__main__":

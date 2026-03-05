@@ -4,7 +4,7 @@
 Create restricted versions of baseline and dependent experiment results.
 
 This script filters the dataset to only include samples whose baseline CoT
-falls within a configurable sentence-length range (default: 1-7 sentences).
+falls within a configurable sentence-length range (default: 1-5 sentences).
 
 HOW IT WORKS:
 1. Read the baseline JSONL for a given (model, dataset).
@@ -212,7 +212,7 @@ def main():
     parser.add_argument('--dataset', type=str, required=True, help="Dataset alias (e.g., 'mmar'), or 'all'.")
     parser.add_argument('--results-dir', type=str, default='./results', help="Root results directory.")
     parser.add_argument('--min-sentences', type=int, default=1, help="Minimum sentence count (inclusive). Default: 1.")
-    parser.add_argument('--max-sentences', type=int, default=7, help="Maximum sentence count (inclusive). Default: 7.")
+    parser.add_argument('--max-sentences', type=int, default=5, help="Maximum sentence count (inclusive). Default: 5.")
     parser.add_argument('--num-chains', type=int, default=1, help="Only process first N chains per question. Default: 1.")
     args = parser.parse_args()
 

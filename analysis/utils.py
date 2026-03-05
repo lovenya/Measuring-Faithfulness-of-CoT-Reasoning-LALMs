@@ -79,20 +79,45 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
         raise
 
 
-def discover_datasets(model_name: str, results_dir: str) -> list:
+def discover_datasets(model_name: str, results_dir: str, restricted: bool = False) -> list:
     """
-    Discovers available datasets by scanning the baseline directory for combined JSONL files.
-    Excludes .part_ files.
+    Discover available datasets by scanning baseline results.
+
+    Args:
+        model_name: Model alias (e.g., 'qwen_omni').
+        results_dir: Root results directory.
+        restricted: If True, discover datasets from files ending in
+            '-restricted.jsonl'. If False, discover non-restricted files.
 
     Returns:
-        list: Sorted list of dataset names (e.g., ['mmar', 'sakura-animal', ...]).
+        Sorted dataset aliases (without '-restricted' suffix).
     """
-    baseline_dir = os.path.join(results_dir, model_name, 'baseline')
-    return sorted(list(set([
-        f.replace(f'baseline_{model_name}_', '').replace('.jsonl', '')
-        for f in os.listdir(baseline_dir)
-        if f.endswith('.jsonl') and '.part_' not in f and '-restricted' not in f
-    ])))
+    baseline_dir = os.path.join(results_dir, model_name, "baseline")
+    prefix = f"baseline_{model_name}_"
+    datasets = set()
+
+    for filename in os.listdir(baseline_dir):
+        if not filename.endswith(".jsonl"):
+            continue
+        if ".part_" in filename:
+            continue
+        if not filename.startswith(prefix):
+            continue
+
+        dataset_part = filename[len(prefix) : -len(".jsonl")]
+        has_restricted_suffix = dataset_part.endswith("-restricted")
+
+        if restricted:
+            if not has_restricted_suffix:
+                continue
+            dataset_part = dataset_part[: -len("-restricted")]
+        else:
+            if has_restricted_suffix:
+                continue
+
+        datasets.add(dataset_part)
+
+    return sorted(datasets)
 
 
 def check_completeness(model_name: str, results_dir: str, experiment_name: str, dataset_name: str, 
