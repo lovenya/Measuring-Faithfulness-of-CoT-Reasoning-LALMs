@@ -13,11 +13,6 @@ This repository contains the complete framework and results for a series of beha
 
 We have included the website link for the results and plots.
 
-[Our website - results/plots for comparison](https://henoopmousavi.github.io/faithfulness/)
-
-<!-- All the plots included in the paper, as well as the plots that were not - providing further detailed analysis have been included in the following website. -->
-
-<!-- **[Google Drive Link](https://drive.google.com/drive/folders/1yVnsEdglHMpJl-DETh8sOCZKNtjtnJDG?usp=sharing)** -->
 
 ## The Experimental Framework: A Quick Tour
 
