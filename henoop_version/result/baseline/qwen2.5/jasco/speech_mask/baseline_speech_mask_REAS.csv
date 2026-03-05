@@ -1,0 +1,447 @@
+id,tgt_text,target_keywords,allm_output,prompt,audio_sound,spoken_text,audio_only_target,speech_only_target
+1,They are planning to build a sandcastle.,sandcastle,"<Reasoning>
+The audio contains the sound of waves crashing and birds chirping. These sounds are typically associated with a beach or coastal environment. The presence of these sounds suggests that the speakers are likely at a beach, possibly enjoying the natural scenery, taking a walk along the shore, or simply relaxing near the water.
+</Reasoning>
+<Conclusion>
+At a beach, enjoying the natural soundscape. </Conclusion>",What are the speakers likely doing?,"Waves crashing,seagulls",Let’s build a castle over there.,They are at the beach enjoying the ocean.,They a planning to build a castle in a specific location.
+2,They are likely fishing.,fishing,"<Reasoning>
+The audio contains the sound of a boat, which suggests they are on a boat. The presence of water splashing and a squeaking sound could indicate movement or activity on the boat, like rowing or adjusting equipment. The spoken text, although not provided, might be related to the boat's operation or a conversation about the journey.
+</Reasoning>
+<Conclusion>
+They are likely on a boat journey, possibly rowing or performing some activity related to the boat's operation. </Conclusion>",What are the speakers likely doing?,"Seagulls,water lapping against a boat",Yeah! This one is much bigger!,They are likely enjoying a day at the beach or sailing on a boat.,They are likely comparing the size of objects.
+3,They are likely watching or observing crabs.,crab,"<Reasoning>
+The audio contains the sound of footsteps and the sound of a bird, likely a seagull, cawing. The footsteps suggest someone is walking, and the bird sounds indicate they are near a body of water, possibly a beach. The combination of these sounds implies the speaker might be walking along a beach and observing or interacting with the birds.
+</Reasoning>
+<Conclusion>
+Walking along a beach and observing seagulls.
+</Conclusion>",What are the speakers likely doing?,"Waves and seagulls, occasional footsteps",Look! They are walking sideways.,They are likely walking on a beach.,They are likely performing a dance move or maneuvering in a confined space.
+4,They are likely at a sports event where people are reacting to a referee's decision.,"sport,referee","<Reasoning>
+The audio contains a series of applause and whistling sounds, which are often associated with a public event or gathering. The presence of these sounds suggests that the speakers are likely participating in or leading a public event, such as a rally, a sports event, or a celebration. The applause and whistling indicate that the audience is engaged and responsive to the speakers' words or actions.
+</Reasoning>
+<Conclusion>
+The speakers are likely leading or participating in a public event, engaging the audience with their words or actions.",What are the speakers likely doing?,Crowd,That's not a yellow but a red!,They are attending an event or gathering,They are likely discussing the color of an object or item.
+5,They are likely at a recreational facility or amusement park.,amusement park,"<Reasoning>
+The audio contains laughter and screaming. The laughter suggests a light-hearted or humorous situation, while the screaming could indicate surprise or excitement. Combined, it seems like the speakers are likely at a social gathering or event where they are reacting to something amusing or surprising.
+</Reasoning>
+<Conclusion>
+Social gathering or event with reactions to something amusing or surprising.
+</Conclusion>",What are the speakers likely doing?,Sound of shouting and joyful laughter,Children must be accompanied by an adult at all times.,They are likely celebrating or having a party.,They are likely making an announcement or providing instructions in a public place.
+6,They are celebrating someone's birthday or coming-of-age event.,"birthday,age","<Reasoning>
+The audio contains sounds of clapping, cheering, and children speaking. The clapping and cheering suggest a celebratory or appreciative atmosphere. The children's speech indicates they are actively participating in the event. The overall soundscape implies a group of people, likely children, are gathered in a public or semi-public space, possibly a school or community center, and they are engaged in a positive and interactive activity.
+</Reasoning>
+<Conclusion>
+The speakers are likely participating in a children's event or activity, such as a school assembly or a community gathering, where they are clapping, cheering, and speaking. </Conclusion>",What are the speakers likely doing?,Sound of party.,You are an adult!,They are likely attending or hosting a party,They are likely addressing someone in a direct and possibly authoritative manner.
+7,They are likely pulling over to let an emergency vehicle pass.,pull over,"<Reasoning>
+The audio contains a siren sound, which is typically associated with emergency vehicles like police cars or ambulances. The spoken text is in Chinese, and the content is about a person's experience of being in a car and then being in a hospital. The siren suggests that the person might have been involved in an accident or emergency situation that required the presence of emergency services. The mention of being in a hospital could indicate that the person was taken there for treatment after the incident.
+</Reasoning>
+<Conclusion>
+The speakers are likely discussing an emergency situation involving a car accident and subsequent hospitalization.",What are the speakers likely doing?,Siren wailing,It's behind us we must let it pass.,They are likely responding to an emergency situation.,They are likely driving a vehicle and passing something behind them.
+8,They are likely interacting with a police officer during a traffic stop.,"traffic stop,police officer","<Reasoning>
+The audio contains a loud, high-pitched siren sound, which is typically associated with emergency vehicles like police cars or ambulances. The spoken text is in Chinese, and the phrase ""Please"" is heard. This suggests that the speakers might be in a situation where they need to alert others or communicate about an emergency. The siren indicates that there is likely an urgent situation nearby, and the ""Please"" could be a polite request for assistance or information.
+</Reasoning>
+<Conclusion>
+The speakers are likely responding to or reporting an emergency situation.",What are the speakers likely doing?,Sound of a siren and car,License please.,They are likely in an emergency situation.,They are likely in a situation where they need to verify or check someone's identification or permission.
+9,They are attempting to avoid an attack from an animal.,"avoid,attack","<Reasoning>
+The audio contains a deep, rumbling roar. This type of sound is typically associated with large animals, such as lions or tigers. The spoken text is not provided, so we can only infer based on the audio. The roar could indicate that the speaker is in a situation where they are either observing or interacting with a large animal, possibly in a zoo or wildlife reserve.
+</Reasoning>
+<Conclusion>
+Observing or interacting with a large animal.
+</Conclusion>",What are the speakers likely doing?,Animal howling,Play dead!,They are likely observing or interacting with animals that are howling.,They are likely participating in a game or acting exercise.
+10,They are likely adjusting or repairing a vehicle or machinery.,"repair,adjust","<Reasoning>
+The audio contains the sound of an engine idling and then stopping. The spoken text is not provided, so we can only infer based on the engine sound. The engine idling suggests a vehicle is running, and the stopping indicates the vehicle has been turned off. This could imply that the speakers are in a vehicle, possibly waiting or preparing to leave.
+</Reasoning>
+<Conclusion>
+The speakers are likely in a vehicle, possibly waiting or preparing to leave.",What are the speakers likely doing?,Engine humming,This is tricky but I think I've got it.,They are likely driving or operating a vehicle.,They are likely working on solving a problem or completing a task.
+11,They are likely setting up or adjusting a tent.,tent,"<Reasoning>
+The audio contains the sounds of birds chirping and water trickling. These sounds are typically associated with a peaceful outdoor setting, possibly a park or a garden. The presence of these sounds suggests that the speakers might be in a natural environment, perhaps enjoying a leisurely walk or a picnic. The lack of any other human-made sounds like traffic or machinery further supports the idea of a quiet, natural setting.
+</Reasoning>
+<Conclusion>
+The speakers are likely enjoying a peaceful outdoor activity in a natural setting. </Conclusion>",What are the speakers likely doing?,Rustling leaves and river,You need to secure the four corners.,They are likely hiking or enjoying a peaceful outdoor environment.,They are likely setting up or adjusting something physical.
+12,They are seeking shelter from the heavy rain.,"seek,shelter","<Reasoning>
+The audio contains the sound of rain and thunder, which suggests an outdoor setting during a storm. The presence of a male voice speaking could indicate that the speakers are likely seeking shelter from the rain. The calm tone of the voice might imply that they are trying to stay safe and avoid getting caught in the storm.
+</Reasoning>
+<Conclusion>
+Seeking shelter from a storm outdoors.
+</Conclusion>",What are the speakers likely doing?,Heavy rain,We need to get inside!,They are likely experiencing heavy rain.,They are trying to enter a building or a secured area urgently.
+13,They are likely dealing with a leaking issue from the ceiling.,ceiling,"<Reasoning>
+The audio contains the sound of water droplets falling, which is a common sound in a bathroom or kitchen setting. The spoken text is in Chinese, and the phrase ""你把水龙头关了"" translates to ""You turn off the faucet."" This suggests that the speakers are likely in a bathroom or kitchen, and one of them is instructing the other to turn off the faucet.
+</Reasoning>
+<Conclusion>
+Instructing to turn off the faucet in a bathroom or kitchen.
+</Conclusion>",What are the speakers likely doing?,Sound of dripping water,Let's call the neighbor upstairs.,They are likely dealing with a leaking faucet or pipe.,They are likely discussing the need to contact the neighbor who lives above them.
+14,They are likely birdwatching or taking a photograph of a bird.,"birdwatching,photograph","<Reasoning>
+The audio contains bird sounds, which are typically associated with outdoor environments. There is no spoken text, so the speakers are likely not engaged in any verbal communication. The presence of bird sounds suggests they might be observing or interacting with the birds, possibly in a park or nature reserve.
+</Reasoning>
+<Conclusion>
+Observing or interacting with birds in an outdoor setting.
+</Conclusion>",What are the speakers likely doing?,Birds chirping,I got a clear shot!,They are likely relaxing outdoors.,They are likely shooting or aiming at a target.
+15,They are likely having a picnic.,picnic,"<Reasoning>
+The audio contains bird sounds and wind noise. There are no distinct human voices or activities that can be clearly identified. The presence of bird sounds suggests an outdoor setting, possibly a park or a garden. The wind noise indicates an open area. However, without any human speech or specific activity sounds, it's difficult to infer what the speakers are doing specifically.
+</Reasoning>
+<Conclusion>
+Cannot determine specific activity of speakers.
+</Conclusion>",What are the speakers likely doing?,"Birds chirping, gentle breeze",What's in your basket?,They are likely spending time outdoors.,They are likely discussing the contents of a basket.
+16,They are likely paying for a delivery.,"pay,delivery","<Reasoning>
+The audio contains a doorbell ringing and a door opening sound. This suggests that someone is arriving at a place and entering. The doorbell is typically rung to announce arrival, and the door opening indicates the person is entering the premises.
+</Reasoning>
+<Conclusion>
+Arriving and entering a building.
+</Conclusion>",What are the speakers likely doing?,"Dog barking, doorbell ringing",Do you have some cash?,They are likely reacting to someone at the door.,They are likely asking to borrow money.
+17,They are likely receiving a delivery or a package at their home.,"delivery,package","<Reasoning>
+The audio contains a doorbell ringing, followed by a door opening and closing. The spoken text is ""Please."" This suggests that someone is likely entering a building or a room and politely asking for permission or attention.
+</Reasoning>
+<Conclusion>
+Someone is entering a building or room and politely asking for permission or attention.
+</Conclusion>",What are the speakers likely doing?,Sound of a doorbell ringing,Signature here please.,The speaker is likely answering the door.,They are likely signing a document.
+18,They are likely roasting marshmallows over a crackling fire.,roast,"<Reasoning>
+The audio contains the sound of rain falling, which is a continuous and steady noise. There are no other distinct sounds or speech that would indicate any specific activity. The rain could be falling on a surface like a roof or a window, but without more context or additional sounds, it's hard to determine a specific action.
+</Reasoning>
+<Conclusion>
+The speakers are likely in a place where it is raining, but no specific activity can be inferred.",What are the speakers likely doing?,Crackling fire,Try this marshmallow!,They are likely sitting by a crackling fire.,They are likely offering someone a marshmallow.
+19,They are likely cooking a steak to a rare doneness.,"steak,meat","<Reasoning>
+The audio contains the sound of sizzling, which is typically associated with cooking. The spoken text is in Chinese, and the phrase ""嗯"" is a common interjection in Chinese that can mean ""yes"" or ""okay"". This suggests that the speakers might be cooking and one of them is acknowledging or agreeing with something related to the cooking process.
+</Reasoning>
+<Conclusion>
+Cooking and acknowledging the process.",What are the speakers likely doing?,"Sizzling, clattering of pans",The client ordered a rare one.,They are likely cooking or preparing food.,They are likely discussing a specific request or order for a rare item.
+20,They are likely discovering that they have burnt the food.,burnt,"<Reasoning>
+The audio contains the sound of sizzling, which is typically associated with cooking. The spoken text is in Chinese, and the phrase ""炒菜"" means ""frying vegetables"" or ""cooking with a wok"". This suggests that the speakers are likely cooking, specifically frying vegetables or using a wok for cooking.
+</Reasoning>
+<Conclusion>
+Cooking, specifically frying vegetables or using a wok for cooking.
+</Conclusion>",What are the speakers likely doing?,"Sizzling, pans","Stop, it's all black.",The speaker is likely cooking or preparing food.,They are likely experiencing a situation where their view or screen has gone dark.
+21,They are likely training a dog.,train,"<Reasoning>
+The audio contains the sound of a dog barking. The spoken text is not provided, so I can only infer based on the barking sound. Dogs often bark when they are excited, scared, or trying to communicate with their owners. Without more context from the spoken text, it's hard to be certain, but it could be that the speakers are interacting with the dog, possibly playing with it or trying to calm it down.
+</Reasoning>
+<Conclusion>
+Interacting with the dog, possibly playing or calming it down.
+</Conclusion>",What are the speakers likely doing?,Dog barking,"Sit down, sit down.",They are likely reacting to the sound of a dog barking,They are instructing someone to sit down
+22,The speaker is likely playing fetch with a dog.,"play,fetch","<Reasoning>
+The audio contains a dog barking. The spoken text is not provided, so it's hard to infer the exact activity. However, the barking could indicate the dog is alerting to something, possibly someone's arrival or an unfamiliar sound. Without more context from the spoken text, it's difficult to be more specific.
+</Reasoning>
+<Conclusion>
+The dog is barking, possibly alerting to something.
+</Conclusion>",What are the speakers likely doing?,Sound of a dog barking,Go get it!,The speaker is likely interacting with a dog.,They are likely instructing someone to retrieve something
+23,They are likely taking an exam.,exam,"<Reasoning>
+The audio contains the sound of a pen scratching on paper, which is a common sound when someone is writing or drawing. The spoken text is not provided, so we can only infer based on the sound. The action of writing or drawing is likely being performed by the speaker.
+</Reasoning>
+<Conclusion>
+Writing or drawing
+</Conclusion>",What are the speakers likely doing?,Sound of a pencil writing,You have two hours.,They are likely taking notes.,They are likely giving someone a deadline or time limit.
+24,They are likely printing or photocopying documents.,"print,photocopy","<Reasoning>
+The audio contains the sound of paper being crumpled. This suggests that the speakers might be involved in an activity that requires handling of paper, such as sorting documents, discarding unwanted papers, or perhaps even crafting something that involves paper. The spoken text doesn't provide additional context, so the focus is solely on the acoustic feature.
+</Reasoning>
+<Conclusion>
+Handling or discarding paper.
+</Conclusion>",What are the speakers likely doing?,Sound of paper shuffling,Use double sides.,They are handling paper.,They are likely instructing someone to use both sides of a document or material.
+25,They are likely discussing the need to repeat a medical test.,medical,"<Reasoning>
+The audio contains a distinct coughing sound. Coughing can be a sign of various things, but in this context, it could be due to a cold or some minor irritation. The spoken text is not provided, so we can't directly infer what the speakers are doing based on that. However, the presence of coughing might suggest that one of the speakers is not feeling well or has a minor health issue.
+</Reasoning>
+<Conclusion>
+One speaker might be experiencing a cough or minor health discomfort.
+</Conclusion>",What are the speakers likely doing?,Cough,"In this case, it's better to do another test.",They are likely experiencing a cough or illness.,They are likely discussing the need for additional testing or evaluation.
+26,They are likely in a medical or health-related consultation.,"medical,health,consultation","<Reasoning>
+The audio contains a sound of a heavy object being moved, likely a door, and a person's breathing. The breathing suggests physical exertion, possibly from opening or closing the door. The sound of the door moving could indicate someone entering or leaving a room.
+</Reasoning>
+<Conclusion>
+The speakers are likely opening or closing a door. </Conclusion>",What are the speakers likely doing?,Deep breath,How many cigarettes do you smoke every day?,They are likely preparing for a presentation or a public speaking engagement.,They are likely discussing smoking habits
+27,They are likely feeding a baby.,feed,"<Reasoning>
+The audio contains the sound of a baby crying, which is a common sound when a baby is upset or in need of attention. The spoken text is not provided, so we can only infer based on the audio. Babies often cry when they are hungry, tired, or uncomfortable. The presence of the crying sound suggests that the baby might be in a situation where it is not being attended to properly, such as not being fed, not being changed, or not being comforted.
+</Reasoning>
+<Conclusion>
+The baby is likely in a situation where it is not being attended to properly, such as not being fed, not being changed, or not being comforted.
+</Conclusion>",What are the speakers likely doing?,Baby crying,The bottle is too cold.,They are likely comforting or attending to a crying baby.,They are likely holding or touching a bottle that feels very cold.
+28,The speaker is likely at a funeral.,funeral,"<Reasoning>
+The audio contains a sound of someone crying, which is a strong emotional expression. The spoken text is not provided, so we can only rely on the acoustic feature. Crying often indicates sadness, distress, or other negative emotions. It could be due to various reasons like losing something important, being in a difficult situation, or experiencing a loss.
+</Reasoning>
+<Conclusion>
+The speakers are likely expressing sadness or distress through crying. </Conclusion>",What are the speakers likely doing?,Sound of soft sobbing,He’s smiling in the picture.,The speaker is likely crying.,They are likely looking at a photograph.
+29,They are likely playing a cooperative or competitive video game.,video game,"<Reasoning>
+The audio contains a continuous, rhythmic sound that resembles a drumbeat. There are no other distinct sounds or spoken words. The drumbeat could indicate a musical performance or a practice session. The lack of other sounds suggests a focused activity centered around the drumming.
+</Reasoning>
+<Conclusion>
+The speakers are likely practicing or performing drumming.
+</Conclusion>",What are the speakers likely doing?,Exciting music,I'll take the left side.,They are likely preparing for an intense and motivating event.,They are likely preparing to navigate or drive a vehicle.
+30,They are likely leading a dance.,dance,"<Reasoning>
+The audio contains a continuous electronic music track, which suggests a relaxed or casual atmosphere. The spoken text is not provided, so it's hard to infer specific actions. However, the music could indicate that the speakers are in a setting like a cafe, a lounge, or a casual meeting place where music is played to create a pleasant ambiance.
+</Reasoning>
+<Conclusion>
+The speakers are likely in a relaxed social setting with music playing. </Conclusion>",What are the speakers likely doing?,Music,I lead.,They are likely in a setting with music playing.,They are likely stating that they lead.
+31,They are likely practicing a song in a band rehearsal.,band rehearsal,"<Reasoning>
+The audio contains a segment of music, which suggests a relaxed or casual atmosphere. The spoken text is not provided, so it's hard to infer specific actions. However, the music could indicate that the speakers are engaged in a leisure activity, like watching a movie or having a casual conversation in a home theater setting.
+</Reasoning>
+<Conclusion>
+Leisurely activity in a home theater setting.
+</Conclusion>",What are the speakers likely doing?,Rock music,Let's run through it one more time.,They are likely enjoying a performance of rock music at a concert or a live music event.,They are likely reviewing or rehearsing something.
+32,They are likely at a restaurant or a bar.,"restaurant,bar","<Reasoning>
+The audio contains a burp sound followed by music. The burp is a natural bodily sound, and the music suggests a relaxed or casual setting. The combination of these elements could indicate that the speakers are having a meal or snack in a casual environment, possibly a home or a relaxed social gathering.
+</Reasoning>
+<Conclusion>
+Having a meal or snack in a casual setting.
+</Conclusion>",What are the speakers likely doing?,Sound of a piano,I'm full.,They are likely playing or listening to a piano performance.,They are likely eating a meal.
+33,They are likely playing or gumbling at a casino using a slot machine.,"gumble,casino,slot machine","<Reasoning>
+The audio contains the sound of a coin dropping and a coin spinning. This suggests that the speakers are likely handling coins, possibly counting or sorting them. The presence of these sounds indicates a physical interaction with coins, which is a common activity in financial transactions or coin handling tasks.
+</Reasoning>
+<Conclusion>
+Handling coins, possibly counting or sorting them.
+</Conclusion>",What are the speakers likely doing?,Coins dropping,Good luck this time sir!,They are likely handling or counting coins.,They are likely wishing someone good luck before they attempt something.
+34,The speaker is likely completing a workout or weightlifting exercise.,"workout,weightlifting","<Reasoning>
+The audio contains a series of impact sounds, which could be from objects being moved or dropped. The spoken text is a simple ""set"", which might indicate that the speakers are preparing for or starting a task. The combination of these elements suggests they are likely setting up or arranging something.
+</Reasoning>
+<Conclusion>
+Setting up or arranging something.
+</Conclusion>",What are the speakers likely doing?,Metal drop on the ground,It’s the final set.,They are likely working with metal objects or tools.,They are likely indicating that it is the last set or group in a series.
+35,They are likely renovating or remodeling a building or house.,"renovate,remodel","<Reasoning>
+The audio contains a loud thud followed by a series of impact sounds. This suggests that something heavy has been dropped or thrown, possibly in a storage or work area where items are being moved or sorted. The lack of other human voices or additional context makes it difficult to determine the exact nature of the activity, but it could be related to moving or organizing items.
+</Reasoning>
+<Conclusion>
+Moving or sorting heavy items.
+</Conclusion>",What are the speakers likely doing?,Breaking,The rooms are finally connected.,They are likely breaking something accidentally or intentionally.,They are likely working on setting up a smart home system or a network infrastructure.
+36,They are likely preparing a fruit smoothie or a fruit-based drink.,"smoothie,drink","<Reasoning>
+The audio contains the sound of a sewing machine, which is typically used for sewing fabric. There are also some impact sounds, possibly related to the sewing process, like cutting or adjusting materials. The speech seems to be instructions or commentary related to the sewing activity.
+</Reasoning>
+<Conclusion>
+The speakers are likely sewing, possibly giving instructions or discussing the sewing process. </Conclusion>",What are the speakers likely doing?,Mixer,"I choose apple, banana, and orange.",They are likely baking or preparing food using a mixer.,They are likely ordering or selecting fruits.
+37,They are likely making and tasting tea.,tea,"<Reasoning>
+The audio contains a high-pitched, continuous sound that resembles a kettle boiling. The spoken text is not provided, so I can only infer based on the sound. Typically, when a kettle boils, it makes a distinct whistling sound. This suggests that the speakers are likely in a kitchen or a similar setting where a kettle is being used.
+</Reasoning>
+<Conclusion>
+The speakers are likely in a kitchen, possibly waiting for a kettle to boil. </Conclusion>",What are the speakers likely doing?,Kettle whistling,Let's taste this one it's from China.,They are likely boiling water using a kettle.,They are likely tasting a food or beverage item imported from China.
+38,They are likely giving someone a haircut or styling their hair.,"haircut,hair","<Reasoning>
+The audio contains repetitive clicking sounds. These sounds could be from a device like a computer mouse or a keyboard. The clicking is rhythmic and consistent, suggesting a task that requires regular input. Given the context of the spoken text, it's likely that the speakers are engaged in some form of work or activity that involves using a computer, such as typing, coding, or data entry.
+</Reasoning>
+<Conclusion>
+The speakers are likely working on a computer-related task. </Conclusion>",What are the speakers likely doing?,Scissors cutting,You look much better in this style.,They are likely cutting something with scissors,They are likely trying on clothes or changing outfits
+39,They are likely fitting or adjusting clothing.,"fit,adjust,clothing","<Reasoning>
+The audio contains the sound of scissors cutting. The spoken text is not provided, so I can only infer based on the sound. Scissors cutting is typically associated with activities like crafting, sewing, or hair cutting. Without more context from the spoken text, it's difficult to be more specific.
+</Reasoning>
+<Conclusion>
+Crafting or sewing.
+</Conclusion>",What are the speakers likely doing?,Scissors snipping,You will be amazing in it.,They are likely cutting or trimming something with scissors.,They are likely discussing or admiring someone's performance or appearance.
+40,They are likely participating in a wedding ceremony.,wedding,"<Reasoning>
+The audio contains a choir singing in a harmonious manner. The spoken text is in Chinese, and the content is about a person's experience of being in a place where they can't see the sky, which is a metaphorical expression. The combination of the choir singing and the spoken text suggests that this could be a scene in a movie or a play where a character is reflecting on their situation while a choir is performing in the background.
+</Reasoning>
+<Conclusion>
+The speakers are likely in a scene where a character is reflecting on their situation, with a choir performing in the background. </Conclusion>",What are the speakers likely doing?,Choir singing,Yes I do.,They are likely participating in or attending a religious or musical event.,They are affirming or confirming something in response to a question or statement.
+41,They are likely attending a wedding or a similar celebratory event.,wedding,"<Reasoning>
+The audio contains the sound of church bells ringing, which is a common practice in churches to mark the start or end of a service or to announce special occasions. The presence of birds chirping suggests it might be early morning or late afternoon when birds are typically active. The spoken text is not provided, so we can only infer based on the bell sounds and the ambient bird sounds.
+</Reasoning>
+<Conclusion>
+The speakers are likely attending or conducting a church service. </Conclusion>",What are the speakers likely doing?,Church bell ringing,What a lovely couple they are!,They are likely near a church or involved in a church-related event.,They are likely commenting on a couple who appears to be affectionate or happy.
+42,They are likely riding a horse.,ride a horse,"<Reasoning>
+The audio contains a sound of a door opening and closing, followed by a man speaking. The man's speech is brief and seems to be a command or instruction, possibly related to the door operation. The presence of the door sound and the man's speech suggests that the speakers are likely opening or closing a door.
+</Reasoning>
+<Conclusion>
+Opening or closing a door.
+</Conclusion>",What are the speakers likely doing?,Horse neighing,Hold on tight.,They are likely observing or interacting with a horse.,They are likely engaging in an activity that requires holding onto something tightly.
+43,They are likely at a horse race.,horse race,"<Reasoning>
+The audio contains the sound of a horse galloping, which is a rhythmic and continuous clip-clop noise. The spoken text is not provided, so we can only infer based on the sound. The presence of this sound suggests that the speakers are likely observing or participating in an equestrian activity, such as horse riding or horse racing.
+</Reasoning>
+<Conclusion>
+Observing or participating in an equestrian activity.
+</Conclusion>",What are the speakers likely doing?,Sound of a crowd and horses running,I’ll bet on that one.,They are at a crowded event with horses running.,They are deciding to place a bet on something.
+44,They are likely hanging a painting.,hang,"<Reasoning>
+The audio contains a sound that resembles a door creaking. The spoken text is not provided, so I can only infer based on the sound. Creaking doors are often associated with movement, like someone opening or closing a door. The sound could indicate that the speakers are either entering or leaving a room.
+</Reasoning>
+<Conclusion>
+The speakers are likely entering or leaving a room.
+</Conclusion>",What are the speakers likely doing?,An electric drill,This painting is beautiful.,They are likely drilling holes or driving screws.,They are likely admiring artwork.
+45,They are likely being disturbed by the noise of an electric drill early in the morning.,"disturb,noise","<Reasoning>
+The audio contains a sound of a door being opened and closed, and the spoken text is ""in the morning"". This suggests that the speakers might be getting ready for the day, possibly in a home or office setting where doors are opened and closed frequently. The mention of ""morning"" implies a routine activity.
+</Reasoning>
+<Conclusion>
+Getting ready for the day.
+</Conclusion>",What are the speakers likely doing?,An electric drill,What? It's seven in the morning!,They are likely drilling holes or driving screws.,They are likely reacting in surprise or disbelief to the fact that it is early in the morning.
+46,They are likely spraying plants with water.,plants,"<Reasoning>
+The audio contains a sound that resembles a spray being used, and the spoken text is in Chinese. The speaker seems to be explaining or describing something related to the spray. The logic is that the spray sound is a key acoustic feature, and the spoken text provides context about what the speaker is doing.
+</Reasoning>
+<Conclusion>
+The speakers are likely demonstrating or explaining the use of a spray product.",What are the speakers likely doing?,Spray,Look how dry they are.,They are likely spraying something.,They are likely inspecting or discussing something that appears to be dry.
+47,The speaker is likely spraying insect repellent or pesticide.,"insect repellent,pesticide","<Reasoning>
+The audio contains a sound that resembles a spray being used, and the spoken text is in Chinese. The speaker seems to be describing or explaining something related to the spray. The context suggests that the speaker might be demonstrating or discussing the use of a spray product, possibly in a tutorial or review setting.
+</Reasoning>
+<Conclusion>
+The speakers are likely demonstrating or discussing the use of a spray product. </Conclusion>",What are the speakers likely doing?,Sound of spraying,I will kill all of them.,The speaker is likely spraying.,They are likely discussing or planning a violent or aggressive action.
+48,They are likely applying a Chanel perfume or fragrance.,"perfume,fragrance","<Reasoning>
+The audio contains a sound of a spray being released, which is typically associated with the action of using a spray bottle or can. The spoken text is not provided, so we can only infer based on the sound. The spray sound suggests that the speakers might be using a spray product, possibly for cleaning or applying some kind of liquid substance.
+</Reasoning>
+<Conclusion>
+Using a spray product.
+</Conclusion>",What are the speakers likely doing?,Sound of spraying,This one is Chanel.,The speaker is likely spraying,They are likely discussing or identifying a specific item of clothing or accessory.
+49,They are likely trying to catch a flight.,catch,"<Reasoning>
+The audio contains the sound of a car horn being honked multiple times. This suggests that the speakers are likely in a situation where they are in a car, possibly stuck in traffic or trying to alert other drivers. The repeated honking indicates urgency or a need to communicate a message to others on the road.
+</Reasoning>
+<Conclusion>
+The speakers are likely in a car, honking to communicate or alert others.",What are the speakers likely doing?,Traffic,It's taking off in 20 minutes.,They are likely discussing or commenting on traffic conditions.,"They are likely at an airport, preparing to board a flight."
+50,They are discussing a missed train ticket purchase.,ticket,"<Reasoning>
+The audio contains a train horn blowing, followed by the sound of train wheels squealing and the train moving. This suggests that the train is likely approaching a station or crossing, and the horn is a warning signal. The squealing of the wheels could indicate the train is slowing down or making a sharp turn.
+</Reasoning>
+<Conclusion>
+The speakers are likely waiting for the train to pass or are at a train station platform.",What are the speakers likely doing?,Train,"Please show it, else you pay an amend.",They are likely waiting for or boarding a train.,"They are likely discussing or reviewing a document, agreement, or contract."
+51,They are likely conducting a search and rescue operation.,"search,rescue","<Reasoning>
+The audio contains the sound of a helicopter engine running. The spoken text is not provided, so it's difficult to infer the specific actions of the speakers based solely on the audio. However, the presence of a helicopter engine suggests that the speakers might be near a helicopter, possibly preparing for a flight, or involved in some activity related to the helicopter.
+</Reasoning>
+<Conclusion>
+Near a helicopter, possibly preparing for a flight or involved in related activity.
+</Conclusion>",What are the speakers likely doing?,Helicopter,I see him! He's there in the snow!,They are likely observing or commenting on the presence of a helicopter nearby.,They are likely doing winter outdoor activity such as skiing or snowboarding.
+52,They are likely flying a kite.,fly a kite,"<Reasoning>
+The audio contains the sound of a car engine running, which suggests that the speakers are likely in a car. The spoken text is not provided, so it's hard to infer more specific actions. However, the presence of the car engine sound implies they might be driving or waiting in the car.
+</Reasoning>
+<Conclusion>
+In a car, possibly driving or waiting.
+</Conclusion>",What are the speakers likely doing?,Wind,Release more it's too low.,They are likely standing outside.,They are likely adjusting the pressure.
+53,They are likely flying a kite.,fly a kite,"<Reasoning>
+The audio contains the sound of a car engine running and a woman speaking. The engine sound suggests that a car is in operation, possibly idling or moving slowly. The woman's speech could indicate that she is either driving the car or communicating with someone inside or outside the vehicle. The combination of these sounds implies that the speakers are likely in a car, possibly driving or waiting in the car.
+</Reasoning>
+<Conclusion>
+In a car, possibly driving or waiting.",What are the speakers likely doing?,Wind,Look! Mine looks like a real eagle.,They are likely standing outside.,They are likely participating in a workshop or art class.
+54,They are likely playing an online video game.,video game,"<Reasoning>
+The audio contains the sound of typing on a computer keyboard. The spoken text is not provided, so I can only infer based on the typing sound. Typing on a keyboard is typically associated with activities like writing emails, coding, or working on a document.
+</Reasoning>
+<Conclusion>
+The speakers are likely working on a computer, possibly writing or coding.
+</Conclusion>",What are the speakers likely doing?,"Keyboard clicking, mouse clicking",I can't believe we won!,They are likely using a computer.,They are likely celebrating a victory.
+55,The speaker is playing a video game.,video game,"<Reasoning>
+The audio contains the sound of typing on a computer keyboard. The spoken text is not provided, so we can only infer based on the typing sound. Typing on a keyboard is typically associated with activities like writing emails, coding, or working on documents.
+</Reasoning>
+<Conclusion>
+The speakers are likely working on a computer, possibly typing out an email or coding.
+</Conclusion>",What are the speakers likely doing?,"Keyboard clicking, mouse clicking",I found the treasure!,The speaker is likely typing.,They are likely on a treasure hunt.
+56,They are likely counting down to the New Year.,count down,"<Reasoning>
+The audio contains a consistent ticking sound, which is characteristic of a clock. There is no spoken text in the audio. The ticking suggests the passage of time, and the lack of speech implies that the speakers are likely not engaged in a conversation or activity that requires verbal communication at this moment.
+</Reasoning>
+<Conclusion>
+The speakers are likely waiting or observing the passage of time. </Conclusion>",What are the speakers likely doing?,Tick-tock,Wish you a happy 2024.,They are likely listening to the sound of a clock or a watch.,They are likely sending a New Year's greeting.
+57,They are likely setting up or assembling furniture or a shelf.,"set up,assemble,shelf","<Reasoning>
+The audio contains the sound of a hammer repeatedly striking a surface, which is a common sound in construction or repair work. The spoken text is not provided, so I can only infer based on the sound. The repeated hammering suggests a task that requires consistent force, like nailing a piece of wood or hammering down a nail into a wall.
+</Reasoning>
+<Conclusion>
+The speakers are likely engaged in some form of construction or repair work involving hammering. </Conclusion>",What are the speakers likely doing?,Light hammering on wood,We don't need to put the books on the ground anymore.,They are likely engaged in woodworking.,They are likely arranging or organizing books in a different way.
+58,They are likely in a rush to use the toilet.,"rush,use","<Reasoning>
+The audio contains the sound of a toilet flushing, which is a common sound in a bathroom. The spoken text is not provided, so we can only infer based on the acoustic feature. The presence of the toilet flush sound suggests that the speakers are likely in a bathroom, possibly using the toilet.
+</Reasoning>
+<Conclusion>
+Using the toilet in a bathroom.
+</Conclusion>",What are the speakers likely doing?,Toilet flush,Hurry up! I can't any longer.,They are likely flushing the toilet.,They are likely waiting for something or someone.
+59,They are likely trying to park a vehicle.,park,"<Reasoning>
+The audio contains a beep sound followed by a woman speaking. The beep could indicate a device being used, like a microwave or a timer. The woman's speech might be related to the device, possibly giving instructions or commenting on the device's operation. The context suggests they are likely using a kitchen appliance.
+</Reasoning>
+<Conclusion>
+Using a kitchen appliance.
+</Conclusion>",What are the speakers likely doing?,Beeping sound,No space available.,"There is a beeping noise, possibly indicating a warning or alert",They are likely trying to book or reserve something.
+60,They are likely searching for an item or document in a drawer.,search,"<Reasoning>
+The audio contains the sound of a car door opening and closing, along with the sound of a seatbelt being fastened. This suggests that someone is getting into a car and preparing to drive. The sequence of these sounds indicates a typical action of entering a vehicle and ensuring safety before starting a journey.
+</Reasoning>
+<Conclusion>
+Getting into a car and fastening the seatbelt.
+</Conclusion>",What are the speakers likely doing?,Sound of a drawer opening and closing,I saw it yesterday.,The speaker is likely opening or closing a drawer.,They are discussing or recalling an event or observation from the previous day.
+61,They are watching a movie or a TV show.,"movie, tv show","<Reasoning>
+The audio contains the sound of a machine gun firing rapidly, which is a clear indication of a combat situation. The spoken text, although not fully provided, seems to be in a language that could be related to military or tactical communication. The combination of these elements suggests that the speakers are likely engaged in a military operation or a simulated combat scenario.
+</Reasoning>
+<Conclusion>
+Engaged in a military operation or simulated combat scenario.
+</Conclusion>",What are the speakers likely doing?,Gunfires,He looks so cool in this uniform.,They are likely engaged in a shooting activity or in a combat situation.,They are observing someone wearing a uniform and commenting on how cool he looks.
+62,They are likely using an elevator.,elevator,"<Reasoning>
+The audio contains a beep sound, which is often associated with electronic devices. The spoken text is not provided, so it's hard to determine the exact activity. However, the beep could indicate a device being used, like a microwave or a cash register. Without more context, it's difficult to be certain.
+</Reasoning>
+<Conclusion>
+Using an electronic device.
+</Conclusion>",What are the speakers likely doing?,Beep,Third please.,They are likely setting a timer or alarm.,They are likely ordering or requesting an item numbered as third on a list or menu.
+63,They are likely entering an elevator.,elevator,"<Reasoning>
+The audio contains a sliding door sound, which suggests they are in a place with sliding doors, like an elevator or a large room. The spoken text ""Which floor?"" implies they are asking about the floor number, likely in an elevator context where one would specify the floor to go to.
+</Reasoning>
+<Conclusion>
+They are likely in an elevator and asking for a floor number.",What are the speakers likely doing?,Automatic door open.,Which floor?,They are likely entering or exiting a building through an automatic door.,They are likely asking for directions.
+64,They are likely conducting an auction.,auction,"<Reasoning>
+The audio contains a sound of a door being closed. The spoken text is not provided, so I can only infer based on the sound. The action of closing a door could indicate that someone is entering or leaving a room, or perhaps closing a door to a workspace or a private area.
+</Reasoning>
+<Conclusion>
+Closing a door.
+</Conclusion>",What are the speakers likely doing?,Sound of a gavel knocking,1000 dollars three times.,They are likely in a court session.,They are likely discussing a financial transaction.
+65,They are likely treating a wound or injury with alcohol.,"wound,injury","<Reasoning>
+The audio contains a loud, abrupt ""YEAH!"" which could indicate excitement or a sudden realization. The spoken text is not provided, so we can only rely on the acoustic feature. The ""YEAH!"" suggests a positive or enthusiastic reaction.
+</Reasoning>
+<Conclusion>
+The speakers are likely expressing excitement or agreement.
+</Conclusion>",What are the speakers likely doing?,Scream,I'm going to use some alcohol now.,They are likely in a situation of extreme fear or pain.,They are likely preparing to clean or disinfect something.
+66,They are likely defusing a bomb.,defuse a bomb,"<Reasoning>
+The audio contains the sound of a clock ticking, which is a consistent and rhythmic noise. There is no spoken text in the audio. The ticking sound suggests the presence of a clock, and the lack of speech implies that the speakers are likely not engaged in a conversation or activity that involves verbal communication at this moment. The focus seems to be on the passage of time as indicated by the ticking.
+</Reasoning>
+<Conclusion>
+The speakers are likely waiting or observing the time, as indicated by the clock ticking sound.
+</Conclusion>",What are the speakers likely doing?,Tick-tock,Which wire should I cut?,They are likely timing or measuring time.,They are likely troubleshooting or repairing an electronic device.
+67,They are likely playing chess.,chess,"<Reasoning>
+The audio contains a sound of something being scraped, and the spoken text is not clear enough to provide specific information. However, the scraping sound could be related to an activity like cleaning, moving furniture, or some kind of manual labor. Without more context from the spoken text, it's difficult to be certain.
+</Reasoning>
+<Conclusion>
+The speakers might be engaged in some form of manual work or cleaning. </Conclusion>",What are the speakers likely doing?,Wooden piece move,Check.,They are likely moving a wooden piece.,They are likely playing a game.
+68,They are likely watching a comedy.,comedy,"<Reasoning>
+The audio contains a sound of a person laughing, which is a common reaction to something funny or enjoyable. The spoken text is not provided, so we can only infer based on the laughter. Laughter often indicates that someone is in a positive mood, possibly enjoying a social interaction or a funny situation.
+</Reasoning>
+<Conclusion>
+The speakers are likely having a good time, possibly sharing a joke or enjoying a humorous moment together.
+</Conclusion>",What are the speakers likely doing?,Laugh,Jim Carrey is a genius.,They are likely having fun.,They are likely talking about movies.
+69,They are likely making coffee.,coffee,"<Reasoning>
+The audio contains the sound of liquid being poured, which is a continuous and steady stream. The spoken text is not provided, so we can only rely on the sound. The sound suggests that someone is pouring a liquid, possibly into a container or a glass.
+</Reasoning>
+<Conclusion>
+Pouring a liquid.
+</Conclusion>",What are the speakers likely doing?,Pour water,Try these new beans.,They are likely pouring water.,They are likely offering someone food.
+70,They are likely grinding coffee beans.,coffee,"<Reasoning>
+The audio contains a sound of a sewing machine running, which is a mechanical noise. The spoken text is ""zero"", which could be a command or a measurement related to the sewing process. The combination of these suggests that the speakers are likely operating a sewing machine, possibly starting or stopping it, or setting a measurement to zero.
+</Reasoning>
+<Conclusion>
+Operating a sewing machine, possibly starting or stopping it or setting a measurement to zero.
+</Conclusion>",What are the speakers likely doing?,Grinder,These are from Brazil.,They are likely grinding something.,They are likely discussing the origin of some items.
+71,They are likely hiking.,hiking,"<Reasoning>
+The audio contains bird sounds and a man speaking. The bird sounds suggest an outdoor setting, possibly a park or garden. The man's speech could indicate he is either talking to someone or recording a message. The combination of these elements suggests the man might be in a peaceful outdoor environment, perhaps enjoying nature or taking a break.
+</Reasoning>
+<Conclusion>
+The man is likely in a peaceful outdoor setting, possibly enjoying nature or taking a break.",What are the speakers likely doing?,Birds chirping and wind blowing,You can't believe how heavy this is!,They are likely outside in nature.,They are likely lifting something heavy.
+72,They are likely playing on a swing.,swing,"<Reasoning>
+The audio contains sounds of children playing and a woman speaking. The woman's speech seems to be interacting with the children, possibly guiding or supervising their play. The children's sounds suggest active play, likely in a park or playground setting. The woman's speech could be giving instructions or encouragement to the children.
+</Reasoning>
+<Conclusion>
+The speakers are likely supervising or playing with children in a park or playground. </Conclusion>",What are the speakers likely doing?,Children laughing and playground noises.,I think we can go higher!,They are likely playing at the playground.,They are likely climbing.
+73,They are likely hiking in the mountains.,"hiking,mountain","<Reasoning>
+The audio contains the sound of birds chirping, which suggests an outdoor setting. There are no distinct human voices or other human-made noises. The lack of any other specific sounds like footsteps or conversation implies that the speakers are likely engaged in a quiet activity, such as bird-watching or simply enjoying the natural surroundings.
+</Reasoning>
+<Conclusion>
+The speakers are likely bird-watching or enjoying nature quietly. </Conclusion>",What are the speakers likely doing?,Birds chirping and wind blowing,"Look, the clouds are below us.",They are likely outside enjoying nature.,They are likely flying in an airplane.
+74,They are likely changing a baby’s diaper.,diaper,"<Reasoning>
+The audio contains the sound of a baby crying, which is a common sound when a baby is in distress or needs attention. The spoken text is not provided, so we can only infer based on the audio. Babies often cry when they are hungry, tired, or need to be changed. The presence of the crying sound suggests that the baby might be in a situation where it is not being attended to, possibly due to the caregiver being occupied with other tasks.
+</Reasoning>
+<Conclusion>
+The baby is likely crying for attention or basic needs. </Conclusion>",What are the speakers likely doing?,A baby crying,Oh that stinks!,They are likely comforting a baby.,They are likely reacting to something unpleasant.
+75,They are likely ordering food from a drive-thru or street vendor.,"drive-thru,street vendor","<Reasoning>
+The audio contains the sound of a car passing by, which is a common urban sound. The spoken text is not provided, so we can only infer based on the sound. The presence of a car passing by suggests that the speakers might be in a location where traffic is present, like a street or a parking lot. They could be waiting for the car to pass, or they might be observing the traffic.
+</Reasoning>
+<Conclusion>
+Waiting for or observing passing traffic.
+</Conclusion>",What are the speakers likely doing?,"Traffic noise, car horns",No onions please.,They are likely driving or walking in a busy street.,They are likely ordering food.
+76,They are likely tailoring or designing clothes.,"tailor,design","<Reasoning>
+The audio contains the sound of a pen clicking. This suggests that the speakers might be in a setting where they are writing or taking notes. The clicking sound is typically associated with the action of using a pen, which is often done during activities like note-taking, signing documents, or writing in a journal.
+</Reasoning>
+<Conclusion>
+The speakers are likely engaged in an activity involving writing or note-taking. </Conclusion>",What are the speakers likely doing?,Scissors cutting,Red sleeves look much better than blue.,They are likely cutting something with scissors.,They are likely discussing clothing or fashion choices.
+77,They are likely at a live concert.,"live,concert","<Reasoning>
+The audio contains a sound of a car engine running, which suggests that the speakers are likely in a car. The presence of music indicates that they might be listening to it while driving or waiting in the car. The speech could be a conversation between the speakers, possibly discussing their destination or something related to the car journey.
+</Reasoning>
+<Conclusion>
+The speakers are likely in a car, possibly driving or waiting, and having a conversation while listening to music.",What are the speakers likely doing?,Rock music,Everybody hands up.,They are likely listening to rock music.,They are likely encouraging a group to raise their hands.
+78,They are likely getting sunburnt.,"sunburnt,sun","<Reasoning>
+The audio contains the sound of waves crashing, which suggests a coastal or seaside environment. The spoken text ""red"" could be a color mentioned in a conversation or narration. However, without more context, it's hard to determine the exact activity. The presence of bird sounds also indicates an outdoor setting, possibly near a beach or a park.
+</Reasoning>
+<Conclusion>
+The speakers might be at a beach or near a park, possibly discussing something related to the color red. </Conclusion>",What are the speakers likely doing?,"Waves crashing, faint seagulls",Look you are so red!,They are likely at the beach.,They are likely commenting on someone's flushed face.
+79,They are likely fixing something.,fix,"<Reasoning>
+The audio contains a series of loud, rhythmic knocks on a hard surface. The spoken text is not provided, so we can only rely on the sound. The knocking pattern suggests someone is trying to get attention or enter a room. The intensity and rhythm of the knocks indicate urgency or importance.
+</Reasoning>
+<Conclusion>
+The speakers are likely knocking on a door to enter or get someone's attention urgently.
+</Conclusion>",What are the speakers likely doing?,Hammering,Hope this can hold up for tonight.,They are likely building something.,They are likely preparing for an event tonight.
+80,They are likely going through a security check.,security check,"<Reasoning>
+The audio contains the sound of a zipper being pulled up, which suggests that someone is likely getting dressed or preparing to leave. The background noise indicates a public or semi-public setting, possibly a store or a busy area. The spoken text is not clear enough to provide additional context.
+</Reasoning>
+<Conclusion>
+Someone is likely getting dressed or preparing to leave in a public or semi-public setting.
+</Conclusion>",What are the speakers likely doing?,"Zipper, crowd","Laptop, camera, or Pad?",They are likely getting dressed in a public place.,They are likely deciding which device to use.
