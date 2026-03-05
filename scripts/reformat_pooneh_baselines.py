@@ -11,7 +11,7 @@ def sanitize_cot(reasoning: str) -> str:
     return reasoning.strip()
 
 def process_baselines():
-    base_dir = Path("/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs")
+    base_dir = Path("/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs")
     
     models_to_map = {
         'af3': 'flamingo_hf',
@@ -22,9 +22,9 @@ def process_baselines():
     for source_model, target_model in models_to_map.items():
         for track in tracks:
             if source_model == 'af3':
-                pooneh_file = base_dir / f"pooneh_version/result/baseline/{source_model}/{track}/baseline_{track}_REAS_post_process.jsonl"
+                henoop_file = base_dir / f"henoop_version/result/baseline/{source_model}/{track}/baseline_{track}_REAS_post_process.jsonl"
             else:
-                pooneh_file = base_dir / f"pooneh_version/result/baseline/{source_model}/{track}/baseline_{track}_REAS.jsonl"
+                henoop_file = base_dir / f"henoop_version/result/baseline/{source_model}/{track}/baseline_{track}_REAS.jsonl"
                 
             dataset_file = base_dir / f"data/sakura/{track}/sakura_{track}_test_standardized.jsonl"
             
@@ -32,8 +32,8 @@ def process_baselines():
             out_dir.mkdir(parents=True, exist_ok=True)
             out_file = out_dir / f"baseline_{target_model}_sakura-{track}.jsonl"
 
-            if not pooneh_file.exists():
-                print(f"Skipping {pooneh_file} - not found.")
+            if not henoop_file.exists():
+                print(f"Skipping {henoop_file} - not found.")
                 continue
             
             if not dataset_file.exists():
@@ -54,7 +54,7 @@ def process_baselines():
             processed_count = 0
             missing_count = 0
             
-            with open(pooneh_file, 'r') as f_in, open(out_file, 'w') as f_out:
+            with open(henoop_file, 'r') as f_in, open(out_file, 'w') as f_out:
                 for line in f_in:
                     try:
                         poo = json.loads(line)
@@ -75,7 +75,7 @@ def process_baselines():
                         formatted_choices.append(f"({letter}) {c}")
                     choices_formatted_str = "\n".join(formatted_choices)
 
-                    # Extract the reasoning. Note Pooneh files might have list or string.
+                    # Extract the reasoning. Note henoop files might have list or string.
                     raw_reasoning_list = poo.get('reasoning', [])
                     reasoning = raw_reasoning_list[0] if raw_reasoning_list else ""
                     

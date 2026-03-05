@@ -79,7 +79,7 @@ def main():
             'xml',
             'single_turn_explicit_letter',
             'legacy_two_turn',
-            'pooneh_single_turn',
+            'henoop_single_turn',
         ],
         help=(
             "Prompt strategy for baseline/audio_masking experiments. "

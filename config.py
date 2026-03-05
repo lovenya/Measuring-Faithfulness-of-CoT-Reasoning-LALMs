@@ -10,21 +10,21 @@ parameters. This single source of truth makes our framework robust and easy to m
 # This dictionary holds the master paths to all our model assets.
 MODEL_PATHS = {
     # --- Qwen (Self-Contained) ---
-    "qwen": "/scratch/lovenya/models/Qwen/Qwen2-Audio-7B",
-    "qwen_omni": "/scratch/lovenya/models/Qwen/Qwen2.5-Omni-7B",
+    "qwen": "/scratch/aynevol/models/Qwen/Qwen2-Audio-7B",
+    "qwen_omni": "/scratch/aynevol/models/Qwen/Qwen2.5-Omni-7B",
 
     # --- Audio Flamingo (Complex) ---
     "flamingo_code": "./audio-flamingo-code",
-    "flamingo_weights": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-flamingo-weights",
-    "flamingo_hf": "/scratch/lovenya/models/AF3/audio-flamingo-3-hf",
+    "flamingo_weights": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-flamingo-weights",
+    "flamingo_hf": "/scratch/aynevol/models/AF3/audio-flamingo-3-hf",
 
     # --- SALMONN (Multi-Component) ---
-    "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
-    "salmonn_7b_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-7b-checkpoint/salmonn_7b_v0.pth",
+    "salmonn_checkpoint": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
+    "salmonn_7b_checkpoint": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-7b-checkpoint/salmonn_7b_v0.pth",
 
     # --- Mistral Small 3 (External Perturbation Model) ---
     # Used for generating mistakes and paraphrasing to avoid in-distribution bias
-    "mistral_small_3": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/mistral-small-3",
+    "mistral_small_3": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/mistral-small-3",
 }
 
 # Check if local SSD model directory is available (set by submission script)
@@ -55,20 +55,20 @@ else:
     # Default: use network /scratch paths
     SALMONN_COMPONENT_PATHS = {
         "source_code": "./salmonn-source-code",
-        "whisper": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/whisper-large-v2",
-        "beats": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
-        "vicuna": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/vicuna-13b-v1.1",
-        "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
-        "bert_base": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/bert-base-uncased",
+        "whisper": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/whisper-large-v2",
+        "beats": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
+        "vicuna": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/vicuna-13b-v1.1",
+        "salmonn_checkpoint": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-13b-checkpoint/salmonn_v1.pth",
+        "bert_base": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/bert-base-uncased",
     }
 
     SALMONN_7B_COMPONENT_PATHS = {
         "source_code": "./salmonn-source-code",
-        "whisper": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/whisper-large-v2",
-        "beats": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
-        "vicuna": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/vicuna-7b-v1.5",
-        "salmonn_checkpoint": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-7b-checkpoint/salmonn_7b_v0.pth",
-        "bert_base": "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/bert-base-uncased",
+        "whisper": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/whisper-large-v2",
+        "beats": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/beats_iter3_plus_AS2M_finetuned_on_AS2M_cpt2/BEATs_iter3_plus_AS2M_finetuned_on_AS2M_cpt2.pt",
+        "vicuna": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/vicuna-7b-v1.5",
+        "salmonn_checkpoint": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/salmonn-7b-checkpoint/salmonn_7b_v0.pth",
+        "bert_base": "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/bert-base-uncased",
     }
 
 # The main directory where all experimental results will be saved.

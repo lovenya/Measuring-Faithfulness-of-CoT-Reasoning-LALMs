@@ -3,7 +3,7 @@
 
 import os
 
-PROJECT = "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs"
+PROJECT = "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs"
 SAKURA = ["sakura-animal", "sakura-emotion", "sakura-gender", "sakura-language"]
 MODELS = ["flamingo_hf", "qwen_omni"]
 

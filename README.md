@@ -1,9 +1,5 @@
 # Measuring Faithfulness in Chain-of-Thought Reasoning for Large Audio-Language Models
 
-## 🌐 [Our website - results/plots for comparison](https://poonehmousavi.github.io/faithfulness/)
-
-📃 **[Arxiv link - Investigating Faithfulness in Large Audio Language Models](https://arxiv.org/abs/2509.22363v2)**
-
 [UPDATE]: Website now includes results for **`Audio Flamingo 3 - thinking`** as well, with **`SALMONN 7B`** underway.  
 We also carry out the 'adding mistakes' and 'paraphrasing' experiments - using an **`external LLM - Mistral`**, to avoid any bias from the models while generating perturbations (results included in the website).  
 For filler tokens exepriment - we carry out replacement by replacing tokens of CoT with '...' to simulate test time compute while destroying semantics, but in order to avoid any deviation in results due to '...' being **out-of-distribution** for the models, we also carry out the **random partial filler** tokens experiment by replacing tokens of CoT with **_syntactic but meaningless_** words like - `lorem ipsum` etc. It can be carried out by `--filler-type lorem`.  
@@ -17,7 +13,7 @@ This repository contains the complete framework and results for a series of beha
 
 We have included the website link for the results and plots.
 
-[Our website - results/plots for comparison](https://poonehmousavi.github.io/faithfulness/)
+[Our website - results/plots for comparison](https://henoopmousavi.github.io/faithfulness/)
 
 <!-- All the plots included in the paper, as well as the plots that were not - providing further detailed analysis have been included in the following website. -->
 
@@ -28,7 +24,6 @@ We have included the website link for the results and plots.
 Our methodology is built on a suite of targeted experiments, each designed to probe a specific aspect of reasoning faithfulness. The experiments are divided into two categories:
 
 - **Foundational Experiments:** These experiments establish the model's performance under normal and zero-reasoning conditions. The `baseline` run is particularly important, as it generates the core Chain-of-Thought (CoT) reasoning that is used in all subsequent tests.
-
   - `baseline`
   - `no_reasoning`
 
@@ -51,7 +46,7 @@ First, clone this repository to your local machine. Note that this project uses 
 
 ```bash
 # The --recurse-submodules flag automatically initializes and clones the SALMONN source code submodule.
-git clone --recurse-submodules https://github.com/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs.git
+git clone --recurse-submodules https://github.com/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs.git
 cd Measuring-Faithfulness-of-CoT-Reasoning-LALMs
 ```
 

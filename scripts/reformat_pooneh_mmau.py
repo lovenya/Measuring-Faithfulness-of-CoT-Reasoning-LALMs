@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Reformat Pooneh's MMAU baseline results into our standard format.
+Reformat henoop's MMAU baseline results into our standard format.
 
-Since MMAU uses UUID IDs that are shared between Pooneh's data and ours,
+Since MMAU uses UUID IDs that are shared between henoop's data and ours,
 the mapping is trivial — just match by ID.
 
 Note: AF3 MMAU results lack a `reasoning` field (only `raw_model_outputs`).
@@ -40,7 +40,7 @@ def sanitize_cot(reasoning: str) -> str:
 
 
 def main():
-    base_dir = Path("/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs")
+    base_dir = Path("/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs")
     dataset_path = base_dir / "data/mmau/mmau_test_standardized.jsonl"
 
     if not dataset_path.exists():
@@ -54,7 +54,7 @@ def main():
     with open(dataset_path, 'r') as f:
         for line in f:
             d = json.loads(line)
-            # Pooneh's ID corresponds to our source_id
+            # henoop's ID corresponds to our source_id
             uuid = d.get('source_id', d['id'])
             our_data[uuid] = d
     print(f"  Loaded {len(our_data)} entries")
@@ -74,28 +74,28 @@ def main():
 
     for source_model, cfg in models.items():
         target_model = cfg["target"]
-        pooneh_result = base_dir / f"pooneh_version/result/baseline/{source_model}/mmau/{cfg['result_file']}"
+        henoop_result = base_dir / f"henoop_version/result/baseline/{source_model}/mmau/{cfg['result_file']}"
 
         out_dir = base_dir / f"results/{target_model}/baseline"
         out_dir.mkdir(parents=True, exist_ok=True)
         out_file = out_dir / f"baseline_{target_model}_mmau.jsonl"
 
-        if not pooneh_result.exists():
-            print(f"Skipping {source_model} -> {target_model}: {pooneh_result} not found.")
+        if not henoop_result.exists():
+            print(f"Skipping {source_model} -> {target_model}: {henoop_result} not found.")
             continue
 
         print(f"\nProcessing MMAU: {source_model} -> {target_model}...")
         processed = 0
         unmatched = []
 
-        with open(pooneh_result, 'r') as f_in, open(out_file, 'w') as f_out:
+        with open(henoop_result, 'r') as f_in, open(out_file, 'w') as f_out:
             for line in f_in:
                 try:
                     poo = json.loads(line)
                 except json.JSONDecodeError:
                     continue
 
-                poo_id = poo['id']  # This is the UUID in Pooneh's data
+                poo_id = poo['id']  # This is the UUID in henoop's data
                 our_entry = our_data.get(poo_id)
 
                 if our_entry is None:

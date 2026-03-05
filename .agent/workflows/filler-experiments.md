@@ -47,8 +47,8 @@ salloc --time=02:00:00 --gpus=h100:1 --cpus-per-task=2 --mem=64G --account=rrg-r
 
 ```bash
 module load StdEnv/2023 gcc/12.3 cuda/12.6 arrow rust opencv
-source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/mistral_env/bin/activate
-cd /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
+source /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/mistral_env/bin/activate
+cd /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
 ```
 
 ### Generate Perturbations (5 datasets × 2 modes = 10 files)
@@ -78,7 +78,7 @@ done
 ```bash
 module load StdEnv/2023 gcc/12.3 python/3.11
 source analysis_env/bin/activate
-cd /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
+cd /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
 
 for dataset in mmar sakura-animal sakura-emotion sakura-gender sakura-language; do
   python scripts/combine_baseline_with_perturbations.py --model flamingo --dataset $dataset --experiment adding_mistakes --restricted
@@ -100,8 +100,8 @@ salloc --time=01:00:00 --gpus=nvidia_h100_80gb_hbm3_3g.40gb:1 --cpus-per-task=2 
 
 ```bash
 module load StdEnv/2023 gcc/12.3 cuda/12.6 arrow python/3.11
-source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-flamingo-env/bin/activate
-cd /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
+source /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/audio-flamingo-env/bin/activate
+cd /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
 ```
 
 ### Demo Commands (time each to estimate full job duration)

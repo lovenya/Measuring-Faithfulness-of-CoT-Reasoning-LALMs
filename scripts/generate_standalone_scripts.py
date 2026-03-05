@@ -26,7 +26,7 @@ COT_TEMPLATE = """#!/bin/bash
 set -euo pipefail
 START_TIME=$(date +%s)
 module load StdEnv/2023 cuda rust gcc arrow
-cd /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
+cd /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
 source af3_new_hf_env/bin/activate
 
 while sleep 1200; do
@@ -60,7 +60,7 @@ MISTRAL_TEMPLATE = """#!/bin/bash
 set -euo pipefail
 START_TIME=$(date +%s)
 module load StdEnv/2023 cuda rust gcc arrow opencv
-cd /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
+cd /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
 source mistral_env/bin/activate
 
 while sleep 1200; do

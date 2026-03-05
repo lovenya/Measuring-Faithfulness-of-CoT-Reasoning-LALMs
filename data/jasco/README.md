@@ -2,7 +2,6 @@
 <img src="JASCO.png" alt="ser_sed" style="width: 80%; min-width: 300px; display: block; margin: auto;">
 </p>
 
-
 # Joint Audio-Speech Co-Reasoning (JASCO)
 
 [![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://https://github.com/BenoitWang/What_Are_They_Doing/blob/main/LICENSE)
@@ -11,26 +10,32 @@
 This repo contains a benchmark of Auditory Large Language Models (ALLMs) on the [Joint Audio-Speech Co-Reasoning (JASCO)](https://arxiv.org/abs/2409.14526) task, which requires a strict co-reasoning based on both audio and speech.
 
 ## What Are They Doing dataset
+
 The What Are They Doing dataset is an open-ended scene reasoning question-answering dataset, where the models need to understand both audio and speech and reason what the speakers are possibly doing. It contains 80 carefully designed audio clips and QA pairs. The main features of the dataset are:
+
 1. Both sound and human speech are present in the same audio clip.
 2. The correct answer is based on both audio and speech, using one single modality leads to Audio-Oriented or Speech-Oriented Answer.
 3. The correct answer requires deep reasoning rather than simply concatenating information.
 4. The audio information and speech information are irrelevant.
 
-The dataset can be found under `dataset/` with the designed answers in `v0.csv`. 
+The dataset can be found under `dataset/` with the designed answers in `v0.csv`.
 😆Listen to the audio clips and make a guess yourself before checking the answers 😆.
 
 ## Evaluate your own ALLM
 
 To run the evaluation, first install the dependencies
+
 ```
 pip install -r requirements.txt
 ```
+
 ### 1. Generate responses with your own ALLM
+
 Infer with your own ALLM for each row in `evaluation/example.csv`, specifically:
 Take the column `audio` and the column `prompt`, generate the response and fill the column `allm_output`.
 
 It should be noted that for each sample, we infer the model with 8 different instructions:
+
 ```
 Based on both the audio sound and the spoken text, infer what the speakers are doing specifically?
 Based on both the spoken text and the audio sound, infer what the speakers are doing specifically?
@@ -56,7 +61,9 @@ QWEN2: https://huggingface.co/Qwen/Qwen2-Audio-7B-Instruct#audio-analysis-infere
 WavLLM: https://github.com/microsoft/SpeechT5/tree/main/WavLLM#inference
 
 ### 2. Score the responses with LLM-Judges
+
 Once the responses are generated and formatted into `evaluation/example.csv`, run:
+
 ```
 cd evaluation/
 
@@ -66,6 +73,7 @@ python eval.py mistralai/Mistral-Large-Instruct-2411 evaluation/example.csv mist
 
 # The reported result should be the average of the 3 judges' scores
 ```
+
 As the above indicates, 3 LLM-Judges are used to evaluate your ALLM's predictions:
 
 Llama-3.1-70B-Instruct: https://huggingface.co/meta-llama/Llama-3.1-70B-Instruct
@@ -75,6 +83,7 @@ Qwen2.5-72B-Instruct: https://huggingface.co/Qwen/Qwen2.5-72B-Instruct
 Mistral-123B-Instruct: https://huggingface.co/mistralai/Mistral-Large-Instruct-2411
 
 The LLM-Judges are demanded to conduct 2 evaluations by receiving a designed prompt:
+
 ```
 [Audio Sound]
 {audio_sound}
@@ -112,7 +121,7 @@ Evaluate if the model's prediction of the speaker's action is inferred from audi
 1. The model's response may contain multiple information, an example is 'The audio clip contains the sound of [detected audio sound], the speaker says [transcribed spoken text], this suggest that they are [predicted speaker's action]'. You need to first extract different components from the model's response: Part1-audio sound detected(may not exist), Part2-spoken text transcribed (may not exist), and Part3-speaker's action predicted(may not exist). If the predicted speaker's action does not exist, the result is directly 'Neither'.
 2. If Part3 exists, align it with Part1 and Part2. Compare the alignments and choose an orientation of the prediction of the speaker's action:
 Audio-Oriented: The predicted speaker's action is explicitly and strongly related to the audio sound.
-Speech-Oriented: The predicted speaker's action is explicitly and strongly related to the spoken text or they have a significant overlap. 
+Speech-Oriented: The predicted speaker's action is explicitly and strongly related to the spoken text or they have a significant overlap.
 Both: The predicted speaker's action is explicitly and strongly related to both the audio sound and the spoken text. Important: if Part3 contains general terms lile 'activity' or 'activity related to' or 'something' or 'somewhere', and you can't choose 'Both' and must choose between 'Audio-Oriented' and 'Speech-Oriented'.
 Remember only to use the extracted predicted speaker's action for assessment make sure you see a STRONG correlation when you make decisions.
 
@@ -124,6 +133,7 @@ Orientation: Audio-Oriented/Speech-Oriented/Both/Neither
 ```
 
 Here we show some evaluations from Llama-3.1-70B-Instruct Judge:
+
 ```
 ######################### Rating 0 + Audio-Oriented #########################
 Explanation1: The provided audio sound is joyful laughter and shouting, the provided spoken text is a message about children being accompanied by an adult at all times, the reference answer is that they are likely at a recreational facility or amusement park, the reference keywords are 'amusement park', while the model’s answer is 'They are laughing'. I think the model's prediction of the speaker's action is not aligned with the reference answer, as it only mentions the emotional state of the speakers but does not capture the specific action or setting.
@@ -135,7 +145,7 @@ Explanation2: The provided audio sound is joyful laughter and shouting and the p
 Orientation: Audio-Oriented
 
 ######################### Rating 0 + Speech-Oriented #########################
-Explanation1: The provided audio sound is birds chirping and a gentle breeze, the provided spoken text is "What's in your basket?", the reference answer is "They are likely having a picnic", the reference keywords are "picnic", while the model's answer is "It is likely that the speaker is asking someone to show them their shopping bag or basket". I think the model’s prediction does not capture the essence of the speaker's action as it misinterprets the context, and doesn't include the reference keyword "picnic" and is only logical for the spoken text but fails to connect with the audio sound for the action. 
+Explanation1: The provided audio sound is birds chirping and a gentle breeze, the provided spoken text is "What's in your basket?", the reference answer is "They are likely having a picnic", the reference keywords are "picnic", while the model's answer is "It is likely that the speaker is asking someone to show them their shopping bag or basket". I think the model’s prediction does not capture the essence of the speaker's action as it misinterprets the context, and doesn't include the reference keyword "picnic" and is only logical for the spoken text but fails to connect with the audio sound for the action.
 
 Rating: 0
 
@@ -144,46 +154,47 @@ Explanation2: The provided audio sound is birds chirping and a gentle breeze and
 Orientation: Speech-Oriented
 
 ######################### Rating 1 + Both-Oriented #########################
-Explanation1: 
-The provided audio sound is waves crashing and seagulls, the provided spoken text is "Let's build a castle over there", the reference answer is they are planning to build a sandcastle, the reference keywords are sandcastle, while the model’s answer is it can be inferred that the speaker wants to build a castle near the ocean or beach. I think the model's answer is somewhat relevant but lacks the specific detail of building with sand, though generally aligns with the reference. 
+Explanation1:
+The provided audio sound is waves crashing and seagulls, the provided spoken text is "Let's build a castle over there", the reference answer is they are planning to build a sandcastle, the reference keywords are sandcastle, while the model’s answer is it can be inferred that the speaker wants to build a castle near the ocean or beach. I think the model's answer is somewhat relevant but lacks the specific detail of building with sand, though generally aligns with the reference.
 
 Rating: 1
 
-Explanation2: 
+Explanation2:
 The provided audio sound is waves crashing and seagulls and the provided spoken text is "Let's build a castle over there". The detected audio sound in the model's response is waves crashing, the transcribed spoken text in the model's response is "Let's build a castle over there", The predicted speaker's action in the model's response is building a castle near the ocean or beach, I think it is strongly related to both the audio sound and the spoken text so it can be classified as Both.
 
 Orientation: Both
 
 ######################### Rating 2 + Both-Oriented #########################
-Explanation1: 
+Explanation1:
 The provided audio sound is rock music, the provided spoken text is "Let's run through it one more time", the reference answer is "they are likely practicing a song in a band rehearsal", the reference keywords are "band rehearsal", while the model's answer is "practicing or rehearsing a guitar part in a musical context, possibly with other musicians or alone". I think the model's prediction closely matches the reference answer in terms of content and logic, and it contains similar meanings of the Reference Answer Key Words "band rehearsal" (using musical context, possibly with other musicians), but it doesn't use the exact reference key words. However, it accurately infers the speaker's action from both audio sound and spoken text.
 
 Rating: 2
 
-Explanation2: 
+Explanation2:
 The provided audio sound is rock music and the provided spoken text is "Let's run through it one more time". The predicted speaker's action in the model's response is "practicing or rehearsing a guitar part in a musical context, possibly with other musicians or alone". I think this speaker's action is explicitly and strongly related to both the audio sound (rock music) and the spoken text ("Let's run through it one more time"), which suggests a rehearsal process in a musical context.
 
 Orientation: Both
 ```
 
 ## Benchmark Results
+
 1. Average best-mean of three judges:
 
-| model | best-mean |
-|:---------------------------:|:-----------:|
-| WavLLM-7B | 0.31 |
-| LTU-AS-7B | 0.99 |
-| SALMONN-7B | 1.10 |
-| Qwen2-Audio-Instruct-7B | 1.23 |
+|          model          | best-mean |
+| :---------------------: | :-------: |
+|        WavLLM-7B        |   0.31    |
+|        LTU-AS-7B        |   0.99    |
+|       SALMONN-7B        |   1.10    |
+| Qwen2-Audio-Instruct-7B |   1.23    |
 
 2. Average Modality-Dependence of three judges:
 
-| model | Audio-Dependence% | Both-Dependence% | Speech-Dependence% |
-|:---------------------------:|:-------------------:|:-------------------:|:-------------------:|
-| WavLLM-7B | 12 | 11 | 77 |
-| LTU-AS-7B | 23 | 40 | 37 |
-| SALMONN-7B | 31 | 42 | 27 |
-| Qwen2-Audio-Instruct-7B | 16 | 50 | 34 |
+|          model          | Audio-Dependence% | Both-Dependence% | Speech-Dependence% |
+| :---------------------: | :---------------: | :--------------: | :----------------: |
+|        WavLLM-7B        |        12         |        11        |         77         |
+|        LTU-AS-7B        |        23         |        40        |         37         |
+|       SALMONN-7B        |        31         |        42        |         27         |
+| Qwen2-Audio-Instruct-7B |        16         |        50        |         34         |
 
 <img src="dependence.png" alt="ser_sed" style="width: 80%; min-width: 300px; display: block; margin: auto;">
 
@@ -191,9 +202,9 @@ Orientation: Both
 
 ```bibtex
 @INPROCEEDINGS{10889092,
-  author={Wang, Yingzhi and Mousavi, Pooneh and Ploujnikov, Artem and Ravanelli, Mirco},
-  booktitle={ICASSP 2025 - 2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)}, 
-  title={What Are They Doing? Joint Audio-Speech Co-Reasoning}, 
+  author={Wang, Yingzhi and Mousavi, henoop and Ploujnikov, Artem and Ravanelli, Mirco},
+  booktitle={ICASSP 2025 - 2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+  title={What Are They Doing? Joint Audio-Speech Co-Reasoning},
   year={2025},
   volume={},
   number={},

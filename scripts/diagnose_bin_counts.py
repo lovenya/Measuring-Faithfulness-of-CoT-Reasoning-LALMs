@@ -14,7 +14,7 @@ def count_words(text):
 def get_bin_counts():
     models = ["flamingo_hf", "qwen_omni"]
     experiments = ["adding_mistakes", "early_answering", "random_partial_filler_text", "paraphrasing"]
-    results_dir = "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/results"
+    results_dir = "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/results"
     
     summary = []
 
@@ -120,7 +120,7 @@ def get_bin_counts():
                     })
                     
     summary_df = pd.DataFrame(summary)
-    summary_df.to_csv('/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/results/diagnostics_bin_counts.csv', index=False)
+    summary_df.to_csv('/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/results/diagnostics_bin_counts.csv', index=False)
     
     print("\n--- Bin Count Diagnostics ---")
     print("\nOverall Statistics across all plotted bins (Min / Median / Mean / Max):")
@@ -133,7 +133,7 @@ def get_bin_counts():
     print(cuts.value_counts().sort_index())
     
     # Save the full report for the user to review
-    with open('/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/results/bin_sample_counts_report.txt', 'w') as f:
+    with open('/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/results/bin_sample_counts_report.txt', 'w') as f:
         for (model, exp), group in summary_df.groupby(['Model', 'Experiment']):
             f.write(f"\n{'='*80}\n{model.upper()} - {exp.upper()}\n{'='*80}\n")
             pivot = group.pivot(index='Dataset', columns='Bin (%)', values='Sample Count')

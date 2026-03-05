@@ -3,7 +3,7 @@ import json
 import re
 from pathlib import Path
 
-def parse_timestamps_from_pooneh_path(path: str):
+def parse_timestamps_from_henoop_path(path: str):
     """
     path is e.g. {DATA_ROOT}/audio/BV1j1ABeqEyp_00-06-02_00-06-16.wav
     Returns (video_id, start_ts, end_ts) e.g. ("BV1j1ABeqEyp", "00:06:02", "00:06:16")
@@ -36,10 +36,10 @@ def sanitize_cot(reasoning: str) -> str:
     return reasoning.strip()
 
 def main():
-    base_dir = Path("/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs")
+    base_dir = Path("/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs")
     
     our_data_file = base_dir / "data/mmar/mmar_test_standardized.jsonl"
-    pooneh_manifest_file = base_dir / "pooneh_version/data/mmar/mmar_manifest.jsonl"
+    henoop_manifest_file = base_dir / "henoop_version/data/mmar/mmar_manifest.jsonl"
     
     # 1. Load Our Standardized Data
     print("Loading Standardized MMAR Dataset...")
@@ -70,15 +70,15 @@ def main():
             
     print(f"  Loaded {len(our_data)} standardized entries")
     
-    # 2. Map Pooneh ID -> Our ID
-    print("Mapping Pooneh MMAR IDs to Standardized IDs...")
-    pooneh_to_our_id = {}
-    with open(pooneh_manifest_file, 'r') as f:
+    # 2. Map henoop ID -> Our ID
+    print("Mapping henoop MMAR IDs to Standardized IDs...")
+    henoop_to_our_id = {}
+    with open(henoop_manifest_file, 'r') as f:
         for line in f:
             d = json.loads(line)
             poo_id = d['id']
             
-            vid, start_ts, end_ts = parse_timestamps_from_pooneh_path(d['audio_path'])
+            vid, start_ts, end_ts = parse_timestamps_from_henoop_path(d['audio_path'])
             
             # Primary Map
             our_id = our_key_map.get((vid, start_ts, end_ts))
@@ -89,33 +89,33 @@ def main():
                 our_id = our_question_map.get(q_norm)
                 
             if our_id:
-                pooneh_to_our_id[poo_id] = our_id
+                henoop_to_our_id[poo_id] = our_id
                 
-    print(f"  Mapped {len(pooneh_to_our_id)} / 997 entries")
+    print(f"  Mapped {len(henoop_to_our_id)} / 997 entries")
     
     # 3. Process the Baselines
     models = {
         "af3": {
             "target": "flamingo_hf",
-            "result_file": "pooneh_version/result/baseline/af3/mmar/baseline_mmar_REAS_post_process.jsonl",
+            "result_file": "henoop_version/result/baseline/af3/mmar/baseline_mmar_REAS_post_process.jsonl",
             "has_reasoning": False
         },
         "qwen2.5": {
             "target": "qwen_omni",
-            "result_file": "pooneh_version/result/baseline/qwen2.5/mmar/baseline_mmar_REAS.jsonl",
+            "result_file": "henoop_version/result/baseline/qwen2.5/mmar/baseline_mmar_REAS.jsonl",
             "has_reasoning": True
         }
     }
     
     for source_model, cfg in models.items():
-        pooneh_result = base_dir / cfg['result_file']
+        henoop_result = base_dir / cfg['result_file']
         target_model = cfg['target']
         
         out_dir = base_dir / f"results/{target_model}/baseline"
         out_dir.mkdir(parents=True, exist_ok=True)
         out_file = out_dir / f"baseline_{target_model}_mmar.jsonl"
         
-        if not pooneh_result.exists():
+        if not henoop_result.exists():
             print(f"Skipping {source_model} -> {target_model}: file not found.")
             continue
             
@@ -123,7 +123,7 @@ def main():
         processed = 0
         unmatched = 0
         
-        with open(pooneh_result, 'r') as f_in, open(out_file, 'w') as f_out:
+        with open(henoop_result, 'r') as f_in, open(out_file, 'w') as f_out:
             for line in f_in:
                 try:
                     poo = json.loads(line)
@@ -131,7 +131,7 @@ def main():
                     continue
                     
                 poo_id = poo['id']
-                our_id = pooneh_to_our_id.get(poo_id)
+                our_id = henoop_to_our_id.get(poo_id)
                 
                 if not our_id:
                     unmatched += 1

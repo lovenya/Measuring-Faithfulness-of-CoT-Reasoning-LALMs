@@ -27,7 +27,7 @@ module load StdEnv/2023 cuda rust gcc arrow
 // turbo
 
 ```bash
-source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/af3_new_hf_env/bin/activate
+source /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/af3_new_hf_env/bin/activate
 ```
 
 ### For Qwen Omni (`qwen_omni`):
@@ -35,7 +35,7 @@ source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/af3_new_hf
 // turbo
 
 ```bash
-source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/qwen_omni_env/bin/activate
+source /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/qwen_omni_env/bin/activate
 ```
 
 ### For Qwen2-Audio (`qwen`):
@@ -43,7 +43,7 @@ source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/qwen_omni_
 // turbo
 
 ```bash
-source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/qwen_new_env/bin/activate
+source /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/qwen_new_env/bin/activate
 ```
 
 ### For SALMONN / SALMONN_7B:
@@ -51,7 +51,7 @@ source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/qwen_new_e
 // turbo
 
 ```bash
-source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/salmonn_env/bin/activate
+source /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/salmonn_env/bin/activate
 ```
 
 ### For Mistral (perturbation generation):
@@ -60,7 +60,7 @@ source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/salmonn_en
 
 ```bash
 module load opencv
-source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/mistral_env/bin/activate
+source /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/mistral_env/bin/activate
 ```
 
 ### For Analysis (CPU-only tasks, plotting, data processing):
@@ -68,7 +68,7 @@ source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/mistral_en
 // turbo
 
 ```bash
-source /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/analysis_env/bin/activate
+source /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/analysis_env/bin/activate
 ```
 
 **Note:** For analysis/CPU-only tasks, use an interactive node with `def-csubakan-ab_cpu` account:

@@ -30,7 +30,7 @@ analysis/
 ## Running Per-Dataset Plots
 
 ```bash
-cd /scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
+cd /scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs
 
 # Audio masking (supports --mask-mode all for comparison plot)
 python analysis/per_dataset/plot_audio_masking.py \
