@@ -1,79 +1,42 @@
-# TODO — Prioritized Task List
+## High-level refactor checklist
 
-## 1. Model-Specific Prompt Strategy Refactor ✅
+- **Model aliases**
+  - [x] Introduce public aliases: `qwen_audio_2`, `qwen_omni_2.5`, `aflamingo_3`, `salmonn_audio_7b`, `salmonn_audio_13b`.
+  - [ ] Sweep experiments, analysis, and scripts to ensure they only use these (keep legacy aliases temporarily for back-compat).
 
-- [x] Centralized `run_conditioned_trial`, `run_no_reasoning_trial` in `prompt_strategies.py`
-- [x] `run_no_reasoning_inference` in `qwen_omni_utils.py` and `audio_flamingo_hf_utils.py`
-- [x] `run_continue_reasoning` in `qwen_omni_utils.py` and `audio_flamingo_hf_utils.py`
-- [x] Migrated: `early_answering.py`, `filler_text.py`, `filler_text_utils.py`, `paraphrasing.py`, `adding_mistakes.py`, `no_reasoning.py`
-- [x] Removed forced `do_sample=False` — all generation uses model defaults
-- [x] Smoke test baseline + early answering for `flamingo_hf` ✓
-- [ ] **MANDATORY**: Make `run_conditioned_inference` and `run_no_reasoning_inference` required in ALL model_utils (remove fallback)
+- **External perturbations (paraphrasing / adding_mistakes)**
+  - [x] Make output filename suffix depend on `EXTERNAL_LLM` instead of hardcoding `-mistral`.
+  - [ ] Thread a clean `perturbation_source` / external-LLM name through experiments, data_processing, and analysis so naming is consistent everywhere.
 
-## 2. AF3 (flamingo_hf) Experiments
+- **Main orchestrator (`main.py`)**
+  - [x] Set default filler type to `lorem` (both CLI and `config.FILTER_TYPE`).
+  - [x] Remove `--temperature/--top-p/--top-k` from the CLI and rely on model defaults.
+  - [ ] Refactor independent experiment handling so they no longer depend on baseline at run time (only analysis scripts compare to baseline).
+  - [ ] Refactor dependent experiment handling so they don’t depend on `no_reasoning` at run time; `no_reasoning` remains foundational only.
+  - [ ] Consider splitting `main.py` into smaller modules (CLI definition, path management, experiment loading) once all experiments are stable.
 
-### Baselines ✅
+- **Experiments**
+  - [ ] Foundational: tidy `baseline` and `no_reasoning` scripts, keeping behavior identical but improving structure and comments.
+  - [ ] Dependent CoT interventions: remove any hard dependency on `no_reasoning` outputs; rely on `baseline` only, and let analysis handle `no_reasoning` comparisons.
+  - [ ] Filler text family: consolidate `filler_text`, `partial_filler_text`, `flipped_partial_filler_text`, and `random_partial_filler_text` into a single parameterized script with a clear `mode` flag.
+  - [ ] Audio interventions: rename `audio_masking` to `partial_audio_masking` across code and analysis (with aliases for back-compat), and remove baseline/no_reasoning coupling from the experiment layer.
 
-- [x] Submit baseline `flamingo_hf` — all 5 datasets (jobs 25177439-44, COMPLETED)
-- [x] Fixed `sanitized_cot` double-strip bug + post-processed all 5 baseline files
+- **Flamingo utils**
+  - [x] Standardize on the HF-backed `audio_flamingo_hf_utils` for `aflamingo_3`.
+  - [ ] Remove the old `audio_flamingo_utils` file and any dead references once we’re confident no job scripts use it.
 
-### Downstream Experiments (IN PROGRESS)
+- **Analysis / plotting**
+  - [ ] Prune analysis scripts that are no longer needed or are superseded by cleaner cross-dataset plots.
+  - [ ] Make all consistency / accuracy comparisons live entirely in analysis (experiments just write per-trial JSONL with minimal assumptions).
+  - [ ] Ensure analysis scripts that compute *baseline consistency* load `baseline` JSONLs directly (no experiment-level dependency on `no_reasoning`), and document this clearly.
+  - [ ] Ensure analysis understands the new alias and external-perturbation naming scheme.
 
-- [x] Submit early answering — 5 datasets (jobs 25195099-103)
-- [x] Submit random partial filler text — 5 datasets (jobs 25195114-118)
-- [ ] Submit Mistral perturbation generation — 10 scripts ready, pending submission
-- [ ] Submit `adding_mistakes --use-external-perturbations --external-llm mistral` — after perturbations complete
-- [ ] Submit `paraphrasing --use-external-perturbations --external-llm mistral` — after perturbations complete
+- **Reproducibility & scripts**
+  - [ ] Add shell scripts to create per-model Python environments (`qwen_audio_2`, `qwen_omni_2.5`, `aflamingo_3`, `salmonn_audio_7b/13b`).
+  - [ ] Add scripts to download models and datasets to user-specified locations and update `config` (or a local override) automatically.
+  - [ ] Add gentle runtime warnings when configured model/dataset paths do not exist, prompting users to run the setup scripts.
 
-## 3. Qwen Omni Experiments
+- **Documentation**
+  - [ ] Rebuild `README.md` from scratch once core aliases, experiments, and scripts are stable.
+  - [ ] Document the offline/HPC-first workflow, including local weights, Slurm/array usage, and restartable behavior.
 
-### Baselines
-
-- [ ] Submit baseline `qwen_omni` — all 5 datasets with sample range splitting
-  - Range splits: 0-150, 150-300, 300-450, ..., etc.
-  - Need merge step after all range jobs complete per dataset
-
-### Downstream Experiments
-
-- [ ] Early answering
-- [ ] Random partial filler text
-- [ ] Mistral perturbation generation
-- [ ] Adding mistakes + paraphrasing with external perturbations
-
-## 4. External LLM Perturbation Pipeline ✅
-
-- [x] Refactored directory structure: `results/external_llm_perturbations/{llm}/{model}/{dataset}/raw/`
-- [x] Dynamic `--external-llm` flag (supports `mistral`, `llama`)
-- [x] Auto-constructed paths from CLI args (no mandatory JSONL path)
-- [x] Mistral uses vLLM defaults (temperature=1.0, top_p=1.0)
-- [x] Added `torch.manual_seed(42)` to `generate_perturbations.py`
-- [x] Updated prompts for mistake generation and paraphrasing
-- [x] Increased `max_new_tokens` for mistakes: 75 → 256
-
-## 5. Future: LLaMA as External LLM
-
-- [ ] Add LLaMA support to `generate_perturbations.py` (new model loader + inference fn)
-- [ ] Create `core/llama_utils.py` for LLaMA-based perturbation generation
-- [ ] Generate and submit LLaMA perturbation jobs
-- [ ] Compare Mistral vs LLaMA perturbation quality
-
-## 6. Audio Masking Experiments (LATER)
-
-- [ ] Run audio masking for `qwen_omni` and `flamingo_hf`
-- [ ] Verify parallel pipeline for new models
-
-## 7. Paraphrasing Experiment
-
-- [x] Migrated `run_paraphrasing_trial()` to `run_conditioned_trial`
-- [x] Added 0% case (run conditioned inference with original CoT, not skipped)
-- [x] Added `perturbation_source` field to output JSONL rows (`self` / `external-mistral`)
-- [ ] Smoke test paraphrasing for both models (5 samples, self-perturbation)
-- [ ] Full-scale paraphrasing runs
-
-## 8. Adding Mistakes Experiment
-
-- [x] Migrated `run_final_trial()` to `run_conditioned_trial`
-- [x] `continue_reasoning` → dispatches to `run_continue_reasoning` if available
-- [x] Implemented `run_continue_reasoning` in `qwen_omni_utils.py` and `audio_flamingo_hf_utils.py`
-- [ ] Add `perturbation_source` field to output JSONL rows
-- [ ] Smoke test + full-scale runs

@@ -84,14 +84,12 @@ requirements_txts/requirements_af3.txt
 # Temporary/local files
 # .agent/
 sbatch_scripts/
-docs/
+
 rebuttal_analysis/
 
 output
 
 
-advadversarial_aug_data.tar.gz
-adverserial_sythetic_data.tar.gz
 
 local_readme.md
 
@@ -103,3 +101,5 @@ data_fetch_and_normalisation/test_mini.parquet
 .cursorignore
 .cursor
 .agent
+
+TODO.md

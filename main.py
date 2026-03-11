@@ -109,9 +109,9 @@ def main():
     parser.add_argument(
         '--filler-type',
         type=str,
-        default='dots',
+        default='lorem',
         choices=['dots', 'lorem'],
-        help="Type of filler for filler text experiments: 'dots' uses '...' (default), 'lorem' uses Lorem Ipsum tokens."
+        help="Type of filler for filler text experiments: 'dots' uses '...', 'lorem' uses Lorem Ipsum tokens (default)."
     )
     
     # --- Arguments for Audio Masking Experiments ---
@@ -153,24 +153,6 @@ def main():
         default='two_turn_cot',
         choices=['two_turn_cot', 'one_turn_cot', 'no_cot'],
         help="Prompt strategy for variance test: 'two_turn_cot', 'one_turn_cot', or 'no_cot'."
-    )
-    parser.add_argument(
-        '--temperature',
-        type=float,
-        default=None,
-        help="Temperature for CoT generation in variance test."
-    )
-    parser.add_argument(
-        '--top-p',
-        type=float,
-        default=None,
-        help="Top-p sampling parameter for generation."
-    )
-    parser.add_argument(
-        '--top-k',
-        type=int,
-        default=None,
-        help="Top-k sampling parameter for generation."
     )
 
     args = parser.parse_args()
@@ -246,9 +228,6 @@ def main():
 
     # Prompt variance test settings
     config.STRATEGY = args.strategy
-    config.TEMPERATURE = args.temperature
-    config.TOP_P = args.top_p
-    config.TOP_K = args.top_k
 
     # --- 2. Centralized Path Management (Now Chunk-Aware) ---
     experiment_name = args.experiment

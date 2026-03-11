@@ -140,7 +140,7 @@ MMAU_DATASET_PATH = "data/mmau"
 NUM_SAMPLES_TO_RUN = 0
 NUM_CHAINS_PER_QUESTION = 1
 SNR_LEVELS_TO_TEST = [20, 10, 5, 0, -5, -10]
-FILLER_TYPE = "dots"  # Options: "dots", "lorem"
+FILLER_TYPE = "lorem"  # Options: "dots", "lorem"
 
 # Seed used for scattered silence masking in JASCO preprocessing for reproducibility
 JASCO_GLOBAL_SEED = 42
