@@ -188,9 +188,9 @@ def main():
     
     # Set default prompt strategy dynamically based on model if not manually overridden
     if args.prompt_strategy == 'two_turn_sanitized_cot':
-        if args.model == 'qwen_omni':
+        if args.model in ('qwen_omni', 'qwen_omni_2.5'):
             config.PROMPT_STRATEGY = 'xml'
-        elif args.model == 'flamingo_hf':
+        elif args.model in ('flamingo_hf', 'aflamingo_3'):
             config.PROMPT_STRATEGY = 'single_turn_explicit_letter'
         else:
             config.PROMPT_STRATEGY = 'two_turn_sanitized_cot'
@@ -271,8 +271,8 @@ def main():
         base_filename += "-restricted"
     
     # Add suffix for external perturbation runs (to distinguish from self-perturbation)
-    if config.USE_EXTERNAL_PERTURBATIONS:
-        base_filename += "-mistral"
+    if config.USE_EXTERNAL_PERTURBATIONS and config.EXTERNAL_LLM:
+        base_filename += f"-{config.EXTERNAL_LLM}"
     
     # Add suffix for lorem filler type (to distinguish from dots filler results)
     if config.FILLER_TYPE == 'lorem':
@@ -308,13 +308,11 @@ def main():
         
         if model_alias == 'qwen':
             from core import qwen_utils as model_utils
-        elif model_alias == 'qwen_omni':
+        elif model_alias in ('qwen_omni', 'qwen_omni_2.5'):
             from core import qwen_omni_utils as model_utils
-        elif model_alias == 'flamingo':
-            from core import audio_flamingo_utils as model_utils
-        elif model_alias == 'flamingo_hf':
+        elif model_alias in ('flamingo_hf', 'aflamingo_3'):
             from core import audio_flamingo_hf_utils as model_utils
-        elif model_alias in ('salmonn', 'salmonn_7b'):
+        elif model_alias in ('salmonn', 'salmonn_7b', 'salmonn_audio_13b', 'salmonn_audio_7b'):
             from core import salmonn_utils as model_utils
         else:
             raise ImportError(f"No utility module defined for model alias '{model_alias}'")

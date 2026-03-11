@@ -81,13 +81,33 @@ SILENT_AUDIO_PATH = "./assets/silent.wav"
 # --- Model Aliases ---
 # This maps the short, user-friendly names from the command line
 # to the internal keys used in MODEL_PATHS.
+#
+# Public, documented aliases (for open-source users):
+#   - qwen_audio_2       -> Qwen2-Audio-7B
+#   - qwen_omni_2.5      -> Qwen2.5-Omni-7B
+#   - aflamingo_3        -> Audio Flamingo 3 HF (thinking)
+#   - salmonn_audio_13b  -> SALMONN 13B
+#   - salmonn_audio_7b   -> SALMONN 7B
+#
+# Legacy aliases are kept temporarily for backwards compatibility with
+# existing scripts and will be deprecated in docs.
 MODEL_ALIASES = {
+    # Qwen audio & omni
+    "qwen_audio_2": "qwen",
+    "qwen_omni_2.5": "qwen_omni",
+    # Legacy Qwen aliases
     "qwen": "qwen",
     "qwen_omni": "qwen_omni",
-    "flamingo": "flamingo_weights",
+
+    # Audio Flamingo 3 (HF backend only)
+    "aflamingo_3": "flamingo_hf",
+    # Legacy Flamingo alias (kept for now)
     "flamingo_hf": "flamingo_hf",
-    # This line tells main.py: "when the user types 'salmonn', the key you
-    # need to look for in MODEL_PATHS is 'salmonn_checkpoint'".
+
+    # SALMONN 13B / 7B
+    "salmonn_audio_13b": "salmonn_checkpoint",
+    "salmonn_audio_7b": "salmonn_7b_checkpoint",
+    # Legacy SALMONN aliases
     "salmonn": "salmonn_checkpoint",
     "salmonn_7b": "salmonn_7b_checkpoint",
 }
