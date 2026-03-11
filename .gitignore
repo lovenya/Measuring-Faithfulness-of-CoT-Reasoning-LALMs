@@ -1,19 +1,10 @@
 # Other models
 audio-flamingo-weights/
-qwen2-audio-weights/
+
 # this folder has the weights for all SALMONN's components
 model_components/ 
-# source code - can be directly cloned from source
-# audio-flamingo-code/
-# to be removed from gitignore, just a backup, in case new submodule of source code doesn't work
-salmonn-source-code-fixed/
-audio-flamingo-code-backup/
+
 # Envs
-audio-faithful/
-tts-env/
-whisper_env/
-audio-analysis-env/
-audio-flamingo-env/
 salmonn_env/
 analysis_env/
 af3-test-env/
@@ -28,22 +19,18 @@ data/**/audio/
 data/**/hf_cache/
 data/**/**/audio/
 data/**/**/hf_cache/
-# Data (input/intermediate) - ASR + AAC
-data/**/asr
-data/**/**/asr
-data/**/captioning
-data/**/**/captioning
-# Data (input/intermediate) - TTS
-spoken_reasoning/audio
+
+
 
 
 data/adversarial_aug_data/
 adverserial_sythetic_data/
 data/jasco/processed/
 henoop_version/data/mmau/audio
-data/mmau
-data/mmar
-
+data/mmau/audio/
+data/mmau/MMAU-meta.json
+data/mmar_noisy
+data/sakura_noisy/
 
 
 # .pyc files
@@ -111,3 +98,7 @@ local_readme.md
 results/
 
 data_fetch_and_normalisation/test_mini.parquet
+
+.cursorignore
+.cursor
+.agent
