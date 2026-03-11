@@ -66,6 +66,9 @@ data_processing/convert_csv_to_jsonl.py
 data_processing/enrich_mmar_dataset.py
 data_processing/create_silent_audio.py
 experiments/robustness_to_noise.py
+scripts/reformat_pooneh_baselines.py
+scripts/reformat_pooneh_mmar.py
+scripts/reformat_pooneh_mmau.py
 analysis/extra_scripts
 analysis/final_plots
 final_plots/delta_slope_vs_accuracy
