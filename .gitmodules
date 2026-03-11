@@ -2,10 +2,6 @@
 	path = salmonn-source-code
 	url = https://github.com/aynevol/SALMONN.git
 	branch = salmonn
-[submodule "audio-flamingo-code"]
-	path = audio-flamingo-code
-	url = git@github.com:aynevol/audio-flamingo-for-LALM-Faithfulness-Project.git
-	branch = audio_flamingo_3
 [submodule "data/data/What_Are_They_Doing"]
 	path = data/data/What_Are_They_Doing
 	url = https://github.com/BenoitWang/What_Are_They_Doing.git

@@ -1,5 +1,6 @@
 # Other models
 audio-flamingo-weights/
+audio-flamingo-code/
 
 # this folder has the weights for all SALMONN's components
 model_components/ 
