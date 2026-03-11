@@ -22,8 +22,12 @@ from core.prompt_strategies import run_conditioned_trial, run_no_reasoning_trial
 EXPERIMENT_TYPE = "dependent"
 
 PROMPT_PROTOCOL_BY_MODEL = {
+    # Qwen Omni
     "qwen_omni": "qwen_omni_xml_conditioned",
+    "qwen_omni_2.5": "qwen_omni_xml_conditioned",
+    # Audio Flamingo 3 (HF backend)
     "flamingo_hf": "af3_conditioned_short_answer",
+    "aflamingo_3": "af3_conditioned_short_answer",
 }
 
 

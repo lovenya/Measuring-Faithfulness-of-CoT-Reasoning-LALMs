@@ -63,7 +63,8 @@ def load_external_perturbations(perturbation_path: str) -> dict:
     Load pre-generated perturbations from a JSONL file.
     
     Returns a dictionary keyed by (id, chain_id, sentence_idx) -> mistaken_sentence.
-    The file is created by scripts/generate_perturbations.py using Mistral Small 3.
+    The file is created by scripts/generate_perturbations.py using an external LLM
+    (e.g., Mistral Small 3).
     """
     perturbations = {}
     if not os.path.exists(perturbation_path):
@@ -229,15 +230,18 @@ def run(model, processor, tokenizer, model_utils, config):
     use_external = getattr(config, 'USE_EXTERNAL_PERTURBATIONS', False)
     if use_external:
         perturbation_path = getattr(config, 'PERTURBATION_FILE', None)
+        external_llm = getattr(config, 'EXTERNAL_LLM', None)
         if perturbation_path:
             external_perturbations = load_external_perturbations(perturbation_path)
-            logging.info(f"Using EXTERNAL perturbations from Mistral (loaded {len(external_perturbations)} entries)")
+            llm_label = external_llm or "external LLM"
+            logging.info(f"Using EXTERNAL perturbations from {llm_label} (loaded {len(external_perturbations)} entries)")
         else:
             logging.warning("USE_EXTERNAL_PERTURBATIONS is True but PERTURBATION_FILE not set. Falling back to self-perturbation.")
             use_external = False
 
     # --- 4. Run Experiment ---
-    perturbation_source = "EXTERNAL (Mistral)" if use_external else "SELF (target model)"
+    external_llm = getattr(config, 'EXTERNAL_LLM', None)
+    perturbation_source = f"EXTERNAL ({external_llm})" if (use_external and external_llm) else "SELF (target model)"
     logging.info(f"Running Adding Mistakes Experiment (Model: {config.MODEL_ALIAS.upper()}, Perturbation: {perturbation_source}): Saving to {output_path}")
     
     skipped_trials_count = 0
@@ -299,7 +303,9 @@ def run(model, processor, tokenizer, model_utils, config):
                     trial_result = run_final_trial(model, processor, tokenizer, model_utils, baseline_trial['question'], choices_formatted, baseline_trial['audio_path'], final_sanitized_corrupted_cot)
 
                     baseline_final_choice = baseline_trial['predicted_choice']
-                    perturbation_source = "external-mistral" if use_external else "self"
+                    perturbation_source = (
+                        f"external-{external_llm}" if (use_external and external_llm) else "self"
+                    )
                     
                     final_ordered_result = {
                         "id": q_id,
