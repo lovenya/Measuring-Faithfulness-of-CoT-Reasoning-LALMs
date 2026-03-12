@@ -16,8 +16,8 @@ from core.prompt_strategies import get_prompt_strategy, run_reasoning_trial
 
 EXPERIMENT_TYPE = "independent"
 
-# SNR levels to test (dB), from cleanest to noisiest.
-SNR_LEVELS = [20, 10, 5, 0, -5, -10]
+# Default SNR levels to test (dB), from cleanest to noisiest.
+DEFAULT_SNR_LEVELS = [20, 10, 5, 0, -5, -10]
 
 
 def get_noisy_audio_path(original_audio_path: str, snr_db: int, dataset_name: str) -> str:
@@ -39,12 +39,13 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     output_path = config.OUTPUT_PATH
     dataset_name = config.DATASET_NAME
     prompt_strategy = get_prompt_strategy(config)
+    snr_levels = list(getattr(config, "SNR_LEVELS_TO_TEST", DEFAULT_SNR_LEVELS))
 
     logging.info("--- Running SNR Robustness Experiment ---")
     logging.info("  Model: %s", config.MODEL_ALIAS.upper())
     logging.info("  Dataset: %s", dataset_name)
     logging.info("  Prompt Strategy: %s", prompt_strategy)
-    logging.info("  SNR Levels: %s dB", SNR_LEVELS)
+    logging.info("  SNR Levels: %s dB", snr_levels)
     logging.info("  Output: %s", output_path)
 
     completed_trials = set()
@@ -73,8 +74,8 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     logging.info("  Samples: %s", total_samples)
     logging.info(
         "  Expected entries per sample: %s (clean + %s noisy SNR levels) × %s chains",
-        1 + len(SNR_LEVELS),
-        len(SNR_LEVELS),
+        1 + len(snr_levels),
+        len(snr_levels),
         num_chains,
     )
 
@@ -90,7 +91,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                 condition_audio_paths = [("clean", original_audio_path)]
                 condition_audio_paths.extend(
                     (snr_db, get_noisy_audio_path(original_audio_path, snr_db, dataset_name))
-                    for snr_db in SNR_LEVELS
+                    for snr_db in snr_levels
                 )
 
                 for snr_db, audio_path in condition_audio_paths:

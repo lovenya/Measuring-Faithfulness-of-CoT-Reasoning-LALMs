@@ -1,7 +1,7 @@
 # Analysis layout
 
 - `analysis/cot/`
-  - Active CoT analysis scripts (one script per experiment).
+  - Active CoT analysis scripts (single script for partial filler modes).
   - Shared logic is centralized but each experiment has a separate CLI.
 - `analysis/audio_interventions/`
   - Active audio intervention analysis scripts.
@@ -18,3 +18,9 @@
 - `partial_filler_text` family: reference = `0%`
 - `adding_mistakes`: reference = `baseline`
   - optional `--include-100-anchor`
+
+## Plot path convention
+
+Analysis outputs mirror results grouping:
+- `plots/{model}/{experiment}/...`
+- Partial filler keeps mode subfolder: `plots/{model}/partial_filler_text/{mode}/...`

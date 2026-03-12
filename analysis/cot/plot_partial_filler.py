@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility wrapper for partial filler mode=random."""
+"""Cross-dataset plotting for partial_filler_text with mode selector."""
 
 from __future__ import annotations
 
@@ -15,8 +15,9 @@ from analysis.cot.plot_cot_experiment import run_analysis
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Partial Filler (random mode) cross-dataset analysis")
+    parser = argparse.ArgumentParser(description="Partial Filler cross-dataset analysis")
     parser.add_argument("--model", required=True)
+    parser.add_argument("--mode", default="start", choices=["start", "end", "random"])
     parser.add_argument("--results-dir", default="results")
     parser.add_argument("--plots-dir", default="plots")
     parser.add_argument("--reference-mode", default="0pct", choices=["0pct", "baseline", "100pct"])
@@ -32,7 +33,7 @@ def main() -> None:
 
     args = parser.parse_args()
     args.experiment = "partial_filler_text"
-    args.partial_filler_mode = "random"
+    args.partial_filler_mode = args.mode
     args.perturbation_source = "self"
     args.include_100_anchor = False
     run_analysis(args)

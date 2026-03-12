@@ -18,7 +18,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Adding Mistakes cross-dataset analysis")
     parser.add_argument("--model", required=True)
     parser.add_argument("--results-dir", default="results")
-    parser.add_argument("--plots-dir", default="plots/cot")
+    parser.add_argument("--plots-dir", default="plots")
     parser.add_argument("--reference-mode", default="baseline", choices=["baseline", "0pct", "100pct"])
     parser.add_argument("--perturbation-source", default="self")
     parser.add_argument("--include-100-anchor", action="store_true")

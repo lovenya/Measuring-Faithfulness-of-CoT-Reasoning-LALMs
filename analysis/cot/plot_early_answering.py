@@ -18,7 +18,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Early Answering cross-dataset analysis")
     parser.add_argument("--model", required=True)
     parser.add_argument("--results-dir", default="results")
-    parser.add_argument("--plots-dir", default="plots/cot")
+    parser.add_argument("--plots-dir", default="plots")
     parser.add_argument("--reference-mode", default="100pct", choices=["100pct", "baseline", "0pct"])
     parser.add_argument("--bin-size", type=int, default=5)
     parser.add_argument("--min-bin-count", type=int, default=1)

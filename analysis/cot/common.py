@@ -53,8 +53,6 @@ def default_reference_mode(experiment: str) -> str:
         "paraphrasing": "0pct",
         "early_answering": "100pct",
         "partial_filler_text": "0pct",
-        "flipped_partial_filler_text": "0pct",
-        "random_partial_filler_text": "0pct",
         "adding_mistakes": "baseline",
     }
     if experiment not in defaults:
@@ -98,8 +96,18 @@ def _build_results_path(
     dataset_name: str,
     filler_type: str,
     perturbation_source: str,
+    partial_filler_mode: str,
     restricted: bool,
 ) -> str:
+    if experiment_name == "partial_filler_text":
+        filename_base = f"{experiment_name}_{model_name}_{dataset_name}"
+        if restricted:
+            filename_base += "-restricted"
+        if filler_type == "lorem":
+            filename_base += "-lorem"
+        filename = f"{filename_base}_{partial_filler_mode}.jsonl"
+        return os.path.join(results_dir, model_name, experiment_name, partial_filler_mode, filename)
+
     experiment_path = os.path.join(results_dir, model_name, experiment_name)
     filename_base = f"{experiment_name}_{model_name}_{dataset_name}"
 
@@ -122,6 +130,7 @@ def load_results(
     dataset_name: str,
     filler_type: str = "dots",
     perturbation_source: str = "self",
+    partial_filler_mode: str = "start",
     restricted: bool = False,
 ) -> pd.DataFrame:
     path = _build_results_path(
@@ -131,8 +140,30 @@ def load_results(
         dataset_name=dataset_name,
         filler_type=filler_type,
         perturbation_source=perturbation_source,
+        partial_filler_mode=partial_filler_mode,
         restricted=restricted,
     )
+
+    if experiment_name == "partial_filler_text" and not os.path.exists(path):
+        # Legacy fallback support for old split experiment names.
+        legacy_name_by_mode = {
+            "start": "partial_filler_text",
+            "end": "flipped_partial_filler_text",
+            "random": "random_partial_filler_text",
+        }
+        legacy_exp = legacy_name_by_mode[partial_filler_mode]
+        legacy_base = f"{legacy_exp}_{model_name}_{dataset_name}"
+        if restricted:
+            legacy_base += "-restricted"
+        if filler_type == "lorem":
+            legacy_base += "-lorem"
+        legacy_path = os.path.join(
+            results_dir,
+            model_name,
+            legacy_exp,
+            f"{legacy_base}.jsonl",
+        )
+        path = legacy_path
 
     rows = []
     with open(path, "r", encoding="utf-8") as handle:
@@ -166,11 +197,7 @@ def _compute_progress_percentage(df: pd.DataFrame, experiment: str) -> pd.Series
         )
         return result
 
-    if experiment in {
-        "partial_filler_text",
-        "flipped_partial_filler_text",
-        "random_partial_filler_text",
-    }:
+    if experiment == "partial_filler_text":
         return df["percent_replaced"].astype(float)
 
     if experiment == "adding_mistakes":
@@ -239,8 +266,6 @@ def x_axis_label(experiment: str) -> str:
         "paraphrasing": "Percentage (%) of sentences paraphrased",
         "early_answering": "Percentage (%) of reasoning chain provided",
         "partial_filler_text": "Percentage (%) of words replaced",
-        "flipped_partial_filler_text": "Percentage (%) of words replaced",
-        "random_partial_filler_text": "Percentage (%) of words replaced",
         "adding_mistakes": "Percentage (%) of chain before inserted mistake",
     }
     return labels[experiment]

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cross-dataset plotting for the partial_filler_text experiment."""
+"""Compatibility wrapper for partial filler mode=start."""
 
 from __future__ import annotations
 
@@ -15,10 +15,10 @@ from analysis.cot.plot_cot_experiment import run_analysis
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Partial Filler Text cross-dataset analysis")
+    parser = argparse.ArgumentParser(description="Partial Filler (start mode) cross-dataset analysis")
     parser.add_argument("--model", required=True)
     parser.add_argument("--results-dir", default="results")
-    parser.add_argument("--plots-dir", default="plots/cot")
+    parser.add_argument("--plots-dir", default="plots")
     parser.add_argument("--reference-mode", default="0pct", choices=["0pct", "baseline", "100pct"])
     parser.add_argument("--filler-type", default="dots", choices=["dots", "lorem"])
     parser.add_argument("--bin-size", type=int, default=5)
@@ -32,6 +32,7 @@ def main() -> None:
 
     args = parser.parse_args()
     args.experiment = "partial_filler_text"
+    args.partial_filler_mode = "start"
     args.perturbation_source = "self"
     args.include_100_anchor = False
     run_analysis(args)

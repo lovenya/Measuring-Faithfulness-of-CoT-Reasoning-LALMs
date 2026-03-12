@@ -32,18 +32,12 @@ SUPPORTED_EXPERIMENTS = [
     "paraphrasing",
     "early_answering",
     "partial_filler_text",
-    "flipped_partial_filler_text",
-    "random_partial_filler_text",
     "adding_mistakes",
 ]
 
 
 def _is_filler_experiment(experiment: str) -> bool:
-    return experiment in {
-        "partial_filler_text",
-        "flipped_partial_filler_text",
-        "random_partial_filler_text",
-    }
+    return experiment == "partial_filler_text"
 
 
 def _is_perturbation_experiment(experiment: str) -> bool:
@@ -56,6 +50,7 @@ def _build_output_basename(
     reference_mode: str,
     restricted: bool,
     filler_type: str,
+    partial_filler_mode: str,
     perturbation_source: str,
     include_100_anchor: bool,
 ) -> str:
@@ -66,6 +61,8 @@ def _build_output_basename(
 
     if _is_filler_experiment(experiment) and filler_type != "dots":
         basename += f"_{filler_type}"
+    if _is_filler_experiment(experiment):
+        basename += f"_{partial_filler_mode}"
 
     if _is_perturbation_experiment(experiment) and perturbation_source != "self":
         basename += f"-{perturbation_source}"
@@ -104,6 +101,7 @@ def _save_stats(path: str, frames: Iterable[tuple[str, pd.DataFrame]]) -> None:
 
 def run_analysis(args: argparse.Namespace) -> None:
     experiment = args.experiment
+    partial_filler_mode = getattr(args, "partial_filler_mode", "start")
     reference_mode = default_reference_mode(experiment) if args.reference_mode == "auto" else args.reference_mode
 
     if args.include_100_anchor and experiment != "adding_mistakes":
@@ -129,6 +127,7 @@ def run_analysis(args: argparse.Namespace) -> None:
                 dataset_name=dataset,
                 filler_type=args.filler_type if _is_filler_experiment(experiment) else "dots",
                 perturbation_source=args.perturbation_source if _is_perturbation_experiment(experiment) else "self",
+                partial_filler_mode=partial_filler_mode,
                 restricted=args.restricted,
             )
         except FileNotFoundError:
@@ -204,6 +203,8 @@ def run_analysis(args: argparse.Namespace) -> None:
     super_df["consistency_pct"] = super_df["is_consistent_with_reference"].astype(int) * 100.0
 
     output_dir = os.path.join(args.plots_dir, args.model, experiment)
+    if experiment == "partial_filler_text":
+        output_dir = os.path.join(output_dir, partial_filler_mode)
     os.makedirs(output_dir, exist_ok=True)
 
     base_filename = _build_output_basename(
@@ -212,6 +213,7 @@ def run_analysis(args: argparse.Namespace) -> None:
         reference_mode=reference_mode,
         restricted=args.restricted,
         filler_type=args.filler_type,
+        partial_filler_mode=partial_filler_mode,
         perturbation_source=args.perturbation_source,
         include_100_anchor=args.include_100_anchor,
     )
@@ -278,6 +280,8 @@ def run_analysis(args: argparse.Namespace) -> None:
 
     title_reference = reference_label(reference_mode)
     title = f"{experiment.replace('_', ' ').title()} ({title_reference} reference)"
+    if experiment == "partial_filler_text":
+        title += f" [{partial_filler_mode}]"
     if args.restricted:
         title += " [restricted]"
 
@@ -315,12 +319,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model", required=True, help="Model alias (e.g., qwen_audio_2)")
     parser.add_argument("--experiment", required=True, choices=SUPPORTED_EXPERIMENTS)
     parser.add_argument("--results-dir", default="results")
-    parser.add_argument("--plots-dir", default="plots/cot")
+    parser.add_argument("--plots-dir", default="plots")
     parser.add_argument("--reference-mode", default="auto", choices=["auto", "baseline", "0pct", "100pct"])
     parser.add_argument("--bin-size", type=int, default=5, help="Bin size in percentage points")
     parser.add_argument("--min-bin-count", type=int, default=1, help="Drop bins with fewer rows than this")
     parser.add_argument("--restricted", action="store_true", help="Use restricted results files")
     parser.add_argument("--filler-type", default="dots", choices=["dots", "lorem"])
+    parser.add_argument("--partial-filler-mode", default="start", choices=["start", "end", "random"])
     parser.add_argument("--perturbation-source", default="self")
     parser.add_argument("--include-100-anchor", action="store_true", help="Add synthetic 100%% anchor (adding_mistakes only)")
     parser.add_argument("--show-ci", action="store_true", help="Use 95%% CI shaded regions")

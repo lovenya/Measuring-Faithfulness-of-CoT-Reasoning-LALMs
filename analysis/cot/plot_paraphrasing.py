@@ -18,7 +18,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Paraphrasing cross-dataset analysis")
     parser.add_argument("--model", required=True)
     parser.add_argument("--results-dir", default="results")
-    parser.add_argument("--plots-dir", default="plots/cot")
+    parser.add_argument("--plots-dir", default="plots")
     parser.add_argument("--reference-mode", default="0pct", choices=["0pct", "baseline", "100pct"])
     parser.add_argument("--perturbation-source", default="self")
     parser.add_argument("--bin-size", type=int, default=5)
