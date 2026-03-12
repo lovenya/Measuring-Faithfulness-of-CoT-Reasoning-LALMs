@@ -4,49 +4,8 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Iterable
 
 import pandas as pd
-
-DATASET_ORDER = [
-    "sakura-animal",
-    "sakura-language",
-    "sakura-emotion",
-    "sakura-gender",
-    "mmar",
-    "mmau",
-]
-
-DATASET_LABELS = {
-    "sakura-animal": "ANIMAL",
-    "sakura-language": "LANGUAGE",
-    "sakura-emotion": "EMOTION",
-    "sakura-gender": "GENDER",
-    "mmar": "MMAR",
-    "mmau": "MMAU",
-}
-
-DATASET_COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"]
-DATASET_MARKERS = ["o", "s", "^", "D", "v", "p"]
-
-
-def ordered_present_datasets(dataset_names: Iterable[str]) -> list[str]:
-    present = set(dataset_names)
-    ordered = [d for d in DATASET_ORDER if d in present]
-    extras = sorted([d for d in present if d not in DATASET_ORDER])
-    return ordered + extras
-
-
-def dataset_style(dataset_name: str) -> dict[str, str]:
-    if dataset_name in DATASET_ORDER:
-        idx = DATASET_ORDER.index(dataset_name)
-        return {
-            "color": DATASET_COLORS[idx],
-            "marker": DATASET_MARKERS[idx],
-            "label": DATASET_LABELS.get(dataset_name, dataset_name.upper()),
-        }
-    return {"color": "#333333", "marker": "o", "label": dataset_name.upper()}
-
 
 def default_reference_mode(experiment: str) -> str:
     defaults = {
