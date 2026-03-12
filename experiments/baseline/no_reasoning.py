@@ -1,4 +1,4 @@
-# experiments/no_reasoning.py
+# experiments/baseline/no_reasoning.py
 
 """
 This script conducts the "No-Reasoning" experiment. It is a crucial foundational
@@ -55,21 +55,31 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     output_path = config.OUTPUT_PATH
     logging.info(f"--- Running 'No-Reasoning' Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path} ---")
 
-    # --- RESTARTABILITY LOGIC (SIMPLIFIED FOR DETERMINISTIC EXPERIMENT) ---
-    completed_ids = set()
+    # --- RESTARTABILITY LOGIC ---
+    # Track completed chains per question ID so partially-complete files can
+    # resume without skipping missing chains.
+    completed_chains = collections.defaultdict(set)
     if os.path.exists(output_path):
         logging.info("Found existing results file. Checking for completed work...")
         with open(output_path, 'r') as f:
             for line in f:
                 try:
-                    # For this deterministic experiment, we only need to know if an ID
-                    # exists in the file. If it does, we consider it complete.
-                    completed_ids.add(json.loads(line)['id'])
+                    row = json.loads(line)
+                    row_id = row.get("id")
+                    row_chain = row.get("chain_id")
+                    if row_id is None or row_chain is None:
+                        continue
+                    completed_chains[row_id].add(int(row_chain))
                 except (json.JSONDecodeError, KeyError):
-                    continue # Ignore corrupted lines
-    
-    if completed_ids:
-        logging.info(f"Found {len(completed_ids)} completed questions. They will be skipped.")
+                    continue  # Ignore corrupted lines
+
+    fully_completed_ids = {
+        q_id for q_id, chain_ids in completed_chains.items()
+        if len(chain_ids) >= config.NUM_CHAINS_PER_QUESTION
+    }
+
+    if fully_completed_ids:
+        logging.info(f"Found {len(fully_completed_ids)} fully completed questions. They will be skipped.")
     # --- END OF RESTARTABILITY LOGIC ---
     
     skipped_samples_count = 0
@@ -77,8 +87,8 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     with open(output_path, 'a') as f:
         for i, sample in enumerate(data_samples):
             try:
-                # If this question has already been processed, skip it instantly.
-                if sample['id'] in completed_ids:
+                # If this question has all required chains, skip it instantly.
+                if sample['id'] in fully_completed_ids:
                     continue
 
                 if config.VERBOSE:
@@ -98,6 +108,9 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                 # ...and then we reuse this result for each chain entry.
                 
                 for j in range(config.NUM_CHAINS_PER_QUESTION):
+                    # Resume support: skip chains already written in prior runs.
+                    if j in completed_chains[sample['id']]:
+                        continue
                     trial_result = cached_result.copy()
 
                     trial_result['id'] = sample['id']
@@ -134,11 +147,11 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                 continue
 
     # The final summary provides a clear report of what was accomplished in this specific run.
-    total_processed_in_this_run = len(data_samples) - len(completed_ids)
+    total_processed_in_this_run = len(data_samples) - len(fully_completed_ids)
     logging.info(f"--- 'No-Reasoning' experiment for {config.MODEL_ALIAS.upper()} complete. ---")
     logging.info("\n" + "="*25 + " RUN SUMMARY " + "="*25)
     logging.info(f"Total samples in dataset: {len(data_samples)}")
-    logging.info(f"Samples already complete: {len(completed_ids)}")
+    logging.info(f"Samples already complete: {len(fully_completed_ids)}")
     logging.info(f"Samples processed in this run: {total_processed_in_this_run - skipped_samples_count}")
     logging.info(f"Skipped samples due to errors in this run: {skipped_samples_count}")
     logging.info(f"Results saved to: {output_path}")

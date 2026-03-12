@@ -20,8 +20,8 @@ from typing import Tuple, List, Dict
 import config as framework_config
 
 # --- Environment Setup for Custom Flamingo Code ---
-# This block handles the setup required to import Flamingo's custom source code.
-_AUDIO_FLAMINGO_CODE_PATH = framework_config.MODEL_PATHS['flamingo_code']
+# Legacy backend support: this module is not used by the canonical HF path.
+_AUDIO_FLAMINGO_CODE_PATH = os.path.join(framework_config.PROJECT_ROOT, "audio-flamingo-code")
 if not os.path.exists(_AUDIO_FLAMINGO_CODE_PATH):
     raise FileNotFoundError(f"The directory 'audio-flamingo-code' was not found at: {_AUDIO_FLAMINGO_CODE_PATH}")
 if _AUDIO_FLAMINGO_CODE_PATH not in sys.path:
