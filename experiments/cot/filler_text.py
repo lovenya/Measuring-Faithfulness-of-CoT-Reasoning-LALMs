@@ -10,9 +10,7 @@ Methodology:
    baseline results. This represents the model's "best effort" at reasoning.
 2. It then runs a series of trials where the reasoning is replaced by meaningless
    filler text ("...") of varying lengths, from 0% to 100% of the longest CoT's length.
-3. The 0% step is optimized by reusing the pre-computed 'no_reasoning' result
-   that corresponds to that specific longest chain.
-4. By plotting accuracy against the percentage of filler, we can visualize how
+3. By plotting accuracy against the percentage of filler, we can visualize how
    much the model's performance depends on the semantic content versus raw compute.
 """
 

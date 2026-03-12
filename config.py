@@ -133,6 +133,8 @@ LEGACY_MODEL_ALIASES = (
 # Canonical experiment/mask-mode naming with legacy aliases.
 LEGACY_EXPERIMENT_ALIASES = {
     "audio_masking": "partial_audio_masking",
+    "flipped_partial_filler_text": "partial_filler_text",
+    "random_partial_filler_text": "partial_filler_text",
 }
 LEGACY_MASK_MODE_ALIASES = {
     "random": "scattered",
@@ -178,3 +180,4 @@ BASELINE_RESULTS_FILE_OVERRIDE = None
 VERBOSE = True
 OUTPUT_PATH = None
 PROMPT_STRATEGY = "two_turn_sanitized_cot"
+PARTIAL_FILLER_MODE = "random"

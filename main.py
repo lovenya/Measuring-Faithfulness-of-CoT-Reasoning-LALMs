@@ -113,6 +113,17 @@ def main():
         choices=['dots', 'lorem'],
         help="Type of filler for filler text experiments: 'dots' uses '...', 'lorem' uses Lorem Ipsum tokens (default)."
     )
+    parser.add_argument(
+        '--partial-filler-mode',
+        type=str,
+        default='random',
+        choices=['start', 'end', 'random'],
+        help=(
+            "Mode for partial_filler_text experiment: "
+            "'start', 'end', or 'random'. "
+            "Default is 'random'. Legacy experiment aliases still map to fixed modes."
+        ),
+    )
     
     # --- Arguments for Audio Masking Experiments ---
     parser.add_argument(
@@ -169,6 +180,17 @@ def main():
         requested_experiment_name,
     )
     mask_mode = config.LEGACY_MASK_MODE_ALIASES.get(args.mask_mode, args.mask_mode)
+    partial_filler_mode_by_experiment = {
+        # Canonical experiment: use explicit CLI mode (default random).
+        "partial_filler_text": args.partial_filler_mode,
+        # Legacy aliases map to fixed modes for backwards compatibility.
+        "flipped_partial_filler_text": "end",
+        "random_partial_filler_text": "random",
+    }
+    partial_filler_mode = partial_filler_mode_by_experiment.get(
+        requested_experiment_name,
+        args.partial_filler_mode,
+    )
 
     if requested_model_alias in config.LEGACY_MODEL_ALIASES:
         logging.warning(
@@ -187,6 +209,14 @@ def main():
             "DEPRECATED mask mode '%s' in use. Canonical mode is '%s'.",
             args.mask_mode,
             mask_mode,
+        )
+    fixed_mode_legacy_experiments = {"flipped_partial_filler_text", "random_partial_filler_text"}
+    if requested_experiment_name in fixed_mode_legacy_experiments and args.partial_filler_mode != partial_filler_mode:
+        logging.warning(
+            "Ignoring --partial-filler-mode=%s because legacy alias '%s' fixes mode='%s'.",
+            args.partial_filler_mode,
+            requested_experiment_name,
+            partial_filler_mode,
         )
 
     # --- 1. Global Configuration Setup ---
@@ -249,6 +279,7 @@ def main():
     
     # Filler type setting (for filler text experiments)
     config.FILLER_TYPE = args.filler_type
+    config.PARTIAL_FILLER_MODE = partial_filler_mode
     
     # Audio masking settings (for partial_audio_masking experiment)
     config.MASK_TYPE = args.mask_type
@@ -267,10 +298,17 @@ def main():
     experiment_name = config.EXPERIMENT_NAME
     model_alias = config.MODEL_ALIAS
     
-    # For partial_audio_masking and adversarial, use hierarchical subdirs
+    # For partial_audio_masking/partial_filler_text and adversarial, use hierarchical subdirs
     if experiment_name == 'partial_audio_masking':
         output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
                                   config.MASK_TYPE, config.MASK_MODE)
+    elif experiment_name == 'partial_filler_text':
+        output_dir = os.path.join(
+            config.RESULTS_DIR,
+            model_alias,
+            experiment_name,
+            config.PARTIAL_FILLER_MODE,
+        )
     elif experiment_name == 'adversarial' and config.ADVERSARIAL_AUG:
         output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
                                   config.ADVERSARIAL_AUG)
@@ -294,6 +332,8 @@ def main():
     # Add suffix for partial audio masking experiments (separate files per mask_type/mask_mode)
     if experiment_name == 'partial_audio_masking':
         base_filename += f"_{config.MASK_TYPE}_{config.MASK_MODE}"
+    elif experiment_name == 'partial_filler_text':
+        base_filename += f"_{config.PARTIAL_FILLER_MODE}"
     
     # Add suffix for adversarial experiments (aug mode + variant)
     if config.ADVERSARIAL_AUG and config.ADVERSARIAL_VARIANT:
@@ -353,6 +393,8 @@ def main():
         )
     logging.info(f"  - Dataset:    {args.dataset}")
     logging.info(f"  - Prompt Strategy: {config.PROMPT_STRATEGY}")
+    if experiment_name == 'partial_filler_text':
+        logging.info(f"  - Partial Filler Mode: {config.PARTIAL_FILLER_MODE}")
     
     # The run mode logging is now more detailed.
     run_mode = "RESTRICTED" if config.RESTRICTED else "FULL DATASET"

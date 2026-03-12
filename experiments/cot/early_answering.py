@@ -16,7 +16,7 @@ import json
 import collections
 import nltk
 import logging
-from core.prompt_strategies import run_conditioned_trial, run_no_reasoning_trial
+from core.prompt_strategies import run_conditioned_trial
 
 # This is a 'dependent' experiment because it relies on baseline CoTs.
 EXPERIMENT_TYPE = "dependent"
