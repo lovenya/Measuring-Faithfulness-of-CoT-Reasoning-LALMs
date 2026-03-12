@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Investigating Faithfulness in Large Audio Language Models — Anonymous Submission</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="venue-tag">Anonymous Submission</div>
+    <h1>Investigating <em>Faithfulness</em> in Large Audio Language Models</h1>
+    <p class="authors">Anonymous Authors</p>
+    <div class="links">
+      <a class="btn primary" href="#">📄 Paper (PDF)</a>
+      <a class="btn" href="https://github.com/anonymous">💻 Code</a>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Abstract</h2>
+      <p>
+        Large Audio Language Models (LALMs) integrate audio encoders with pretrained Large Language Models to perform complex multimodal reasoning tasks. While these models can generate Chain-of-Thought (CoT) explanations, the faithfulness of these reasoning chains remains unclear. In this work, we propose a systematic framework to evaluate CoT faithfulness in LALMs with respect to both the input audio and the final model prediction. We define three criteria for audio faithfulness: hallucination-free, holistic, and attentive listening. Our code and experiments suggest a potential multimodal disconnect: reasoning often aligns with the final prediction but is not always strongly grounded in the audio.
+      </p>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="openTab(event, 'audio-interventions')">Audio Interventions</button>
+      <button class="tab-btn" onclick="openTab(event, 'cot-interventions')">CoT Interventions</button>
+    </div>
+
+    <!-- AUDIO INTERVENTIONS CONTENT -->
+    <div id="audio-interventions" class="tab-content active">
+      <section>
+        <h2>Audio Interventions</h2>
+        <p>We propose three different audio interventions in order to measure the capability of LALMs to listen attentively, wholistically, and without hallucinations.</p>
+        
+        <div class="intervention-group">
+          <h3>Masking (Wholistic Listening)</h3>
+          <p class="caption">Combined Masking Accuracy and Consistency across Masking Ratios.</p>
+          <div class="result-grid two-col">
+            <div class="plot-container">
+              <span class="plot-title">Mask Accuracy</span>
+              <img src="assets/audio_intervention/Combined_mask_Accuracy.png" alt="Combined Mask Accuracy Plot" />
+            </div>
+            <div class="plot-container">
+              <span class="plot-title">Mask Consistency</span>
+              <img src="assets/audio_intervention/Combined_mask_Consistency.png" alt="Combined Mask Consistency Plot" />
+            </div>
+          </div>
+        </div>
+
+        <div class="intervention-group">
+          <h3>Noise (Hallucination-free listening)</h3>
+          <p class="caption">Combined Noise Accuracy and Consistency across SNR levels.</p>
+          <div class="result-grid two-col">
+            <div class="plot-container">
+              <span class="plot-title">Noise Accuracy</span>
+              <img src="assets/audio_intervention/Combined_noise_Accuracy.png" alt="Combined Noise Accuracy Plot" />
+            </div>
+            <div class="plot-container">
+              <span class="plot-title">Noise Consistency</span>
+              <img src="assets/audio_intervention/Combined_noise_Consistency.png" alt="Combined Noise Consistency Plot" />
+            </div>
+          </div>
+        </div>
+
+        <div class="intervention-group">
+          <h3>Adversarial (Attentive Listening)</h3>
+          <p class="caption">Adversarial accuracy and consistency evaluated on AF3 and Qwen2.5-Omni.</p>
+          <div class="result-grid two-col">
+            <div class="plot-container">
+              <span class="plot-title">AF3 Adversarial Accuracy</span>
+              <img src="assets/audio_intervention/af3_adv_accuracy.png" alt="AF3 Adversarial Accuracy" />
+            </div>
+            <div class="plot-container">
+              <span class="plot-title">AF3 Adversarial Consistency</span>
+              <img src="assets/audio_intervention/af3_adv_consistency.png" alt="AF3 Adversarial Consistency" />
+            </div>
+            <div class="plot-container">
+              <span class="plot-title">Qwen2.5-Omni Adversarial Accuracy</span>
+              <img src="assets/audio_intervention/qwen2.5_adv_accuracy.png" alt="Qwen2.5-Omni Adversarial Accuracy" />
+            </div>
+            <div class="plot-container">
+              <span class="plot-title">Qwen2.5-Omni Adversarial Consistency</span>
+              <img src="assets/audio_intervention/qwen2.5_adv_consistency.png" alt="Qwen2.5-Omni Adversarial Consistency" />
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- COT INTERVENTIONS CONTENT -->
+    <div id="cot-interventions" class="tab-content">
+      <section>
+        <h2>Chain-of-Thought (CoT) Interventions</h2>
+        <p>We analyze faithfulness by systematically modifying the generated CoTs and observing how these changes affect model accuracy and predictions. The following visualizations demonstrate the impact of filler token injection and mistake addition based on Mistral perturbations.</p>
+        
+        <div class="sub-tabs">
+          <button class="sub-tab-btn active" onclick="openSubTab(event, 'cot-filler')">Filler Tokens</button>
+          <button class="sub-tab-btn" onclick="openSubTab(event, 'cot-mistakes')">Adding Mistakes</button>
+          <button class="sub-tab-btn" onclick="openSubTab(event, 'cot-early')">Early Answering</button>
+          <button class="sub-tab-btn" onclick="openSubTab(event, 'cot-para')">Paraphrasing</button>
+        </div>
+
+        <div id="cot-filler" class="sub-tab-content active">
+          <div class="intervention-group">
+            <h3>Random Partial Filler Text (Lorem)</h3>
+            <div class="result-grid two-col">
+              <div class="plot-container">
+                <span class="plot-title">Audio Flamingo 3</span>
+                <img src="assets/cot_intervention/cross_dataset_random_partial_filler_text_0pct_flamingo_hf_lorem_restricted.png" alt="AF3 Filler Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+              <div class="plot-container">
+                <span class="plot-title">Qwen2.5-Omni</span>
+                <img src="assets/cot_intervention/cross_dataset_random_partial_filler_text_0pct_qwen_omni_lorem_restricted.png" alt="Qwen Omni Filler Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="cot-mistakes" class="sub-tab-content">
+          <div class="intervention-group">
+            <h3>Adding Mistakes (External Mistral Perturbation)</h3>
+            <div class="result-grid two-col">
+              <div class="plot-container">
+                <span class="plot-title">Audio Flamingo 3</span>
+                <img src="assets/cot_intervention/cross_dataset_adding_mistakes_vs_rpf_flamingo_hf_restricted-mistral.png" alt="AF3 Mistakes Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+              <div class="plot-container">
+                <span class="plot-title">Qwen2.5-Omni</span>
+                <img src="assets/cot_intervention/cross_dataset_adding_mistakes_vs_rpf_qwen_omni_restricted-mistral.png" alt="Qwen Omni Mistakes Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="cot-early" class="sub-tab-content">
+          <div class="intervention-group">
+            <h3>Early Answering</h3>
+            <div class="result-grid two-col">
+              <div class="plot-container">
+                <span class="plot-title">Audio Flamingo 3</span>
+                <img src="assets/cot_intervention/cross_dataset_early_answering_100pct_flamingo_hf_restricted.png" alt="AF3 Early Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+              <div class="plot-container">
+                <span class="plot-title">Qwen2.5-Omni</span>
+                <img src="assets/cot_intervention/cross_dataset_early_answering_100pct_qwen_omni_restricted.png" alt="Qwen Omni Early Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="cot-para" class="sub-tab-content">
+          <div class="intervention-group">
+            <h3>Paraphrasing (External Mistral)</h3>
+            <div class="result-grid two-col">
+              <div class="plot-container">
+                <span class="plot-title">Audio Flamingo 3</span>
+                <img src="assets/cot_intervention/cross_dataset_paraphrasing_0pct_words_flamingo_hf_restricted-mistral.png" alt="AF3 Paraphrasing Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+              <div class="plot-container">
+                <span class="plot-title">Qwen2.5-Omni</span>
+                <img src="assets/cot_intervention/cross_dataset_paraphrasing_0pct_words_qwen_omni_restricted-mistral.png" alt="Qwen Omni Paraphrasing Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+  </main>
+
+  <footer>
+    <span>Anonymous Submission</span>
+    <span>Conference Name 20XX</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

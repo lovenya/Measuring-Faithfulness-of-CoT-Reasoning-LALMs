@@ -1,0 +1,30 @@
+
+\section{Research Questions}
+
+% Our goal in this paper is to establish the faithfulness of CoTs produced by LALMs, with respect to i) Input Audio, ii) Final Answer.  As established in the introduction for input audio faithfulness we identify three qualities that are necessary for having a faithful CoT with respect to input audio.
+
+ The goal of this work is to assess the faithfulness of CoT reasoning in LALMs with respect to (i) the input audio and (ii) the final answer. As discussed earlier, we identify three key properties that characterize faithful CoT reasoning with respect to  the audio input.
+
+
+%We evaluate the faithfulness of LALMs by measuring the consistency of their outputs under various acoustic perturbations. Specifically, we compare the final predictions and consistency in CoT reasoning generated from the intervened audio against a baseline of the original (non-intervened) audio. To evaluate LALM faithfulness, we formulate the following questions:
+
+%\begin{itemize}
+%    \item \textbf{RQ1: Robustness to Noise.} How resilient are LALMs to environmental interference? We apply the \textit{Noise Intervention} and compare the resulting CoT and answer consistency against the baseline. 
+%    \item \textbf{RQ2: Information Localization.} Do LALMs rely on specific segments or the full audio context? We use \textit{Random Masking} for general testing and \textit{Guided Masking} on a challenging co-reasoning dataset that requires global audio context to correctly answer
+%    \item \textbf{RQ3: Acoustic vs. Linguistic Reliance.} Do LALMs prioritize transcriptions over acoustic clues? We generate an \textit{Adversarial Dataset} to test if the CoT remains grounded in the audio when presented with conflicting linguistic cues.
+%\end{itemize}
+
+\begin{itemize}
+    \item \textbf{Q1: Hallucination-free listening} We ask the question whether the LALM infact incorporates the audio into its answer. To answer this question, we investigate the behavior at the extremes. When contaminated with noise, or given silence, does the same prompt make the model produce an hallucinatory CoT?  
+    
+    %How resilient are LALMs to environmental interference? We apply the \textit{Noise Intervention} and compare the resulting CoT and answer consistency against the baseline. 
+    
+    \item \textbf{Q2: Wholistic listening} Does the LALM rely on specific segments or the full audio context? Is there an attention sink behavior in the way LALM listens? We use \textit{Random Masking} for general testing and \textit{Guided Masking} on a challenging co-reasoning dataset \cite{wang2025they} that requires global audio context to correctly answer.
+    
+    \item \textbf{Q3: Attentive Listening} Does the LALM follow the instructions, and listen to what it is supposed to? In order to test for this, we inject an adversarial speech signal into the input audio, mentioning the answer, and see if this adversarial injection in fact changes the answer or not.  
+    
+    %do the LALM prioritize transcriptions over acoustic clues? We generate an \textit{Adversarial Dataset} to test if the CoT remains grounded in the audio when presented with conflicting linguistic cues.
+    
+    \item \textbf{Q4: CoT-Output Faithfulness} We finally test whether the CoTs that the LALM produce are in fact faithful to the produced model output. For this purpose we apply the interventions introduced in \cite{lanham2023measuringfaithfulnesschainofthoughtreasoning}, which check for posthoc reasoning, extra test-time computation, and encoded reasoning, as mentioned in the introduction. 
+\end{itemize}
+%We describe the intervention pipeline in Figure \ref{fig:full_pipeline_centered}. We elaborate more en each intervention, and the obtained results in subsequent sections as well. 

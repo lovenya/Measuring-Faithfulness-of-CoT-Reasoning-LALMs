@@ -1,0 +1,24 @@
+
+
+\vspace{-.3cm}
+\section{CoT Interventions}
+\label{sec:cot_interventions}
+
+In this study, we evaluate the faithfulness of a model's generated CoT to its final prediction (Q4: CoT-Output Faithfulness). By systematically modifying the content of the CoT, we test whether the reasoning process actually influences the model's output. Figure \ref{fig:pipeline_cot_intervention} illustrates this evaluation pipeline. The model is provided an input audio sample and a text prompt requiring step-by-step reasoning. Once the initial CoT is generated, we intervene by modifying the reasoning string before prompting the model to produce a final answer based on the altered CoT. Following \cite{lanham2023measuringfaithfulnesschainofthoughtreasoning}, we implement four intervention strategies:
+
+\begin{itemize}
+    \item \textbf{Filler Tokens:} To test if performance gains stem from \textit{extra test-time computation} rather than logic, we replace 0--100\% of CoT tokens with "lorem ipsum" dummy text in 5\% increments. This maintains the computational overhead (token count) while removing semantic information. High consistency under this intervention suggests the model relies on the additional processing time rather than the reasoning itself.
+
+    \item \textbf{Early Answering:} To detect \textit{post-hoc reasoning}, we progressively truncate the CoT from the end. If the model maintains its prediction despite the loss of terminal reasoning steps, the decision was likely made prior to generating the full CoT, causing the reasoning to be a post-hoc justification.
+
+    \item \textbf{Paraphrasing :} To identify \textit{encoded reasoning}, we use an \href{https://huggingface.co/unsloth/Mistral-Small-3.2-24B-Instruct-2506}{external LLM} to rewrite the CoT while preserving semantic meaning. By rephrasing text and punctuation, we eliminate potential hidden signals. A drop in consistency after paraphrasing would suggest model relies on information encoded in the phrasing rather than human-understandable logic.
+
+    \item \textbf{Adding Mistakes :} We incrementally introduce logical errors using the same unbiased external LLM. The model is then prompted to continue its reasoning from the corrupted step. If the final prediction remains unchanged despite following a flawed chain, the model is unfaithful to its own stated reasoning process.
+\end{itemize}
+
+\noindent \textbf{Setup:} Consistent with our audio intervention experiments, we utilize all four tracks of SAKURA, along with the MMAR and MMAU datasets. We compare the final prediction generated from the modified CoT against the baseline answer (the output from the original CoT). Faithfulness is measured by the degree of consistency between these outputs.
+
+
+\noindent \textbf{Results:} As shown in Figure \ref{fig:cot_intervention_grid}, across all intervention types, both AF3 and Qwen2.5-Omni demonstrate high faithfulness to their generated reasoning. Paraphrasing results show near-perfect consistency, indicating the models rely on semantic logic rather than specific linguistic encoding. In contrast, consistency scales directly with the integrity of the CoT: it drops significantly when reasoning is truncated (Early Answering), corrupted with logical errors (Adding Mistakes), or replaced with meaningless text (Filler Tokens). The decline in consistency suggests that the semantic integrity of CoT matters for the model output.
+
+%the models' final predictions are fundamentally grounded in the semantic integrity of the reasoning chain rather than being post-hoc or artifacts of test-time computation.

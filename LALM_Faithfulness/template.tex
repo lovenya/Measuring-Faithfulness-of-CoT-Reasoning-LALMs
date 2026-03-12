@@ -1,0 +1,734 @@
+% *==================================================================================*
+% *                     Review vs. Camera-Ready settings                             *
+% *==================================================================================*
+%
+% REVIEW: Use the following command for submitting the paper (double-blind,
+% for review):
+\documentclass{Interspeech}
+%
+% CAMERA-READY: Use the following command for the camera-ready version, one
+% affiliation per line:
+% \documentclass[cameraready]{Interspeech}
+% *==================================================================================*
+
+
+% **************************************
+% *                                    *
+% *      STOP !   DO NOT DELETE !      *
+% *          READ THIS FIRST           *
+% *                                    *
+% * This template also includes        *
+% * important INSTRUCTIONS that you    *
+% * must follow when preparing your    *
+% * paper. Read it BEFORE replacing    *
+% * the content with your own work.    *
+% **************************************
+
+\usepackage{amsmath,graphicx,hyperref}
+\usepackage{tikz}
+\usetikzlibrary{shapes, positioning}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{booktabs}
+% Example definitions.
+% --------------------
+\def\x{{\mathbf x}}
+\def\L{{\cal L}}
+
+%==================================================================================
+% Title
+% Must exactly match the title entered into the paper submission system
+\title{Investigating Faithfulness in Large Audio Language Models}
+
+%==================================================================================
+% Authors
+% The order of authors here must exactly match the order entered into the paper submission system
+% Note that the COMPLETE list of authors MUST be entered into the paper submission system at the outset, including when submitting your manuscript for double-blind review
+% The ORCID number is still optional but will become mandatory in the future years. It is strongly encouraged to get an ORCID for each cu-author.
+% Middle names, including initials, must be included in the first name
+\author[affiliation={1}, orcid=0000-0000-0000-0000, equalcontribution]{FirstNameA}{LastNameA}
+\author[affiliation={2,3}, orcid=0000-0000-0000-1111, equalcontribution, correspondingauthor]{FirstNameB InitialB}{LastNameB}
+\author[affiliation={1,3}]{FirstNameC}{LastNameC}
+% The maximum number of authors in the author list is 20. If the number of contributing authors is more than this, they should be listed in a footnote or the acknowledgement section.
+
+%==================================================================================
+% Affiliations
+
+\address{
+    $^1$ Address Affiliation 1, Country Affiliation 1 \\
+    $^2$ Address Affiliation 2, Country Affiliation 2 \\
+    $^3$ Address Affiliation 3, Country Affiliation 3
+}
+
+%==================================================================================
+% Emails
+\email{first@university.edu, second@companyA.com, third@companyB.ai}
+
+%==================================================================================
+% Keywords
+\keywords{Large Audio Language Models, Faithfulness}
+
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\usepackage{comment}
+
+%==================================================================================
+% Content
+
+\begin{document}
+
+\maketitle
+
+% the abstract here must exactly match the abstract entered into the paper submission system
+\begin{abstract}
+
+%%% ICASSP version
+% Faithfulness measures whether chain-of-thought (CoT) representations accurately reflect a model’s decision process and can be used as reliable explanations. Prior work has shown that CoTs from text-based LLMs are often unfaithful. This question has not been explored for large audio-language models (LALMs), where faithfulness is critical for safety-sensitive applications. Reasoning in LALMs is also more challenging, as models must first extract relevant clues from audio before reasoning over them. In this paper, we investigate the faithfulness of CoTs produced by several LALMs by applying targeted interventions, including paraphrasing, filler token injection, early answering, and introducing mistakes, on two challenging reasoning datasets: SAKURA and MMAR. After going through the aforementioned interventions across several datasets and tasks, our experiments suggest that, LALMs generally produce CoTs that appear to be faithful to their underlying decision processes.
+
+% Interspeech version
+%Multimodal Large Language Models come with the capability of providing Chain-of-Thought (CoT) representations that would help to explain their reasoning for their decision making. The concept of faithfulness aims to measure whether these CoTs accurately reflect the model's decision process, and therefore can be used as reliable explanations. 
+
+%In this paper, we study the faithfulness of CoTs similar to the way it had been studied for text LLMs through introducing interventions on CoTs, to understand how sensitive the underlying model to the produced CoTs. We also take the intervention based faithfulness analysis a step further through audio domain input interventions, with the goal to provide a more complete understanding as to if the model in fact also listens to the audio input or not. Our experimental results with the CoT interventions point towards the fact that the CoTs tend to be faithful, whereas the models do not necessarily have a wholistic understanding of the inputted audio. 
+
+
+ %Prior work has shown that CoTs from text-based LLMs are often unfaithful. This question has not been explored for large audio-language models (LALMs), where faithfulness is critical for safety-sensitive applications. Reasoning in LALMs is also more challenging, as models must first extract relevant clues from audio before reasoning over them. In this paper, we investigate the faithfulness of CoTs produced by several LALMs by applying targeted interventions, including paraphrasing, filler token injection, early answering, and introducing mistakes, on two challenging reasoning datasets: SAKURA and MMAR. After going through the aforementioned interventions across several datasets and tasks, our experiments suggest that, LALMs generally produce CoTs that appear to be faithful to their underlying decision processes.
+
+%final version
+Large Audio Language Models (LALMs) integrate audio encoders with pretrained Large Language Models to perform complex multimodal reasoning tasks. While these models can generate Chain-of-Thought (CoT) explanations, the faithfulness of these reasoning chains remains unclear. In this work, we propose a systematic framework to evaluate CoT faithfulness in LALMs with respect to both the input audio and the final model prediction. We define three criteria for audio faithfulness: hallucination-free, holistic, and attentive listening. We also introduce a benchmark based on both audio and CoT interventions to assess faithfulness\footnote{The benchmarking interface and evaluation results are available at \url{https://anonymous.4open.science/w/Measuring-Faithfulness-of-CoT-Reasoning-LALMs-A3B6/} \\ our demo page.}. Experiments on Audio Flamingo 3 and Qwen2.5-Omni suggest a potential multimodal disconnect: reasoning often aligns with the final prediction but is not always strongly grounded in the audio and can be vulnerable to hallucinations or adversarial perturbations. 
+
+%Multimodal Large Language Models come with the capability of providing Chain-of-Thought (CoT) representations that would help to explain their reasoning for their decision making. The concept of faithfulness aims to measure whether these CoTs accurately reflect the model's decision process, and therefore can be used as reliable explanations. 
+
+%In this paper, we study the faithfulness of CoTs similar to the way it had been studied for text LLMs through introducing interventions on CoTs, to understand how sensitive the underlying model to the produced CoTs. We also take the intervention based faithfulness analysis a step further through audio domain input interventions, with the goal to provide a more complete understanding as to if the model in fact also listens to the audio input or not. Our experimental results with the CoT interventions point towards the fact that the CoTs tend to be faithful, whereas the models do not necessarily have a wholistic understanding of the inputted audio. 
+
+\end{abstract}
+
+%todo: vertical line in figure -- done
+%todo: error bars on CoT consistency plot
+
+\newcommand{\cem}[1]{ {\color{red} $\mathcal C$ #1 }}
+
+\label{sec:intro}
+
+
+% \begin{figure*}[t]
+%     \centering
+%     % Left Figure: Audio Intervention (Larger)
+%     \begin{subfigure}[m]{0.55\textwidth}
+%         \centering
+%         \includegraphics[width=\linewidth, valign=m, trim=0.0cm 0.4cm 0.0cm 0.0cm, clip]{figures/pipeline_audio.pdf}
+%         \caption{Audio Intervention Module}
+%         \label{fig:pipeline_audio_intervention}
+%     \end{subfigure}
+%     \hspace{1em} % Small space between them
+%     % Right Figure: CoT Reasoning (Smaller & Vertically Centered)
+%     \begin{subfigure}[m]{0.38\textwidth}
+%         \centering
+%         \includegraphics[width=\linewidth, valign=m, trim=0.0cm 0.4cm 0.0cm 0.0cm, clip]{figures/pipeline_cot.pdf}
+%         \caption{CoT Intervention Module}
+%         \label{fig:pipeline_cot_intervention}
+%     \end{subfigure}
+
+%     \caption{\textbf{LALM Consistency Evaluation Framework.} .}
+%     \label{fig:full_pipeline_centered}
+% \end{figure*}
+
+
+
+\section{Introduction}
+
+Large Language Models (LLMs) have transformed machine learning in recent years. In the audio and speech domain, Large Audio Language Models (LALMs) followed suit for tackling complex audio understanding tasks such as Audio Question-Answering. Large Audio-Language Models (LALMs) integrate audio encoders with pre-trained decoder-based LLMs, enabling open-ended audio question-answering and free-form response generation~\cite{aroralandscape,xu2025qwen3,Qwen2.5-Omni,goel2025audioflamingo3advancing,wu2025step}. 
+
+% \begin{figure}[htbp]
+%     \centering
+%     
+%     \label{fig:pipeline_audio_intervention}
+% \end{figure}
+
+
+
+%Even though LALMs perform relatively well on a variety of question-answering tasks \cite{sakshi2024mmaumassivemultitaskaudio}, their faithfulness to the audio content is not well established. In this paper, through contaminating the audio input with various interventions we make an effort to understand how well the LALMs listen to the input audio as opposed to producing hallucinations.   
+
+An important feature of text LLMs is that they can be prompted to provide reasoning for their decisions, potentially helping their deployment in decision-critical applications such as healthcare, security, and forensics~\cite{kojima2022large,zhouleast}. Prior studies show that generating intermediate reasoning steps, often called chain-of-thought (CoT) or reasoning chains, can improve explainability and trustworthiness ~\cite{yao2023reactsynergizingreasoningacting,liexplanations,wang2022rationaleaugmentedensembleslanguagemodels,yao2023tree}. 
+CoT provides a reasoning chain for complex tasks, and can make the model output more accurate and interpretable.
+%CoT provides a reasoning chain for complex tasks into smaller subproblems and allocates more computation to harder questions, which can make predictions more accurate and interpretable.
+
+Similar to LLMs, LALMs also have the capability to generate Chain-of-Thought (CoT) explanations for their predictions. Previous studies evaluate the robustness of LALMs to audio modifications and prompt perturbations~\cite{hou2025evaluating,lopez2025robustness,li2025silence}. However, they do not investigate whether these CoTs faithfully reflect the model’s internal decision process. This raises a key question for trustworthy AI: \textit{How faithful are the chain-of-thought explanations produced by LALMs?} In particular, we ask the following question: \textit{i) How faithful are the CoTs to the input audio?}
+\textit{ii) How faithful the CoTs are to the model output? }  
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth, trim=0.0cm 0.4cm 0.0cm 0.0cm, clip]{figures/pipeline_audio.pdf}
+    \noindent\rule{\linewidth}{0.3mm}
+    %\caption{Audio Intervention Pipeline.}
+    \includegraphics[width=\linewidth, trim=0.0cm 0.4cm 0.0cm 0.0cm, clip]{figures/pipeline_cot.pdf}
+    \vspace{-.6cm}
+    \caption{\textbf{(top)} Audio Intervention Pipeline  \textbf{(bottom)}CoT Intervention Pipeline.}
+    \vspace{-.8cm}
+    \label{fig:pipeline_cot_intervention}
+\end{figure}
+
+In machine learning, \textit{faithfulness} refers to whether an explanation reflects the model’s actual reasoning process. A faithful explanation correctly shows why the model produced a specific answer. An unfaithful explanation may sound plausible, but it does not match the true decision process. Faithfulness is therefore crucial for building reliable and safe AI systems. Recent work suggests that for text-only LLMs, CoT representations may not reflect the model’s underlying reasoning~\cite{turpin2023languagemodelsdontsay,barez-chain-2025,arcuschin2025chainofthoughtreasoningwildfaithful,chen2023modelsexplainthemselvescounterfactual}. Other studies have proposed methods to measure the faithfulness of CoT explanations~\cite{lanham2023measuringfaithfulnesschainofthoughtreasoning,arcuschin2025chainofthoughtreasoningwildfaithful,matton2025walktalkmeasuringfaithfulness,huang2023largelanguagemodelsexplain,madsen2024selfexplanationslargelanguagemodels}.
+
+\newcommand{\figsizeiii}{0.2}
+\begin{figure*}[t]
+    \centering
+    % Legend Row: Using % to remove whitespace and negative hspace to pull them together
+    \includegraphics[width=0.8\linewidth]{figures/audio_intervention/legend_datasets_only.pdf}%
+    \vspace{-.4cm}
+    \hspace{-3mm} 
+    \includegraphics[width=0.22\linewidth]{figures/audio_intervention/legend_models_only.pdf}
+    
+    \vspace{-0.1cm} 
+
+    % Single row of plots with a solid vertical separator
+    \includegraphics[width=\figsizeiii\linewidth]{figures/audio_intervention/Combined_noise_Accuracy.pdf}
+    \hfill
+    \includegraphics[width=\figsizeiii\linewidth]{figures/audio_intervention/Combined_noise_Consistency.pdf}
+    \hfill
+    \vrule width 0.8pt % Solid vertical line
+    \hfill
+    \includegraphics[width=\figsizeiii\linewidth]{figures/audio_intervention/Combined_mask_Accuracy.pdf}
+    \hfill
+    \includegraphics[width=\figsizeiii\linewidth]{figures/audio_intervention/Combined_mask_Consistency.pdf}
+
+    \caption{\textbf{Quantitative Impact of Audio Interventions.} The \textbf{(left)} two plots show Noise performance across SNR levels, while the \textbf{(right)} two plots show Masking trends across ratios. Solid lines represent \textit{AF3-Think} and dashed lines represent \textit{Qwen2.5-Omni}.}
+    \vspace{-.7cm}
+    \label{fig:full_results_quantitative audio}
+\end{figure*}
+%While LLMs have shown strong reasoning abilities through language, extending these systems to understand audio is essential for building models that can reason using contextual auditory cues. 
+In the audio domain, several LALMs incorporate chain-of-thought (CoT) reasoning to improve perception and reasoning over audio~\cite{yang2025sakuramultihopreasoninglarge,goel2025audioflamingo3advancing,xie2025audioreasonerimprovingreasoningcapability,chu2024qwen2audiotechnicalreport,kong2025audioflamingosoundcottechnical,ma2025audio}. Although these works report accuracy gains from reasoning, it is unclear whether such reasoning can serve as faithful explanations of the model’s decision process. This question is important because reasoning in audio-language models is inherently more challenging than in text-only models. Despite recent progress, even the most advanced LALMs underperform on expert-level reasoning tasks compared to foundational tasks such as event classification~\cite{yang2025sakuramultihopreasoninglarge}.
+
+
+For text-only LLMs \cite{lanham2023measuringfaithfulnesschainofthoughtreasoning} posits three reasons why CoT may fail as a faithful explanation:  
+(i) \textbf{Post-hoc reasoning}: The model may generate reasoning after it has already decided on an answer~\cite{holzinger2017needbuildexplainableai}. Since this reasoning does not influence the decision, it may not reflect the true internal process.  
+(ii) \textbf{Extra test-time computation}: The performance gain may come from the extra computation allowed by generating more tokens between the question and the answer~\cite{wei2023chainofthoughtpromptingelicitsreasoning}.  
+(iii) \textbf{Encoded reasoning in CoT}: The model may encode useful information (steganography) in ways not understandable to humans, that would encode the answer. This could involve subtle changes in wording, punctuation, or phrasing.
+
+
+Because Large Audio-Language Models (LALMs) operate conditional to the input sound, it remains unclear whether empirical findings on the faithfulness of CoT representations in text-only LLMs extend to LALMs. In particular due to the additional audio conditioning of LALMs, it is unclear whether the audio makes a genuine impact on the produced CoT, or it in fact consists of hallucinations (i - \textbf{Hallucination-free listening}). If the input audio does have an influence, it is still unclear whether the model exhibits an attention sink type \cite{wang2025mirageeyeshallucinationattack, xiao2024efficientstreaminglanguagemodels, huang2024operaalleviatinghallucinationmultimodal} behavior on the audio, focusing only on a narrow portion, rather than wholistically listening to the input (ii - \textbf{Wholistic listening}). It is also unclear whether the model robustly listens to the input audio following the directives in the question, or whether LALMs prioritize transcriptions over acoustic clues~\cite{chen2025audio} (iii - \textbf{Attentive listening}). 
+
+
+In this paper, we present a faithfulness analysis for CoTs with respect to the audio and also with respect to the output. We provide our analysis on two popular and powerful LALMs, including Qwen2.5 Omni \cite{Qwen2.5-Omni} and AudioFlamingo 3 \cite{goel2025audioflamingo3advancing}. We propose three different audio interventions in order to measure the three qualities of listening we defined above, and we also for the first time incorporate the previously defined CoT interventions on LALMs. 
+% Our code and exhaustive results can be accessed through our companion website. \footnote{\url{https://anonymous.4open.science/w/Measuring-Faithfulness-of-CoT-Reasoning-LALMs-A3B6/}} 
+
+
+
+
+
+%Our evaluation uses modified chain-of-thought (CoT) representations to test whether the semantic content of the CoT influences the model’s final predictions. We analyze faithfulness by systematically modifying the CoTs and observing how these changes affect model accuracy, aiming to identify potential sources of unfaithfulness. We find that LALMs generally produce CoTs that accurately reflect their decision process across tasks and datasets.
+
+
+% \tikzstyle{cot} = [rectangle, draw=black, fill=orange!20, rounded corners, text width=5cm, align=center, inner sep=5pt, minimum height=2cm]
+% \tikzstyle{cotm1} = [rectangle, draw=black, fill=green!20, rounded corners, text width=5cm, align=center, inner sep=5pt, minimum height=2cm]
+% \tikzstyle{cotm2} = [rectangle, draw=black, fill=cyan!20, rounded corners, text width=5cm, align=center, inner sep=5pt, minimum height=2cm]
+% \tikzstyle{cotm3} = [rectangle, draw=black, fill=magenta!20, rounded corners, text width=5cm, align=center, inner sep=5pt, minimum height=2cm]
+% \tikzstyle{cotm4} = [rectangle, draw=black, fill=gray!20, rounded corners, text width=5cm, align=center, inner sep=5pt, minimum height=2cm]
+
+% \begin{figure*}[ht!]
+% \resizebox{0.26\textwidth}{!}{
+% \begin{tikzpicture}[node distance=1cm]
+
+% % Define styles for nodes
+% \tikzstyle{human} = [rectangle, draw=black, fill=orange!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+
+% \tikzstyle{assistant} = [rectangle, draw=black, fill=blue!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{question} = [rectangle, draw=black, fill=yellow!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{label} = [font=\small, align=center]
+
+% % Nodes
+% \node (question) [question] {What animal is causing this sound?};
+% \node (sound) [below of=question, xshift=1cm] {\includegraphics[width=.1\textwidth]{figures/audioinput.png}}; 
+% \node (filler) [cot, below=of question, yshift=-0cm] {It sounds like a horse, because I hear that typical clip-clap sound that horse hooves make on old timey streets.};
+% \node (filler2) [cotm1, below=of filler, yshift=-0cm] {It .....  ......., because I hear that ........... sound that horse hooves make ......... \\ ......... ........};
+% \node (answer4) [assistant, below=of filler2] {Final answer?};
+% \node (final4) [human, below=of answer4] {Horse};
+
+% \node[left of=filler2, rotate=90, align=center, yshift=2cm]{\Large{CoT interventions}};
+
+% % Labels
+% \node[label, above=0.01cm of question, xshift=-2cm] {User};
+% \node[label, above=0.01cm of filler, xshift=-2cm] {CoT};
+% \node[label, above=0.01cm of answer4, xshift=-2cm] {User};
+% %\node[label, above=0.01cm of final4, xshift=-2cm] {Human};
+% \node[label, above=0.01cm of final4, xshift=-1.5cm] {Model Output};
+% \node[label, above=0.01cm of filler2, xshift=-1.5cm] {Modified CoT};
+% \node[label, above=0.01cm of filler2, xshift=1.2cm] {(Filler Tokens)};
+
+% \draw [->, >=latex, line width=1mm] (question) -- (filler);
+% \draw [->, >=latex, line width=1mm] (filler) -- (filler2);
+% \draw [->, >=latex, line width=1mm] (filler2) -- (answer4);
+% \draw [->, >=latex, line width=1mm] (answer4) -- (final4);
+
+% \end{tikzpicture}
+% }
+% \resizebox{0.235\textwidth}{!}{
+% \begin{tikzpicture}[node distance=1cm]
+
+
+
+% % Define styles for nodes
+% \tikzstyle{human} = [rectangle, draw=black, fill=orange!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{assistant} = [rectangle, draw=black, fill=blue!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{question} = [rectangle, draw=black, fill=yellow!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{label} = [font=\small, align=center]
+
+% % Nodes
+% \node (question) [question] {What animal is causing this sound?};
+% \node (sound) [below of=question, xshift=1cm] {\includegraphics[width=.1\textwidth]{figures/audioinput.png}}; 
+% \node (filler) [cot, below=of question, yshift=-0cm] {It sounds like a horse, because I hear that typical clip-clap sound that horse hooves make on old timey streets.};
+% \node (filler2) [cotm2, below=of filler, yshift=-0cm] {It resembles a horse, as I can hear the distinctive clip-clop noise made by horse hooves on vintage streets.};
+
+% \node (answer4) [assistant, below=of filler2] {Final answer?};
+% \node (final4) [human, below=of answer4] {Horse};
+
+% % Labels
+% \node[label, above=0.01cm of question, xshift=-2cm] {User};
+% \node[label, above=0.01cm of filler, xshift=-2cm] {CoT};
+% \node[label, above=0.01cm of answer4, xshift=-2cm] {User};
+% %\node[label, above=0.01cm of final4, xshift=-2cm] {Human};
+% \node[label, above=0.01cm of final4, xshift=-1.5cm] {Model Output};
+% \node[label, above=0.01cm of filler2, xshift=-1.5cm] {Modified CoT};
+% \node[label, above=0.01cm of filler2, xshift=1.2cm] {(Paraphrasing)};
+
+% \draw [->, >=latex, line width=1mm] (question) -- (filler);
+% \draw [->, >=latex, line width=1mm] (filler) -- (filler2);
+% \draw [->, >=latex, line width=1mm] (filler2) -- (answer4);
+% \draw [->, >=latex, line width=1mm] (answer4) -- (final4);
+
+% \end{tikzpicture}
+% }
+% \resizebox{0.235\textwidth}{!}{
+% \begin{tikzpicture}[node distance=1cm]
+
+% % Define styles for nodes
+% \tikzstyle{human} = [rectangle, draw=black, fill=orange!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{assistant} = [rectangle, draw=black, fill=blue!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{question} = [rectangle, draw=black, fill=yellow!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{label} = [font=\small, align=center]
+
+% % Nodes
+% \node (question) [question] {What animal is causing this sound?};
+% \node (sound) [below of=question, xshift=1cm] {\includegraphics[width=.1\textwidth]{figures/audioinput.png}}; 
+% \node (filler) [cot, below=of question, yshift=-0cm] {It sounds like a horse, because I hear that typical clip-clap sound that horse hooves make on old timey streets.};
+% \node (filler2) [cotm3, below=of filler, yshift=-0cm] {It sounds like a horse.};
+
+% \node (answer4) [assistant, below=of filler2] {Final answer?};
+% \node (final4) [human, below=of answer4] {Horse};
+
+% % Labels
+% \node[label, above=0.01cm of question, xshift=-2cm] {User};
+% \node[label, above=0.01cm of filler, xshift=-2cm] {CoT};
+% \node[label, above=0.01cm of answer4, xshift=-2cm] {User};
+% %\node[label, above=0.01cm of final4, xshift=-2cm] {Human};
+% \node[label, above=0.01cm of final4, xshift=-1.5cm] {Model Output};
+% \node[label, above=0.01cm of filler2, xshift=-1.5cm] {Modified CoT};
+% \node[label, above=0.01cm of filler2, xshift=1.4cm] {(EarlyAnswering)};
+
+% \draw [->, >=latex, line width=1mm] (question) -- (filler);
+% \draw [->, >=latex, line width=1mm] (filler) -- (filler2);
+% \draw [->, >=latex, line width=1mm] (filler2) -- (answer4);
+% \draw [->, >=latex, line width=1mm] (answer4) -- (final4);
+
+% \end{tikzpicture}
+% }
+% \resizebox{0.235\textwidth}{!}{
+% \begin{tikzpicture}[node distance=1cm]
+
+% % Define styles for nodes
+% \tikzstyle{human} = [rectangle, draw=black, fill=orange!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{assistant} = [rectangle, draw=black, fill=blue!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{question} = [rectangle, draw=black, fill=yellow!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+% \tikzstyle{label} = [font=\small, align=center]
+
+% % Nodes
+% \node (question) [question] {What animal is causing this sound?};
+% \node (sound) [below of=question, xshift=1cm] {\includegraphics[width=.1\textwidth]{figures/audioinput.png}}; 
+% \node (filler) [cot, below=of question, yshift=-0cm] {It sounds like a horse, because I hear that typical clip-clap sound that horse hooves make on old timey streets.};
+% \node (filler2) [cotm4, below=of filler, yshift=-0cm] {It sounds like a \textbf{dog}, because I hear that typical clip-clap sound that \textbf{dog paws} make on old timey streets.};
+
+% \node (answer4) [assistant, below=of filler2] {Final answer?};
+% \node (final4) [human, below=of answer4] {Horse};
+
+% % Labels
+% \node[label, above=0.01cm of question, xshift=-2cm] {User};
+% \node[label, above=0.01cm of filler, xshift=-2cm] {CoT};
+% \node[label, above=0.01cm of answer4, xshift=-2cm] {User};
+% \node[label, above=0.01cm of final4, xshift=-1.5cm] {Model Output};
+% \node[label, above=0.01cm of filler2, xshift=-1.5cm] {Modified CoT};
+% \node[label, above=0.01cm of filler2, xshift=1.4cm] {(AddingMistakes)};
+
+% \draw [->, >=latex, line width=1mm] (question) -- (filler);
+% \draw [->, >=latex, line width=1mm] (filler) -- (filler2);
+% \draw [->, >=latex, line width=1mm] (filler2) -- (answer4);
+% \draw [->, >=latex, line width=1mm] (answer4) -- (final4);
+
+% \end{tikzpicture}
+% }
+
+
+
+%\resizebox{0.24\textwidth}{!}{
+%\begin{tikzpicture}[node distance=1cm]
+%
+%% Define styles for nodes
+%\tikzstyle{human} = [rectangle, draw=black, fill=orange!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+%\tikzstyle{assistant} = [rectangle, draw=black, fill=blue!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+%\tikzstyle{question} = [rectangle, draw=black, fill=yellow!20, rounded corners, text width=5cm, align=center, inner sep=5pt]
+%\tikzstyle{label} = [font=\small, align=center]
+%
+%% Nodes
+%\node (question) [question] {What animal is causing this sound?};
+%\node (sound) [below of=question, xshift=1.5cm] {\includegraphics[width=.15\textwidth]{figures/adversarial.png}}; 
+%\node (filler) [cot, below=of question, yshift=-0cm] {It sounds like a horse, but I think it is more likely a dog.};
+%%\node (filler2) [cotm4, below=of filler, yshift=-0cm] {It sounds like a \textbf{dog}, because I hear that typical clip-clap sound that \textbf{dog paws} make on old timey streets.};
+%
+%\node (answer4) [assistant, below=of filler] {Final answer?};
+%\node (final4) [human, below=of answer4] {Dog};
+%
+%% Labels
+%\node[label, above=0.01cm of question, xshift=-2cm] {User};
+%\node[label, above=0.01cm of filler, xshift=-2cm] {CoT};
+%%\node[label, above=0.01cm of answer4, xshift=-2cm] {User};
+%\node[label, above=0.01cm of final4, xshift=-1.5cm] {Model Output};
+%%\node[label, above=0.01cm of filler2, xshift=-1.5cm] {Modified CoT};
+%\node[label, above=0.01cm of filler2, xshift=-1.4cm, yshift=3.5cm] {(Adversarial)};
+%
+%\draw [->, >=latex, line width=1mm] (question) -- (filler);
+%\draw [->, >=latex, line width=1mm] (filler) -- (answer4);
+%\draw [->, >=latex, line width=1mm] (answer4) -- (final4);
+%
+%%\draw [->, >=latex, line width=1mm] (filler2) -- (answer4);
+%%\draw [->, >=latex, line width=1mm] (answer4) -- (final4);
+%\end{tikzpicture}
+%}
+
+
+
+% \caption{\textbf{(left)} Filler token modification of CoT representation. We randomly mask a certain percentage of the CoT to see the effect on the answer that the model gives. \textbf{(middle-left)} Paraphrasing of CoT representation. We use an LLM to paraphrase the CoT. \textbf{(middle-right)} Early answering modification of CoT. We remove the last sentences depending on the rate of early answering. \textbf{(right)} Adding mistakes to the CoT. We add mistakes to the CoT with a certain rate.}
+% \label{fig:cot-modifications}
+% \end{figure*}
+
+
+
+\input{research_question}
+\section{Audio Interventions}
+First, we specify the experimental setup used for our audio-based interventions below. \\
+\noindent \textbf{Benchmarks:} We perform our audio interventions evaluate on three diverse datasets:
+\begin{itemize}
+    \item \textbf{SAKURA:} \cite{yang2025sakuramultihopreasoninglarge} Tests single- and multi-hop reasoning over 500 multiple-choice questions per track, focusing on gender, language, emotion, and animal sounds.
+    \item \textbf{MMAR:} \cite{ma2025mmarchallengingbenchmarkdeep} A challenging benchmark with 1,000 triplets from real-world videos. It requires multi-step reasoning across mixtures of speech, music, and environmental audio.
+    \item \textbf{MMAU:} \cite{sakshi2024mmaumassivemultitaskaudio} Evaluates expert-level multimodal understanding using 1,000 curated clips paired with human-annotated questions and answers.
+
+\end{itemize}
+
+\begin{figure*}[t]
+    \centering
+    % Legend Row
+    \includegraphics[width=0.7\linewidth]{figures/audio_intervention/legend_adversarial.pdf}
+    
+    \vspace{-.2cm} 
+
+    % AF3 Group
+    \begin{subfigure}{0.43\textwidth}
+        \centering
+        \textbf{Audio Flamingo 3 (AF3)}\\[0.5em]
+        \includegraphics[width=0.45\linewidth]{figures/audio_intervention/af3_adv_accuracy.pdf}
+        \hfill
+        \includegraphics[width=0.45\linewidth]{figures/audio_intervention/af3_adv_consistency.pdf}
+    \end{subfigure}
+    \hfill
+    \vrule width 0.8pt % Solid vertical separator
+    \hfill
+    % Qwen Group
+    \begin{subfigure}{0.43\textwidth}
+        \centering
+        \textbf{Qwen2.5-Omni}\\[0.5em]
+        \includegraphics[width=0.45\linewidth]{figures/audio_intervention/qwen2.5_adv_accuracy.pdf}
+        \hfill
+        \includegraphics[width=0.45\linewidth]{figures/audio_intervention/qwen2.5_adv_consistency.pdf}
+    \end{subfigure}
+    \vspace{-.3cm}
+    \caption{\textbf{Adversarial Intervention Results (RQ3).} Accuracy and CoT Consistency for \textit{AF 3} \textbf{(left)} and \textit{Qwen2.5-Omni} \textbf{(right)}. }
+    \vspace{-.7cm}
+    \label{fig:adv_results}
+\end{figure*}
+
+\noindent \textbf{Models:} We utilize two high-performance open-source models capable of structured reasoning: \textit{Audio Flamingo 3-Think} \cite{goel2025audioflamingo3advancing} and \textit{Qwen2.5-Omni} \cite{Qwen2.5-Omni}.
+
+\noindent \textbf{Evaluation Procedure:} As shown in Figure \ref{fig:pipeline_cot_intervention}, we prompt the models to "think and reason step-by-step" before providing a final answer. We use automated preprocessing to isolate the reasoning string from the final prediction. Consistency is evaluated in two parts:
+\begin{enumerate}
+    \item \textbf{Answer Consistency:} We compare the final prediction of the noisy audio against the clean baseline answer to calculate accuracy trends.
+    \item \textbf{CoT Consistency:} We employ an \textit{LLM-as-a-judge} (\texttt{Mistral-Small-3.1-24B-Instruct-2503}) to rate the semantic similarity between the baseline and intervened reasoning on a 1--5 scale. A score of 5 represents \textit{Perfectly Consistent} (identical meaning), while a score of 1 represents \textit{Contradictory} (opposing conclusions).
+\end{enumerate}
+We elaborate more en each intervention, and the obtained results in the following subsections. 
+
+
+
+
+\input{study1}
+
+\input{study2}
+\input{study3}
+
+%\subsection{Grounded Masking}
+
+\input{cot_intervention}
+
+
+% \section{Methodology}
+
+% In this paper, we have two main categories to assess the faithfulness of a LALM. i) \textbf{CoT interventions} to evaluate the faithfulness of the produced reasoning chains ii) \textbf{Audio Interventions} To assess whether the model is faithful to the input audio. \cem{(Debatable if should use the faithfulness for audio interventions actually)}
+
+
+% \subsection{CoT Interventions}
+% In this section, we describe the interventions used to assess the faithfulness of CoT representations. The prompting setup is illustrated in Figure~\ref{fig:cot-modifications}. An Audio-Language Model is given an input audio sample along with a text prompt containing a question about the audio. The prompt also instructs the model to reason step by step. The model first generates a CoT explaining its reasoning process. After obtaining the CoT, we modify it for the faithfulness analysis and then prompt the model to produce a final answer based on the modified CoT. In the following subsection, we describe the intervention strategies in detail.
+
+
+
+% % \begin{figure*}[ht]
+% %     \centering
+% %     \includegraphics[width=.95\textwidth]{figures/standalone_legend.pdf}
+% %     \includegraphics[width=.41\textwidth]{figures/cross_dataset_random_partial_filler_text_qwen-restricted.pdf}
+% %     \includegraphics[width=.41\textwidth]{figures/cross_dataset_random_partial_filler_text_salmonn-restricted.pdf}
+% %     \caption{Injecting filler tokens inside CoTs \textbf{(left)} for QWEN, \textbf{(right)} for SALMONN.}
+% %     \label{fig:fillertokens}
+% % \end{figure*}
+
+% % \begin{figure*}[ht]
+% %     \centering
+% %     \includegraphics[width=.95\textwidth]{figures/standalone_legend.pdf}
+% %     \includegraphics[width=.41\textwidth]{figures/cross_dataset_paraphrasing_qwen-restricted.pdf}
+% %     \includegraphics[width=.41\textwidth]{figures/cross_dataset_paraphrasing_salmonn-restricted.pdf}
+% %     \caption{Paraphrasing of CoTs \textbf{(left)} for QWEN, \textbf{(right)} for SALMONN.}
+% %     \label{fig:paraphrasing}
+% % \end{figure*}
+
+% % \begin{figure*}[ht]
+% %     \centering
+% %     \includegraphics[width=.95\textwidth]{figures/standalone_legend.pdf}
+% %     \includegraphics[width=.41\textwidth]{figures/cross_dataset_early_answering_qwen-restricted.pdf}
+% %     \includegraphics[width=.41\textwidth]{figures/cross_dataset_early_answering_salmonn-restricted.pdf}
+% %     \caption{Early Answering modification on CoTs \textbf{(left)} for QWEN, \textbf{(right)} for SALMONN.}
+% %     \label{fig:earlyanswering}
+% % \end{figure*}
+
+
+% % \begin{figure*}[ht]
+% %     \centering
+% %     \includegraphics[width=.95\textwidth]{figures/standalone_legend.pdf}
+% %     \includegraphics[width=.41\textwidth]{figures/cross_dataset_adding_mistakes_qwen-restricted.pdf}
+% %     \includegraphics[width=.41\textwidth]{figures/cross_dataset_adding_mistakes_salmonn-restricted.pdf}
+% %     \caption{Adding Mistakes modification on CoTs \textbf{(left)} for QWEN, \textbf{(right)} for SALMONN.}
+% %     \label{fig:addingmistakes}
+% % \end{figure*}
+
+
+% We apply the following CoT modifications to assess the faithfulness of the selected LALMs. \\
+
+% \noindent \textbf{Filler Tokens} \; To assess whether the model relies on the semantic content of the CoT representations, we replace a given percentage of CoT tokens with filler tokens. If the answer of the model after the replacement with filler tokens does not change compared to the original CoT, (if the results remain consistent), we infer that the model may not be faithful to its generated CoT, likely due to extra test time compute. Specifically, we randomly replace portions of the CoT with sequences of filler tokens, each represented as a space followed by three periods (“ ...”). We test filler token strings ranging from 0 tokens up to the full length of the CoT, with a step size of 5\% of a given CoT.
+% \cem{We need to fix this one as we do the non-OOD version as well now}
+
+% \noindent \textbf{Paraphrasing} \; To test whether CoTs contain hidden information encoded in their phrasing, we paraphrase each CoT using a large language model while preserving the semantic content of the CoT. This removes specific wording choices that could carry implicit signals. If phrasing-encoded information contributes to the accuracy gains from CoT, paraphrasing should reduce the consistency of results between the original CoT and the paraphrased one. This intervention targets potential unfaithfulness due to encoded reasoning in CoTs. We progressively paraphrase each sentence until reaching the end of the CoT. For paraphrasing, we use the same LLM backbone as used within the corresponding LALM. For example, LLAMA\footnote{\href{https://huggingface.co/lmsys/vicuna-13b-v1.1/}{lmsys/vicuna-13b-v1.1} } ~\cite{touvron2023llama} for SALMONN and Qwen\footnote{\href{https://huggingface.co/Qwen/Qwen-7B}{Qwen/Qwen-7B}}~\cite{bai2023qwen} LLM for Qwen2-Audio.\\
+
+% \noindent \textbf{Early Answering} \; To test whether accuracy gains of CoT originate from post-hoc reasoning, we truncate the CoT and prompt the model to answer using only the partial reasoning. For each collected CoT, we progressively remove sentences from the end, producing truncated versions such as [], [x\textsubscript{1}], [x\textsubscript{1}, x\textsubscript{2}], ..., [x\textsubscript{1}, ..., x\textsubscript{n}]. Each truncated CoT replaces the original one in the sample, and the model is then prompted to answer as before. If performance remains consistent with the original CoT even with shorter CoTs, this then suggests that reasoning is likely to be post-hoc, since the earlier sentences were generated after the decision was made.\\
+
+% \noindent \textbf{Adding Mistakes} \; To assess whether the model relies on the semantic content of the CoT, we incrementally introduce mistakes into the reasoning. If the model’s final answer changes after these modifications, it suggests that the CoT is a faithful representation of the model’s decision process. Conversely, if the answer remains unchanged, it indicates that the semantic content of the CoT may not influence the decision. Similar to paraphrasing, we progressively add mistakes to the CoT sentences using the same LLM backbone as used within the corresponding LALM. Unlike paraphrasing, after introducing an incorrect sentence (e.g., at position $x_5$), we prompt the model to continue reasoning from this incorrect step and use the resulting CoT to evaluate the model’s faithfulness.
+
+%  \begin{figure*}[t]
+%     \centering
+%     %\begin{tikzpicture}
+%         % Draw a horizontal line that covers the entire width of the page
+%     %    \draw[thick] (0,0) -- (17,0);
+%     %\end{tikzpicture}
+%     \begin{tikzpicture}
+%         %interventions
+%         \node (adv) at (-10,0) [xshift=0cm] {\includegraphics[width=.25\textwidth]{figures/adversarial.png}};
+%         \node[left of=adv, rotate=90, align=center, yshift=1.5cm]{{Adversarial}};
+%         \node[above of=adv, yshift=.4cm]{\textbf{Interventions}};
+        
+%         \node (mask) [below of=adv, xshift=0cm, yshift=-.5cm] {\includegraphics[width=.25\textwidth]{figures/audioinput_masked.png}};
+%         \node[left of=mask, rotate=90, yshift=1.5cm]{Masking};
+%         \draw[thick] (-7.2,-5.1) -- (-7.2,1.5);
+
+%         \node (gmask) [below of=mask, xshift=0cm, yshift=-.5cm] {\includegraphics[width=.25\textwidth]{figures/audioinput_masked.png}};
+%         \node[left of=gmask, rotate=90, yshift=1.5cm, text width=1cm]{Guided\\Masking};
+%         %\draw[thick] (-7.2,-4.) -- (-7.2,1.5);
+        
+%         \node (parap) [below of=gmask, xshift=0cm, yshift=-.5cm] {\includegraphics[width=.25\textwidth]{figures/audioinput_noise.png}};
+%         \node[left of=parap, rotate=90, yshift=1.5cm, xshift=-.1cm]{Noise};
+
+%         %datasets 
+%         \node(datasets) [right of=adv, xshift=4cm, yshift=1.4cm]{\textbf{Datasets}};
+%         \node(advdata) [below of=datasets, text width=4cm, yshift=-.2cm, xshift=.2cm, align=center]{{S. Gender\\ S. Animal, S. Language, \\ S. Emotion}};
+
+%         \node(maskdata) [below of=advdata, text width=4cm, yshift=-.7cm, xshift=0cm, align=center]{{S. Gender\\ S. Animal, S. Language, \\ S. Emotion}};
+
+%         \node(gmaskdata) [below of=maskdata, text width=4cm, yshift=-.5cm, xshift=0cm, align=center]{{JASCO}};
+
+%         \node(ndata) [below of=gmaskdata, text width=4cm, yshift=-.5cm, xshift=0cm, align=center]{{S. Gender\\ S. Animal, S. Language, \\ S. Emotion}};
+
+%         %eval
+%         \draw[thick] (-2.7,-5.1) -- (-2.7,1.5);
+%         \node(eval) [right of=datasets, xshift=3.5cm]{\textbf{Evaluation}};
+%         \node(adveval) [below of=eval, text width=4cm, yshift=-.2cm, xshift=.0cm, align=center]{{CoT comparison,\\ Accuracy, Consistency}};
+
+%         \node(maskeval) [below of=adveval, text width=4cm, yshift=-.7cm, xshift=.0cm, align=center]{{CoT comparison, \\ Accuracy, Consistency}};
+
+%         \node(gmaskeval) [below of=maskeval, text width=4cm, yshift=-.5cm, xshift=.0cm, align=center]{{CoT comparison, \\ Accuracy, Consistency}};
+
+%         \node(neval) [below of=gmaskeval, text width=4cm, yshift=-.5cm, xshift=.0cm, align=center]{{CoT comparison, \\ Accuracy, Consistency}};
+
+%         \draw[thick] (-12.2,-.7) -- (1,-.7);
+%         \draw[thick] (-12.2,-2.2) -- (1,-2.2);
+%         \draw[thick] (-12.2,-3.7) -- (1,-3.7);
+        
+%         %\node (adv) [] {incld}
+%     \end{tikzpicture}
+%     \caption{The table describes the audio interventions, and the datasets / evaluations they are applied on. \textbf{(First row)} Adversarial Interventions to test attentive listening, \textbf{(Second row)} Masking based Interventions to test wholistic listening, \textbf{(Third row)} Guided masking specific to JASCO dataset, \textbf{(Fourth row)} {Additive Noise Interventions} to test robustness.}
+%     \label{fig:audiointerventions}
+% \end{figure*}
+
+% \subsection{Audio Interventions}
+% We introduce four different types of audio interventions to assess the faithfulness of audio language models on different axes. These consists of i) Adversarial Interventions ii) Masking Interventions iii) Noise Intervention  iv) Guided Masking 
+
+% \noindent \textbf{Adversarial Interventions} \\
+% In this 
+
+% The goal is to check for attentive listening 
+
+% \noindent \textbf{Masking Interventions} \\
+% The goal is to check if the LALM exhibits a wholistic listening capability 
+
+% \noindent \textbf{Noise Intervention} \\ 
+% The goal is to test the robustness, and hallucinations.
+
+% \noindent \textbf{Guided Masking}
+
+% \section{Experimental Setup}
+% \noindent \textbf{Models} \; We use Qwen2-Audio-7B-Instruct~\cite{chu2024qwen2audiotechnicalreport}, and SALMONN-13B~\cite{tang2024salmonngenerichearingabilities}. We chose these models because they have shown promising results in audio understanding and reasoning tasks. \\
+
+% \begin{figure*}[th]
+%     \centering
+%     \resizebox{0.8\textwidth}{!}{%
+%     \begin{minipage}{\textwidth}
+
+%     % -------------------------
+%     % Shared legend
+%     % -------------------------
+%     \includegraphics[width=.95\textwidth]{figures/standalone_legend.pdf}
+%     \vspace{0.5em}
+
+%     % -------------------------
+%     % Column headers
+%     % -------------------------
+%     \begin{minipage}[t]{.32\textwidth}
+%         \centering \textbf{QWEN}
+%     \end{minipage}
+%     \begin{minipage}[t]{.32\textwidth}
+%         \centering \textbf{SALMONN}
+%     \end{minipage}
+%     \begin{minipage}[t]{.32\textwidth}
+%         \centering \textbf{Flamingo3}
+%     \end{minipage}
+
+%     \vspace{0.5em}
+
+%     % =========================
+%     % Row 1: Filler Tokens
+%     % =========================
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_random_partial_filler_text_qwen-restricted.pdf}
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_random_partial_filler_text_salmonn-restricted.pdf}
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_random_partial_filler_text_salmonn-restricted.pdf}
+
+%     \vspace{0.4em}
+
+%     % =========================
+%     % Row 2: Paraphrasing
+%     % =========================
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_paraphrasing_qwen-restricted.pdf}
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_paraphrasing_salmonn-restricted.pdf}
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_paraphrasing_salmonn-restricted.pdf}
+
+%     \vspace{0.4em}
+
+%     % =========================
+%     % Row 3: Early Answering
+%     % =========================
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_early_answering_qwen-restricted.pdf}
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_early_answering_salmonn-restricted.pdf}
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_early_answering_salmonn-restricted.pdf}
+
+%     \vspace{0.4em}
+
+%     % =========================
+%     % Row 4: Adding Mistakes
+%     % =========================
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_adding_mistakes_qwen-restricted.pdf}
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_adding_mistakes_salmonn-restricted.pdf}
+%     \includegraphics[width=.32\textwidth]{figures/cross_dataset_adding_mistakes_salmonn-restricted.pdf}
+
+%     % -------------------------
+%     % Caption
+%     % -------------------------
+%     \caption{
+%         Effects of Chain-of-Thought (CoT) interventions across models.
+%         Rows correspond to intervention types (top to bottom):
+%         filler token injection, paraphrasing, early answering, and adding mistakes.
+%         Columns correspond to models (left to right):
+%         QWEN, SALMONN, and Flamingo3.
+%     }
+%     \label{fig:cot_interventions}
+%     \end{minipage}}
+% \end{figure*}
+
+
+% \noindent \textbf{Datasets} \; We evaluate our method on two benchmarks: SAKURA~\cite{yang2025sakuramultihopreasoninglarge} and MMAR~\cite{ma2025mmarchallengingbenchmarkdeep}. SAKURA tests single- and multi-hop reasoning over 500 multiple-choice questions per track across four audio attributes: gender, language, emotion, and animal sounds. MMAR is a more challenging benchmark with 1,000 curated audio–question–answer triplets from real-world videos, requiring multi-step reasoning and domain knowledge. Unlike prior benchmarks, MMAR spans not only speech, audio, and music, but also their mixtures, making it a diverse and difficult evaluation set. \\
+
+% \noindent \textbf{Prompting and Sampling} \; For each example, we generate three CoT chains to improve the stability and robustness of our evaluation. We include only CoTs containing 2–7 sentences to avoid outliers caused by overly short or excessively long responses. Our filtering criteria and prompting templates for the different intervention types are available in our \href{https://github.com/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs}{GitHub repository}.
+
+% \section{Experimental Results}
+% We evaluate model faithfulness by measuring \textit{consistency}, defined as the agreement between the predicted answer using the original CoT and the predicted answer using a modified CoT. We analyze how consistency varies with the percentage of modifications applied to the original CoT.
+
+% \subsection{Filler Tokens}
+% Figure~\ref{fig:fillertokens} shows the effect of progressively replacing CoT words with filler tokens on answer consistency. For both Qwen2-Audio and SALMONN, consistency decreases as a larger proportion of the CoT is replaced, indicating that removing semantic content degrades performance. The degree of performance drop varies across datasets. For example, in SALMONN, the SAKURA-Gender shows a smaller decline compared to other tracks, suggesting that gender-related reasoning may be less dependent on explicit CoT content and more influenced by other factors. Overall, across both models and all datasets, we observe a clear downward trend in consistency as the proportion of filler tokens increases.
+
+% \subsection{Paraphrasing}
+% In Figure \ref{fig:paraphrasing}, we see the effect of paraphrasing the CoTs. We initially observe a drop in consistency, but unlike the other modifications the observation is that both QWEN2-Audio and SALMONN remain more or less consistent with the original answers which points towards the fact that the models do not rely on a specific hidden encoding in CoTs, but rather pay attention to the actual semantic content.
+
+
+% \subsection{Early Answering}
+% Figure~\ref{fig:earlyanswering} shows the effect of progressively truncating the CoT and prompting the model to answer with only the remaining initial sentences. Unlike text-only LLMs, where prior work~\cite{lanham2023measuringfaithfulnesschainofthoughtreasoning} observed a slower decline or even flat trends, LALMs show a clear dependence on the amount of reasoning retained. When fewer sentences are kept, answer consistency drops sharply, and it increases almost monotonically as more of the original CoT is preserved. This suggests that LALMs rely heavily on the full reasoning chain rather than producing post-hoc justifications.
+
+% \subsection{Adding Mistakes}
+% Figure~\ref{fig:addingmistakes} shows the effect of injecting random mistakes into the CoTs. For both Qwen2-Audio and SALMONN, answer consistency decreases when a larger portion of the reasoning is corrupted, then recovers when the original unaltered CoT is fully preserved (100\%). This pattern suggests that both models rely on the semantic content of the CoTs: introducing incorrect reasoning disrupts their predictions, indicating that the models tend to attend to the meaning of the CoTs rather than treating them as post-hoc explanations.
+
+
+% \section{Conclusion}
+% In this paper, we presented an empirical study on the faithfulness of chain-of-thought reasoning in Large Audio-Language Models. Our results suggest that, unlike text-only LLMs, after going through the list of interventions we described, LALMs generally produce CoTs that seem to be faithful to their underlying decision processes, with no substantial variation across different datasets or tasks. To the best of our knowledge, this is the first work to investigate faithfulness in LALMs, and we view it as an important step toward more comprehensive studies of reliability and interpretability in multimodal reasoning models. For future work, we plan to evaluate a broader range of LALMs and explore a more comprehensive list of intervention strategies.
+
+\vspace{-.4cm}
+\section{Conclusions}
+% In this paper, we investigated the faithfulness of CoT representations of LALMs with respect to the input audio, and with respect to audio. We have identified three criteria for faithful CoT with respect to input audio; Hallucination-free listening, Wholistic Listening, and Attentive Listening. We observe that both AF3, and QWEN exhibits hallucinatory CoTs depending on the dataset, measured by the heavy noise (-20dB SNR) and intense masking (100\% masking). We have also observed that the models remain brittle to adversarial injections, which suggests that the model's attention can easily get distracted from the input audio on which the model's being asked about. On the CoT interventions, we have observed that the CoTs produced by LALMs do not obviously exhibit posthoc reasoning, extra test-time computation or encoded reasoning effects. As mentioned however, our investigation reveals interesting shortcomings regarding faithfulness of the CoTs with respect to the input audio. We believe that future research can investigate methodologies to address these shortcomings.   
+%hallucination-free listening, holistic listening, and attentive listening. 
+In this work, we study the faithfulness of CoT reasoning in LALMs with respect to both the input audio and the final prediction. We defined three criteria for audio-faithful reasoning, and through our experiments show that both AF3 and Qwen2.5-Omni fail to consistently satisfy these properties. The models often hallucinate CoTs even when audio input is corrupted and are vulnerable to adversarial injections. 
+At the same time, textual CoT interventions indicate that the generated reasoning is generally faithful to the model’s final prediction. Overall, our findings reveal a multimodal disconnect: LALMs are internally consistent with their text outputs but frequently fail to remain strongly grounded in the audio input, highlighting the need for stronger audio–text grounding mechanisms.
+
+%as their attention is easily hijacked by irrelevant spoken transcripts rather than remaining focused on the target acoustic features they are asked to analyze. 
+
+\section{Generative AI Use Disclosure}
+Generative AI Use Disclosure: Large Language Models (LLMs) were used solely to assist with minor language editing, grammar correction, and polishing of the manuscript text. No AI tools were used to generate scientific ideas, experimental results, or analyses. All authors reviewed and verified the final content and take full responsibility for the accuracy and integrity of the work.
+
+\bibliographystyle{IEEEtran}
+\bibliography{mybib}
+
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: t
+%%% End:
