@@ -21,7 +21,7 @@ Methodology:
    indicates a bias toward semantic speech content in the audio.
 
 This is a FOUNDATIONAL experiment - it generates fresh CoTs on the adversarial
-audio. Baseline predicted choices are loaded for consistency comparison.
+audio.
 """
 
 import os
@@ -31,29 +31,6 @@ import logging
 
 # This is a 'foundational' experiment - fresh CoT generation on adversarial audio.
 EXPERIMENT_TYPE = "foundational"
-
-
-def load_baseline_lookup(baseline_path: str) -> dict:
-    """
-    Load baseline results and build a lookup by (id, chain_id) -> predicted_choice.
-    This allows us to compare adversarial predictions against baseline predictions.
-    """
-    lookup = {}
-    if not os.path.exists(baseline_path):
-        logging.warning(f"Baseline results not found at '{baseline_path}'. "
-                        "Consistency with baseline will not be computed.")
-        return lookup
-    
-    with open(baseline_path, 'r') as f:
-        for line in f:
-            try:
-                data = json.loads(line)
-                lookup[(data['id'], data['chain_id'])] = data['predicted_choice']
-            except (json.JSONDecodeError, KeyError):
-                continue
-    
-    logging.info(f"Loaded {len(lookup)} baseline predictions from '{baseline_path}'")
-    return lookup
 
 
 def run_adversarial_trial(model, processor, tokenizer, model_utils, question: str, choices: str, audio_path: str) -> dict:
@@ -116,14 +93,6 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                  f"Aug: {adversarial_aug}, Variant: {adversarial_variant}): "
                  f"Saving to {output_path} ---")
 
-    # --- Load Baseline Predictions for Consistency ---
-    # Construct baseline path: results/{model}/baseline/baseline_{model}_{dataset}.jsonl
-    baseline_path = os.path.join(
-        config.RESULTS_DIR, config.MODEL_ALIAS, 'baseline',
-        f"baseline_{config.MODEL_ALIAS}_{config.DATASET_NAME}.jsonl"
-    )
-    baseline_lookup = load_baseline_lookup(baseline_path)
-
     # --- RESTARTABILITY LOGIC (identical to baseline.py) ---
     completed_chains = collections.defaultdict(int)
     if os.path.exists(output_path):
@@ -180,9 +149,6 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                     trial_result['correct_choice'] = correct_choice_letter
                     trial_result['is_correct'] = (trial_result['predicted_choice'] == correct_choice_letter)
                     
-                    # Baseline consistency
-                    baseline_pred = baseline_lookup.get((sample['id'], chain_id))
-                    
                     # Explicitly order keys for readability
                     final_ordered_result = {
                         "id": trial_result['id'],
@@ -192,8 +158,6 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                         "predicted_choice": trial_result['predicted_choice'],
                         "correct_choice": trial_result['correct_choice'],
                         "is_correct": trial_result['is_correct'],
-                        "corresponding_baseline_predicted_choice": baseline_pred,
-                        "is_consistent_with_baseline": (trial_result['predicted_choice'] == baseline_pred) if baseline_pred is not None else None,
                         "final_answer_raw": trial_result['final_answer_raw'],
                         "final_prompt_messages": trial_result['final_prompt_messages'],
                         "question": trial_result['question'],
@@ -223,7 +187,6 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     logging.info(f"Total samples in dataset: {len(data_samples)}")
     logging.info(f"Adversarial augmentation: {adversarial_aug}")
     logging.info(f"Adversarial variant: {adversarial_variant}")
-    logging.info(f"Baseline predictions loaded: {len(baseline_lookup)}")
     logging.info(f"Samples already complete: {len(fully_completed_ids)}")
     logging.info(f"Samples processed in this run: {total_processed_in_this_run - skipped_samples_count}")
     logging.info(f"Skipped samples due to errors in this run: {skipped_samples_count}")

@@ -18,15 +18,14 @@ if PROJECT_ROOT not in sys.path:
 
 from analysis.cot.common import (
     build_reference_lookup,
-    dataset_style,
     default_reference_mode,
     discover_datasets,
     load_results,
-    ordered_present_datasets,
     prepare_experiment_frame,
     reference_label,
     x_axis_label,
 )
+from analysis.shared_plot_style import dataset_style, ordered_present_datasets
 
 SUPPORTED_EXPERIMENTS = [
     "paraphrasing",
@@ -59,9 +58,8 @@ def _build_output_basename(
     if restricted:
         basename += "_restricted"
 
-    if _is_filler_experiment(experiment) and filler_type != "dots":
-        basename += f"_{filler_type}"
     if _is_filler_experiment(experiment):
+        basename += f"_{filler_type}"
         basename += f"_{partial_filler_mode}"
 
     if _is_perturbation_experiment(experiment) and perturbation_source != "self":

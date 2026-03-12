@@ -7,11 +7,6 @@ Each experiment now has its own script:
 - `plot_partial_filler.py` (single script, select `--mode start|end|random`)
 - `plot_adding_mistakes.py`
 
-Compatibility wrappers are still present:
-- `plot_partial_filler_text.py` (`start`)
-- `plot_flipped_partial_filler_text.py` (`end`)
-- `plot_random_partial_filler_text.py` (`random`)
-
 Shared utilities live in `common.py`, while `plot_cot_experiment.py` is the shared backend.
 
 ## Canonical defaults
