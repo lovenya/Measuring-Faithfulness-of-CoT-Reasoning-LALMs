@@ -1,0 +1,229 @@
+:root {
+  --bg: #f7f5f0;
+  --ink: #1a1a18;
+  --muted: #6b6b63;
+  --accent: #c84b2f;
+  --rule: #d8d4cc;
+  --card: #ffffff;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  padding: 0 1.5rem;
+}
+
+/* ── Header ── */
+header {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 5rem 0 2.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.venue-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.2rem;
+}
+
+h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.2;
+  font-weight: 400;
+  margin-bottom: 1.8rem;
+}
+
+h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.authors {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-bottom: 1.8rem;
+  font-style: italic;
+}
+
+/* ── Buttons ── */
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  background: transparent;
+  transition: background 0.18s, color 0.18s;
+}
+.btn:hover { background: var(--ink); color: var(--bg); }
+.btn.primary { background: var(--ink); color: var(--bg); }
+.btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+
+/* ── Main layout ── */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 0 6rem;
+}
+
+section { margin-bottom: 3.5rem; }
+
+h2 {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  font-family: 'DM Serif Display', serif;
+}
+
+p {
+  font-size: 1rem;
+  color: var(--ink);
+  max-width: 80ch;
+  margin-bottom: 1rem;
+}
+
+/* Tabs */
+.tabs, .sub-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tab-btn, .sub-tab-btn {
+  background: transparent;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.2s, background 0.2s;
+  border-radius: 4px;
+}
+
+.tab-btn:hover, .sub-tab-btn:hover {
+  background: var(--rule);
+  color: var(--ink);
+}
+
+.tab-btn.active, .sub-tab-btn.active {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.tab-content { display: none; }
+.sub-tab-content { display: none; }
+
+/* Interventions */
+.intervention-group {
+  margin-bottom: 3rem;
+  padding: 1.5rem;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.caption {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}
+
+.result-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+.result-grid.two-col {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.plot-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.plot-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.plot-container img {
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+
+/* ── Footer ── */
+footer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--rule);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.tab-content.active, .sub-tab-content.active {
+  animation: fadeUp 0.3s ease both;
+}
+header, main section {
+  animation: fadeUp 0.5s ease both;
+}
