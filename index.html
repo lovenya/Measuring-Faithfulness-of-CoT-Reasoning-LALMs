@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Paper Title — Anonymous Submission</title>
+  <title>Investigating Faithfulness in Large Audio Language Models — Anonymous Submission</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
@@ -29,7 +29,7 @@
 
     /* ── Header ── */
     header {
-      max-width: 780px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 5rem 0 2.5rem;
       border-bottom: 1px solid var(--rule);
@@ -93,7 +93,7 @@
 
     /* ── Main layout ── */
     main {
-      max-width: 780px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 3rem 0 6rem;
     }
@@ -102,7 +102,7 @@
 
     h2 {
       font-family: 'DM Mono', monospace;
-      font-size: 0.72rem;
+      font-size: 0.85rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
       color: var(--muted);
@@ -111,80 +111,108 @@
       border-bottom: 1px solid var(--rule);
     }
 
+    h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      font-family: 'DM Serif Display', serif;
+    }
+
     p {
       font-size: 1rem;
       color: var(--ink);
-      max-width: 65ch;
+      max-width: 80ch;
+      margin-bottom: 1rem;
     }
 
-    /* ── Teaser figure ── */
-    .teaser {
-      width: 100%;
-      aspect-ratio: 16/7;
-      background: var(--card);
-      border: 1px solid var(--rule);
-      border-radius: 4px;
+    /* Tabs */
+    .tabs, .sub-tabs {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--muted);
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn, .sub-tab-btn {
+      background: transparent;
+      border: none;
       font-family: 'DM Mono', monospace;
       font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.75rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      color: var(--muted);
+      transition: color 0.2s, background 0.2s;
+      border-radius: 4px;
+    }
+
+    .tab-btn:hover, .sub-tab-btn:hover {
+      background: var(--rule);
+      color: var(--ink);
+    }
+
+    .tab-btn.active, .sub-tab-btn.active {
+      background: var(--ink);
+      color: var(--bg);
+    }
+
+    .tab-content { display: none; }
+    .sub-tab-content { display: none; }
+
+    /* Interventions */
+    .intervention-group {
+      margin-bottom: 3rem;
+      padding: 1.5rem;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
     .caption {
       font-size: 0.85rem;
       color: var(--muted);
       font-style: italic;
+      margin-bottom: 1.5rem;
     }
 
-    /* ── Results grid ── */
     .result-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
+      gap: 1.5rem;
       margin-top: 1rem;
     }
+    .result-grid.two-col {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
 
-    .result-card {
-      background: var(--card);
+    .plot-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--bg);
       border: 1px solid var(--rule);
       border-radius: 4px;
-      padding: 1.4rem 1.6rem;
+      padding: 1rem;
     }
 
-    .result-card .metric {
-      font-family: 'DM Serif Display', serif;
-      font-size: 2.2rem;
-      color: var(--accent);
-      line-height: 1;
-      margin-bottom: 0.3rem;
-    }
-
-    .result-card .label {
-      font-size: 0.82rem;
-      color: var(--muted);
-    }
-
-    /* ── BibTeX ── */
-    .bibtex {
-      background: var(--card);
-      border: 1px solid var(--rule);
-      border-radius: 4px;
-      padding: 1.4rem 1.6rem;
+    .plot-title {
       font-family: 'DM Mono', monospace;
-      font-size: 0.78rem;
-      line-height: 1.8;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
       color: var(--muted);
-      white-space: pre;
-      overflow-x: auto;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .plot-container img {
+      width: 100%;
+      height: auto;
+      border-radius: 2px;
     }
 
     /* ── Footer ── */
     footer {
-      max-width: 780px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 1.5rem 0;
       border-top: 1px solid var(--rule);
@@ -199,104 +227,233 @@
 
     /* ── Animations ── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: translateY(0); }
+    }
+    .tab-content.active, .sub-tab-content.active {
+      animation: fadeUp 0.3s ease both;
     }
     header, main section {
       animation: fadeUp 0.5s ease both;
     }
-    main section:nth-child(1) { animation-delay: 0.05s; }
-    main section:nth-child(2) { animation-delay: 0.10s; }
-    main section:nth-child(3) { animation-delay: 0.15s; }
-    main section:nth-child(4) { animation-delay: 0.20s; }
-    main section:nth-child(5) { animation-delay: 0.25s; }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="venue-tag">Anonymous Submission · Conference Name 20XX</div>
-    <h1>Your Paper Title Goes <em>Here</em></h1>
+    <div class="venue-tag">Anonymous Submission</div>
+    <h1>Investigating <em>Faithfulness</em> in Large Audio Language Models</h1>
     <p class="authors">Anonymous Authors</p>
     <div class="links">
       <a class="btn primary" href="#">📄 Paper (PDF)</a>
-      <a class="btn" href="YOUR_ANONYMOUS_GITHUB_URL">💻 Code</a>
-      <a class="btn" href="#">🎥 Video</a>
-      <a class="btn" href="#">📊 Slides</a>
+      <a class="btn" href="https://github.com/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/Measuring-Faithfulness-of-CoT-Reasoning-LALMs">💻 Code</a>
     </div>
   </header>
 
   <main>
-
-    <!-- TEASER FIGURE -->
-    <section>
-      <h2>Teaser</h2>
-      <div class="teaser">[ Teaser figure goes here ]</div>
-      <p class="caption">Figure 1. A short caption describing the main idea or result of the paper.</p>
-    </section>
-
-    <!-- ABSTRACT -->
     <section>
       <h2>Abstract</h2>
       <p>
-        Replace this with your paper abstract. Keep it concise — one paragraph summarizing
-        the problem, your approach, and the key results. This is often the first thing
-        reviewers read, so make it count.
+        Large Audio Language Models (LALMs) integrate audio encoders with pretrained Large Language Models to perform complex multimodal reasoning tasks. While these models can generate Chain-of-Thought (CoT) explanations, the faithfulness of these reasoning chains remains unclear. In this work, we propose a systematic framework to evaluate CoT faithfulness in LALMs with respect to both the input audio and the final model prediction. We define three criteria for audio faithfulness: hallucination-free, holistic, and attentive listening. Our code and experiments suggest a potential multimodal disconnect: reasoning often aligns with the final prediction but is not always strongly grounded in the audio.
       </p>
     </section>
 
-    <!-- METHOD -->
-    <section>
-      <h2>Method</h2>
-      <p>
-        Briefly describe your approach here. You can add figures, diagrams, or an overview
-        of your pipeline. Replace the teaser block below with an architecture figure.
-      </p>
-      <br>
-      <div class="teaser">[ Method / Architecture figure ]</div>
-      <p class="caption">Figure 2. Overview of the proposed method.</p>
-    </section>
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="openTab(event, 'audio-interventions')">Audio Interventions</button>
+      <button class="tab-btn" onclick="openTab(event, 'cot-interventions')">CoT Interventions</button>
+    </div>
 
-    <!-- RESULTS -->
-    <section>
-      <h2>Results</h2>
-      <p>Highlight your key quantitative results. Edit the cards below with your numbers.</p>
-      <div class="result-grid">
-        <div class="result-card">
-          <div class="metric">XX.X%</div>
-          <div class="label">Metric A on Dataset B</div>
+    <!-- AUDIO INTERVENTIONS CONTENT -->
+    <div id="audio-interventions" class="tab-content active">
+      <section>
+        <h2>Audio Interventions</h2>
+        <p>We propose three different audio interventions in order to measure the capability of LALMs to listen attentively, wholistically, and without hallucinations.</p>
+        
+        <div class="intervention-group">
+          <h3>Masking (Wholistic Listening)</h3>
+          <p class="caption">Combined Masking Accuracy and Consistency across Masking Ratios.</p>
+          <div class="result-grid two-col">
+            <div class="plot-container">
+              <span class="plot-title">Mask Accuracy</span>
+              <img src="assets/audio_intervention/Combined_mask_Accuracy.png" alt="Combined Mask Accuracy Plot" />
+            </div>
+            <div class="plot-container">
+              <span class="plot-title">Mask Consistency</span>
+              <img src="assets/audio_intervention/Combined_mask_Consistency.png" alt="Combined Mask Consistency Plot" />
+            </div>
+          </div>
         </div>
-        <div class="result-card">
-          <div class="metric">+X.X</div>
-          <div class="label">Improvement over baseline</div>
-        </div>
-        <div class="result-card">
-          <div class="metric">XX×</div>
-          <div class="label">Speedup / Efficiency gain</div>
-        </div>
-      </div>
-      <br>
-      <div class="teaser">[ Qualitative results / comparison figure ]</div>
-      <p class="caption">Figure 3. Qualitative comparison against prior work.</p>
-    </section>
 
-    <!-- BIBTEX -->
-    <section>
-      <h2>BibTeX</h2>
-      <div class="bibtex">@inproceedings{anonymous20XX,
-  title     = {Your Paper Title Goes Here},
-  author    = {Anonymous},
-  booktitle = {Conference Name},
-  year      = {20XX}
-}</div>
-    </section>
+        <div class="intervention-group">
+          <h3>Noise (Hallucination-free listening)</h3>
+          <p class="caption">Combined Noise Accuracy and Consistency across SNR levels.</p>
+          <div class="result-grid two-col">
+            <div class="plot-container">
+              <span class="plot-title">Noise Accuracy</span>
+              <img src="assets/audio_intervention/Combined_noise_Accuracy.png" alt="Combined Noise Accuracy Plot" />
+            </div>
+            <div class="plot-container">
+              <span class="plot-title">Noise Consistency</span>
+              <img src="assets/audio_intervention/Combined_noise_Consistency.png" alt="Combined Noise Consistency Plot" />
+            </div>
+          </div>
+        </div>
+
+        <div class="intervention-group">
+          <h3>Adversarial (Attentive Listening)</h3>
+          <p class="caption">Adversarial accuracy and consistency evaluated on AF3 and Qwen2.5-Omni.</p>
+          <div class="result-grid two-col">
+            <div class="plot-container">
+              <span class="plot-title">AF3 Adversarial Accuracy</span>
+              <img src="assets/audio_intervention/af3_adv_accuracy.png" alt="AF3 Adversarial Accuracy" />
+            </div>
+            <div class="plot-container">
+              <span class="plot-title">AF3 Adversarial Consistency</span>
+              <img src="assets/audio_intervention/af3_adv_consistency.png" alt="AF3 Adversarial Consistency" />
+            </div>
+            <div class="plot-container">
+              <span class="plot-title">Qwen2.5-Omni Adversarial Accuracy</span>
+              <img src="assets/audio_intervention/qwen2.5_adv_accuracy.png" alt="Qwen2.5-Omni Adversarial Accuracy" />
+            </div>
+            <div class="plot-container">
+              <span class="plot-title">Qwen2.5-Omni Adversarial Consistency</span>
+              <img src="assets/audio_intervention/qwen2.5_adv_consistency.png" alt="Qwen2.5-Omni Adversarial Consistency" />
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- COT INTERVENTIONS CONTENT -->
+    <div id="cot-interventions" class="tab-content">
+      <section>
+        <h2>Chain-of-Thought (CoT) Interventions</h2>
+        <p>We analyze faithfulness by systematically modifying the generated CoTs and observing how these changes affect model accuracy and predictions. The following visualizations demonstrate the impact of filler token injection and mistake addition based on Mistral perturbations.</p>
+        
+        <div class="sub-tabs">
+          <button class="sub-tab-btn active" onclick="openSubTab(event, 'cot-filler')">Filler Tokens</button>
+          <button class="sub-tab-btn" onclick="openSubTab(event, 'cot-mistakes')">Adding Mistakes</button>
+          <button class="sub-tab-btn" onclick="openSubTab(event, 'cot-early')">Early Answering</button>
+          <button class="sub-tab-btn" onclick="openSubTab(event, 'cot-para')">Paraphrasing</button>
+        </div>
+
+        <div id="cot-filler" class="sub-tab-content active">
+          <div class="intervention-group">
+            <h3>Random Partial Filler Text (Lorem)</h3>
+            <div class="result-grid two-col">
+              <div class="plot-container">
+                <span class="plot-title">Audio Flamingo 3</span>
+                <img src="assets/cot_intervention/cross_dataset_random_partial_filler_text_0pct_flamingo_hf_lorem_restricted.png" alt="AF3 Filler Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+              <div class="plot-container">
+                <span class="plot-title">Qwen2.5-Omni</span>
+                <img src="assets/cot_intervention/cross_dataset_random_partial_filler_text_0pct_qwen_omni_lorem_restricted.png" alt="Qwen Omni Filler Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="cot-mistakes" class="sub-tab-content">
+          <div class="intervention-group">
+            <h3>Adding Mistakes (External Mistral Perturbation)</h3>
+            <div class="result-grid two-col">
+              <div class="plot-container">
+                <span class="plot-title">Audio Flamingo 3</span>
+                <img src="assets/cot_intervention/cross_dataset_adding_mistakes_vs_rpf_flamingo_hf_restricted-mistral.png" alt="AF3 Mistakes Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+              <div class="plot-container">
+                <span class="plot-title">Qwen2.5-Omni</span>
+                <img src="assets/cot_intervention/cross_dataset_adding_mistakes_vs_rpf_qwen_omni_restricted-mistral.png" alt="Qwen Omni Mistakes Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="cot-early" class="sub-tab-content">
+          <div class="intervention-group">
+            <h3>Early Answering</h3>
+            <div class="result-grid two-col">
+              <div class="plot-container">
+                <span class="plot-title">Audio Flamingo 3</span>
+                <img src="assets/cot_intervention/cross_dataset_early_answering_100pct_flamingo_hf_restricted.png" alt="AF3 Early Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+              <div class="plot-container">
+                <span class="plot-title">Qwen2.5-Omni</span>
+                <img src="assets/cot_intervention/cross_dataset_early_answering_100pct_qwen_omni_restricted.png" alt="Qwen Omni Early Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="cot-para" class="sub-tab-content">
+          <div class="intervention-group">
+            <h3>Paraphrasing (External Mistral)</h3>
+            <div class="result-grid two-col">
+              <div class="plot-container">
+                <span class="plot-title">Audio Flamingo 3</span>
+                <img src="assets/cot_intervention/cross_dataset_paraphrasing_0pct_words_flamingo_hf_restricted-mistral.png" alt="AF3 Paraphrasing Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+              <div class="plot-container">
+                <span class="plot-title">Qwen2.5-Omni</span>
+                <img src="assets/cot_intervention/cross_dataset_paraphrasing_0pct_words_qwen_omni_restricted-mistral.png" alt="Qwen Omni Paraphrasing Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
 
   </main>
 
   <footer>
-    <span>Anonymous Submission — Do not distribute</span>
+    <span>Anonymous Submission</span>
     <span>Conference Name 20XX</span>
   </footer>
 
+  <script>
+    function openTab(evt, tabName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tab-content");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+        tabcontent[i].classList.remove("active");
+      }
+      tablinks = document.getElementsByClassName("tab-btn");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(tabName).style.display = "block";
+      // Slight delay to re-trigger animation
+      setTimeout(() => {
+        document.getElementById(tabName).classList.add("active");
+      }, 10);
+      evt.currentTarget.className += " active";
+    }
+    
+    function openSubTab(evt, tabName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("sub-tab-content");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+        tabcontent[i].classList.remove("active");
+      }
+      tablinks = document.getElementsByClassName("sub-tab-btn");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(tabName).style.display = "block";
+      setTimeout(() => {
+        document.getElementById(tabName).classList.add("active");
+      }, 10);
+      evt.currentTarget.className += " active";
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("audio-interventions").style.display = "block";
+      document.getElementById("cot-filler").style.display = "block";
+    });
+  </script>
 </body>
-</html>index.html
+</html>

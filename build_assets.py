@@ -5,9 +5,9 @@ from pathlib import Path
 
 # Paths
 SRC_DIR = Path("LALM_Faithfulness/figures")
-DOCS_ASSETS = Path("docs/assets")
+DOCS_ASSETS = Path("assets")
 
-# Create docs/assets if it doesn't exist
+# Create assets if it doesn't exist
 DOCS_ASSETS.mkdir(parents=True, exist_ok=True)
 (DOCS_ASSETS / "audio_intervention").mkdir(exist_ok=True)
 (DOCS_ASSETS / "cot_intervention").mkdir(exist_ok=True)
@@ -80,4 +80,4 @@ process_file(qwen / "random_partial_filler_text" / "cross_dataset_random_partial
 process_file(qwen / "early_answering" / "cross_dataset_early_answering_100pct_qwen_omni_restricted.png", cot_dest) # guess
 process_file(qwen / "paraphrasing" / "cross_dataset_paraphrasing_0pct_words_qwen_omni_restricted-mistral.png", cot_dest) # guess
 
-print("Asset build complete! Please verify generated PNGs in docs/assets.")
+print("Asset build complete! Please verify generated PNGs in assets/.")
