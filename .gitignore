@@ -71,6 +71,7 @@ scripts/reformat_pooneh_mmar.py
 scripts/reformat_pooneh_mmau.py
 analysis/extra_scripts
 analysis/final_plots
+analysis/old_scripts/
 final_plots/delta_slope_vs_accuracy
 final_plots/flamingo
 final_plots/slope_vs_accuracy

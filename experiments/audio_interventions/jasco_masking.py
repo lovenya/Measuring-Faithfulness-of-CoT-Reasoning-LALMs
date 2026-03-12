@@ -137,7 +137,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                     )
                     continue
 
-                for chain_id in range(1, num_chains + 1):
+                for chain_id in range(num_chains):
                     total_expected += 1
                     trial_key = (sample_id, condition, chain_id)
 
