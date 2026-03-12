@@ -132,13 +132,13 @@ if __name__ == "__main__":
     names =["mmar","mmau"]
     for name in names:
         print(f"\n🔧 Processing dataset: {name.upper()}")
-        # MANIFEST_FILE = f"henoop_version/data/sakura/{name}/{name}_manifest_new.jsonl" 
-        # RESULTS_FILE = f"henoop_version/output/af3/{name}/baseline_{name}_REAS.jsonl"
-        # OUTPUT_FILE = f"henoop_version/output/af3/{name}/baseline_{name}_REAS_fixed.jsonl"
-        MANIFEST_FILE = f"henoop_version/data/{name}/{name}_manifest_json_new.jsonl" 
-        RESULTS_FILE = f"henoop_version/output/af3/{name}/baseline_{name}_REAS.jsonl"
-        OUTPUT_FILE = f"henoop_version/output/af3/{name}/baseline_{name}_REAS_fixed.jsonl"
-        OUTPUT_FILE = f"henoop_version/output/af3/{name}/baseline_{name}_REAS_fixed.jsonl"
+        # MANIFEST_FILE = f"pooneh_version/data/sakura/{name}/{name}_manifest_new.jsonl" 
+        # RESULTS_FILE = f"pooneh_version/output/af3/{name}/baseline_{name}_REAS.jsonl"
+        # OUTPUT_FILE = f"pooneh_version/output/af3/{name}/baseline_{name}_REAS_fixed.jsonl"
+        MANIFEST_FILE = f"pooneh_version/data/{name}/{name}_manifest_json_new.jsonl" 
+        RESULTS_FILE = f"pooneh_version/output/af3/{name}/baseline_{name}_REAS.jsonl"
+        OUTPUT_FILE = f"pooneh_version/output/af3/{name}/baseline_{name}_REAS_fixed.jsonl"
+        OUTPUT_FILE = f"pooneh_version/output/af3/{name}/baseline_{name}_REAS_fixed.jsonl"
         
         process_semantic_file(MANIFEST_FILE, RESULTS_FILE, OUTPUT_FILE)
 

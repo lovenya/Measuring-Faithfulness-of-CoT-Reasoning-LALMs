@@ -4,7 +4,7 @@
 Transformers backend adapter for Qwen2.5-Omni.
 
 This module follows the framework utility contract while keeping prompting,
-parsing, and generation behavior aligned with henoop's Qwen Omni wrappers.
+parsing, and generation behavior aligned with pooneh's Qwen Omni wrappers.
 """
 
 from __future__ import annotations
@@ -287,7 +287,7 @@ def run_inference(
     )
     inputs = inputs.to(model.device).to(model.dtype)
 
-    # Keep generation behavior aligned with henoop's wrapper.
+    # Keep generation behavior aligned with pooneh's wrapper.
     with torch.no_grad():
         text_ids = model.generate(
             **inputs,

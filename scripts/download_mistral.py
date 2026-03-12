@@ -11,7 +11,7 @@ import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # Target directory
-TARGET_DIR = "/scratch/aynevol/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/mistral-small-3"
+TARGET_DIR = "/scratch/lovenya/Measuring-Faithfulness-of-CoT-Reasoning-LALMs/model_components/mistral-small-3"
 MODEL_ID = "mistralai/Mistral-Small-3.1-24B-Instruct-2503"
 
 def download_model():

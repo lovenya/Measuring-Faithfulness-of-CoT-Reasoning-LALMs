@@ -5,7 +5,7 @@ Downloads and normalizes the MMAU-test-mini dataset from Hugging Face.
 This script:
 1. Loads the `gamma-lab-umd/MMAU-test-mini` dataset from Hugging Face.
 2. Extracts the UUID `id` from the `other_attributes` JSON string — this is
-   the same ID used in henoop's baseline results, enabling direct mapping.
+   the same ID used in pooneh's baseline results, enabling direct mapping.
 3. Saves each audio file as `data/mmau/audio/mmau_audio_{idx}.wav`.
 4. Produces a standardized JSONL: `data/mmau/mmau_test_standardized.jsonl`.
 5. Also saves a raw metadata JSON for traceability.

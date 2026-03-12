@@ -27,7 +27,7 @@ data/**/**/hf_cache/
 data/adversarial_aug_data/
 adverserial_sythetic_data/
 data/jasco/processed/
-henoop_version/data/mmau/audio
+pooneh_version/data/mmau/audio
 data/mmau/audio/
 data/mmau/MMAU-meta.json
 data/mmar_noisy

@@ -79,10 +79,10 @@ def main():
             'xml',
             'single_turn_explicit_letter',
             'legacy_two_turn',
-            'henoop_single_turn',
+            'pooneh_single_turn',
         ],
         help=(
-            "Prompt strategy for baseline/audio_masking experiments. "
+            "Prompt strategy for baseline/partial_audio_masking experiments. "
             "Use the new names; old names remain as deprecated aliases."
         ),
     )
@@ -125,9 +125,13 @@ def main():
     parser.add_argument(
         '--mask-mode',
         type=str,
-        default='random',
+        default='scattered',
         choices=['random', 'start', 'end', 'scattered'],
-        help="Position mode for audio masking: 'random' (single block), 'start', 'end', or 'scattered' (multiple distributed segments)."
+        help=(
+            "Position mode for partial audio masking: "
+            "'start', 'end', or 'scattered'. "
+            "'random' is kept as a deprecated alias for 'scattered'."
+        ),
     )
 
     # --- Arguments for Adversarial Audio Experiments ---
@@ -157,22 +161,52 @@ def main():
 
     args = parser.parse_args()
 
+    requested_model_alias = args.model
+    requested_experiment_name = args.experiment
+    model_key = config.MODEL_ALIASES[requested_model_alias]
+    experiment_name = config.LEGACY_EXPERIMENT_ALIASES.get(
+        requested_experiment_name,
+        requested_experiment_name,
+    )
+    mask_mode = config.LEGACY_MASK_MODE_ALIASES.get(args.mask_mode, args.mask_mode)
+
+    if requested_model_alias in config.LEGACY_MODEL_ALIASES:
+        logging.warning(
+            "DEPRECATED model alias '%s' in use. Prefer one of %s.",
+            requested_model_alias,
+            config.PUBLIC_MODEL_ALIASES,
+        )
+    if requested_experiment_name != experiment_name:
+        logging.warning(
+            "DEPRECATED experiment alias '%s' in use. Canonical name is '%s'.",
+            requested_experiment_name,
+            experiment_name,
+        )
+    if args.mask_mode != mask_mode:
+        logging.warning(
+            "DEPRECATED mask mode '%s' in use. Canonical mode is '%s'.",
+            args.mask_mode,
+            mask_mode,
+        )
+
     # --- 1. Global Configuration Setup ---
     if args.num_samples is not None: config.NUM_SAMPLES_TO_RUN = args.num_samples
     if args.num_chains is not None: config.NUM_CHAINS_PER_QUESTION = args.num_chains
     config.START_SAMPLE = args.start_sample
     config.END_SAMPLE = args.end_sample
     
-    config.MODEL_ALIAS = args.model
+    config.MODEL_ALIAS = requested_model_alias
+    config.MODEL_KEY = model_key
+    config.EXPERIMENT_NAME = experiment_name
     config.DATASET_NAME = args.dataset
     config.VERBOSE = args.verbose
     config.RESTRICTED = args.restricted
     
     # Set default prompt strategy dynamically based on model if not manually overridden
     if args.prompt_strategy == 'two_turn_sanitized_cot':
-        if args.model in ('qwen_omni', 'qwen_omni_2.5'):
+        if model_key == 'qwen_omni':
             config.PROMPT_STRATEGY = 'xml'
-        elif args.model in ('flamingo_hf', 'aflamingo_3'):
+        elif model_key == 'flamingo_hf':
             config.PROMPT_STRATEGY = 'single_turn_explicit_letter'
         else:
             config.PROMPT_STRATEGY = 'two_turn_sanitized_cot'
@@ -193,7 +227,7 @@ def main():
     # Auto-construct perturbation file path if --use-external-perturbations is set
     # but --perturbation-file is not explicitly provided.
     if config.USE_EXTERNAL_PERTURBATIONS and not config.PERTURBATION_FILE:
-        exp_for_path = args.experiment
+        exp_for_path = experiment_name
         if exp_for_path == 'adding_mistakes':
             pert_filename = 'mistakes.jsonl'
         elif exp_for_path == 'paraphrasing':
@@ -204,7 +238,7 @@ def main():
         if pert_filename:
             config.PERTURBATION_FILE = os.path.join(
                 config.RESULTS_DIR, 'external_llm_perturbations', config.EXTERNAL_LLM,
-                args.model, args.dataset, 'raw', pert_filename
+                requested_model_alias, args.dataset, 'raw', pert_filename
             )
             logging.info(f"[AUTO-PATH] Perturbation file: {config.PERTURBATION_FILE}")
     
@@ -216,9 +250,9 @@ def main():
     # Filler type setting (for filler text experiments)
     config.FILLER_TYPE = args.filler_type
     
-    # Audio masking settings (for audio_masking experiment)
+    # Audio masking settings (for partial_audio_masking experiment)
     config.MASK_TYPE = args.mask_type
-    config.MASK_MODE = args.mask_mode
+    config.MASK_MODE = mask_mode
     
 
     
@@ -230,11 +264,11 @@ def main():
     config.STRATEGY = args.strategy
 
     # --- 2. Centralized Path Management (Now Chunk-Aware) ---
-    experiment_name = args.experiment
+    experiment_name = config.EXPERIMENT_NAME
     model_alias = config.MODEL_ALIAS
     
-    # For audio_masking, jasco_masking, and adversarial, use hierarchical subdirs
-    if experiment_name == 'audio_masking':
+    # For partial_audio_masking and adversarial, use hierarchical subdirs
+    if experiment_name == 'partial_audio_masking':
         output_dir = os.path.join(config.RESULTS_DIR, model_alias, experiment_name,
                                   config.MASK_TYPE, config.MASK_MODE)
     elif experiment_name == 'adversarial' and config.ADVERSARIAL_AUG:
@@ -257,8 +291,8 @@ def main():
     if config.FILLER_TYPE == 'lorem':
         base_filename += "-lorem"
     
-    # Add suffix for audio masking experiments (to create separate files per mask_type/mask_mode)
-    if experiment_name == 'audio_masking':
+    # Add suffix for partial audio masking experiments (separate files per mask_type/mask_mode)
+    if experiment_name == 'partial_audio_masking':
         base_filename += f"_{config.MASK_TYPE}_{config.MASK_MODE}"
     
     # Add suffix for adversarial experiments (aug mode + variant)
@@ -280,30 +314,43 @@ def main():
     log_filepath = setup_logger(log_dir, model_alias, experiment_name, args.dataset)
     
     # --- 3. Dynamic Model Utility Loading ---
-    logging.info(f"Loading utility module for model: {model_alias}")
+    logging.info(
+        "Loading utility module for model alias '%s' (internal key '%s')...",
+        model_alias,
+        model_key,
+    )
     try:
-        model_key = config.MODEL_ALIASES[model_alias]
         model_path = config.MODEL_PATHS[model_key]
-        
-        if model_alias == 'qwen':
-            from core import qwen_utils as model_utils
-        elif model_alias in ('qwen_omni', 'qwen_omni_2.5'):
+
+        if model_key == 'qwen':
+            from core import qwen_audio_2_utils as model_utils
+        elif model_key == 'qwen_omni':
             from core import qwen_omni_utils as model_utils
-        elif model_alias in ('flamingo_hf', 'aflamingo_3'):
+        elif model_key == 'flamingo_hf':
             from core import audio_flamingo_hf_utils as model_utils
-        elif model_alias in ('salmonn', 'salmonn_7b', 'salmonn_audio_13b', 'salmonn_audio_7b'):
+        elif model_key in ('salmonn_checkpoint', 'salmonn_7b_checkpoint'):
             from core import salmonn_utils as model_utils
         else:
-            raise ImportError(f"No utility module defined for model alias '{model_alias}'")
+            raise ImportError(f"No utility module defined for model key '{model_key}'")
 
-    except (ImportError, KeyError) as e:
-        logging.exception(f"Could not load utilities for model '{model_alias}'.")
+    except (ImportError, KeyError):
+        logging.exception(
+            "Could not load utilities for model alias '%s' (internal key '%s').",
+            model_alias,
+            model_key,
+        )
         sys.exit(1)
 
     # --- 4. logging.info a "Run Summary" Banner ---
     logging.info("--- LALM Faithfulness Framework ---")
     logging.info(f"  - Model:      {model_alias.upper()}")
-    logging.info(f"  - Experiment: {args.experiment}")
+    logging.info(f"  - Experiment: {experiment_name}")
+    if requested_experiment_name != experiment_name:
+        logging.info(
+            "  - Deprecated CLI experiment alias '%s' mapped to '%s'",
+            requested_experiment_name,
+            experiment_name,
+        )
     logging.info(f"  - Dataset:    {args.dataset}")
     logging.info(f"  - Prompt Strategy: {config.PROMPT_STRATEGY}")
     
@@ -325,7 +372,7 @@ def main():
     
     try:
         experiment_module = None
-        exp_name = args.experiment
+        exp_name = experiment_name
         
         # When using external perturbations, the ORIGINAL experiment scripts
         # already handle the external lookup via config.PERTURBATION_FILE.
@@ -348,7 +395,7 @@ def main():
         
         EXPERIMENT_TYPE = getattr(experiment_module, 'EXPERIMENT_TYPE')
     except (ImportError, AttributeError):
-        logging.exception(f"Could not load experiment '{args.experiment}'.")
+        logging.exception(f"Could not load experiment '{experiment_name}'.")
         sys.exit(1)
 
     logging.info(f"Detected experiment type: '{EXPERIMENT_TYPE}'")
@@ -424,33 +471,25 @@ def main():
             return os.path.join(base_dir, filename)
 
         config.BASELINE_RESULTS_PATH = get_dependency_path('baseline')
-        config.NO_REASONING_RESULTS_PATH = get_dependency_path('no_reasoning')
         
         experiment_module.run(model, processor, tokenizer, model_utils, config)
 
     elif EXPERIMENT_TYPE == "independent":
-        # Independent experiments need baseline results for consistency comparison
-        # but operate on their own data (e.g., masked audio datasets)
         logging.info("Running an INDEPENDENT experiment...")
-        
-        # Get baseline path for consistency comparison
-        def get_dependency_path(exp_name):
-            base_dir = os.path.join(config.RESULTS_DIR, model_alias, exp_name)
-            filename = f"{exp_name}_{model_alias}_{args.dataset}"
-            if config.RESTRICTED:
-                filename += "-restricted"
-            if args.part is not None:
-                filename += f".part_{args.part}"
-            filename += ".jsonl"
-            return os.path.join(base_dir, filename)
-        
-        config.BASELINE_RESULTS_PATH = get_dependency_path('baseline')
-        
+
         # Load original dataset samples
         try:
             dataset_path = config.DATASET_MAPPING[args.dataset]
             data_samples = load_dataset(dataset_path)
-            if config.NUM_SAMPLES_TO_RUN > 0:
+            if config.START_SAMPLE is not None and config.END_SAMPLE is not None:
+                data_samples = data_samples[config.START_SAMPLE:config.END_SAMPLE]
+                logging.info(
+                    "[SAMPLE RANGE] Processing samples %s to %s (%s samples).",
+                    config.START_SAMPLE,
+                    config.END_SAMPLE,
+                    len(data_samples),
+                )
+            elif config.NUM_SAMPLES_TO_RUN > 0:
                 data_samples = data_samples[:config.NUM_SAMPLES_TO_RUN]
             logging.info(f"Processing {len(data_samples)} samples from '{dataset_path}'.")
             experiment_module.run(model, processor, tokenizer, model_utils, data_samples, config)

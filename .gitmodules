@@ -1,6 +1,6 @@
 [submodule "salmonn-source-code"]
 	path = salmonn-source-code
-	url = https://github.com/aynevol/SALMONN.git
+	url = https://github.com/lovenya/SALMONN.git
 	branch = salmonn
 [submodule "data/data/What_Are_They_Doing"]
 	path = data/data/What_Are_They_Doing

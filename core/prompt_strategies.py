@@ -15,7 +15,7 @@ DEFAULT_PROMPT_STRATEGY = "two_turn_sanitized_cot"
 VALID_PROMPT_STRATEGIES = ("two_turn_sanitized_cot", "xml", "single_turn_explicit_letter")
 DEPRECATED_STRATEGY_ALIASES = {
     "legacy_two_turn": "two_turn_sanitized_cot",
-    "henoop_single_turn": "single_turn_explicit_letter",
+    "pooneh_single_turn": "single_turn_explicit_letter",
 }
 
 

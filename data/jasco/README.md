@@ -202,7 +202,7 @@ Orientation: Both
 
 ```bibtex
 @INPROCEEDINGS{10889092,
-  author={Wang, Yingzhi and Mousavi, henoop and Ploujnikov, Artem and Ravanelli, Mirco},
+  author={Wang, Yingzhi and Mousavi, pooneh and Ploujnikov, Artem and Ravanelli, Mirco},
   booktitle={ICASSP 2025 - 2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
   title={What Are They Doing? Joint Audio-Speech Co-Reasoning},
   year={2025},

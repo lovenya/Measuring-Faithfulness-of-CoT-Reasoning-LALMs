@@ -502,7 +502,7 @@ def run_no_reasoning_inference(
 ) -> Dict[str, object]:
     """Run inference with no-reasoning prompt (direct answer only).
 
-    Uses a simpler prompt without reasoning cues, matching henoop's
+    Uses a simpler prompt without reasoning cues, matching pooneh's
     af3_wrapper.py use_reasoning=False pattern.
     """
     if not os.path.exists(audio_path):

@@ -80,8 +80,8 @@ python interface/AF3_wrapper.py \
 
 To extract labels for any remaining null predictions, these scripts parse the model's text using exact string matching, word stemming, and semantic overlap.
 
-- For SAKURA: Run python henoop_version/repair_and_save_final.py
-- For MMAR and MMAU: Run python henoop_version/repair_and_save_final_mm.py
+- For SAKURA: Run python pooneh_version/repair_and_save_final.py
+- For MMAR and MMAU: Run python pooneh_version/repair_and_save_final_mm.py
   Fix path inside the scripts.
 
 ## Step 4 — Run Conditioned Inference (Faithfulness)
@@ -123,9 +123,9 @@ ratios=("p20" "p40" "p60" "p80","p80")
 for r in "${ratios[@]}"; do
   echo "Running AF3 for MASK ${r}..."
 
-  python henoop_version/interface/af3_wrapper.py \
-    --input henoop_version/data/sakura/${name}/${name}_manifest.jsonl \
-    --output henoop_version/result/baseline/af3/${name}/mask/${r}/baseline_${name}_REAS.jsonl \
+  python pooneh_version/interface/af3_wrapper.py \
+    --input pooneh_version/data/sakura/${name}/${name}_manifest.jsonl \
+    --output pooneh_version/result/baseline/af3/${name}/mask/${r}/baseline_${name}_REAS.jsonl \
     --data_root [PATH_TO_YOUR_DATA]/${name}/mask/${r} \
     --num_runs 1 \
     --use_reasoning
@@ -149,9 +149,9 @@ snrs=("snr20" "snr10" "snr0" "snr-10" "snr-20" )
 for s in "${snrs[@]}"; do
   echo "Running AF3 for NOISE ${s}..."
 
-  python henoop_version/interface/af3_wrapper.py \
-    --input henoop_version/data/sakura/${name}/${name}_manifest.jsonl \
-    --output henoop_version/result/baseline/af3/${name}/noise/${s}/baseline_${name}_REAS.jsonl \
+  python pooneh_version/interface/af3_wrapper.py \
+    --input pooneh_version/data/sakura/${name}/${name}_manifest.jsonl \
+    --output pooneh_version/result/baseline/af3/${name}/noise/${s}/baseline_${name}_REAS.jsonl \
     --data_root [PATH_TO_YOUR_DATA]/${name}/noise_snr/${s} \
     --num_runs 1 \
     --use_reasoning
@@ -166,9 +166,9 @@ Use this module to evaluate the semantic consistency between a clean baseline an
 
 ```bash
 MODEL="mistralai/Mistral-Small-3.1-24B-Instruct-2503"
-BASE="henoop_version/result/baseline/af3/mmar/baseline_mmar_REAS_post_process.jsonl"
-INTERV="henoop_version/result/baseline/af3/mmar/mask/p20/baseline_mmar_REAS_post_process.jsonl"
-OUTPUT="henoop_version/result/baseline/af3/mmar/mask/p20/consistency_analysis.jsonl"
+BASE="pooneh_version/result/baseline/af3/mmar/baseline_mmar_REAS_post_process.jsonl"
+INTERV="pooneh_version/result/baseline/af3/mmar/mask/p20/baseline_mmar_REAS_post_process.jsonl"
+OUTPUT="pooneh_version/result/baseline/af3/mmar/mask/p20/consistency_analysis.jsonl"
 
 # Run the script
 python cot_consistency.py "$MODEL" "$BASE" "$INTERV" "$OUTPUT"

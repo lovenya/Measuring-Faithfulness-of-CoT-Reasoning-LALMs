@@ -53,7 +53,7 @@ def convert_jsonl_to_jasco_csv(jsonl_path, metadata_csv_path, output_csv_path):
     print(f"✅ Saved JASCO-formatted CSV to {output_csv_path}")
 # Run this for all 3 conditions: Original, Audio Mask, Speech Mask
 convert_jsonl_to_jasco_csv(
-    jsonl_path="henoop_version/result/baseline/qwen2.5/jasco/audio_mask/baseline_audio_mask_REAS.jsonl",
+    jsonl_path="pooneh_version/result/baseline/qwen2.5/jasco/audio_mask/baseline_audio_mask_REAS.jsonl",
     metadata_csv_path="data/jasco/dataset/v0/v0.csv",
-    output_csv_path="henoop_version/result/baseline/qwen2.5/jasco/audio_mask/baseline_audio_mask_REAS.csv"
+    output_csv_path="pooneh_version/result/baseline/qwen2.5/jasco/audio_mask/baseline_audio_mask_REAS.csv"
 )
