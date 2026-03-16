@@ -325,8 +325,8 @@ def main():
     if config.USE_EXTERNAL_PERTURBATIONS and config.EXTERNAL_LLM:
         base_filename += f"-{config.EXTERNAL_LLM}"
     
-    # Add suffix for lorem filler type (to distinguish from dots filler results)
-    if config.FILLER_TYPE == 'lorem':
+    # Add suffix for filler experiments only (do not tag unrelated experiments like baseline).
+    if experiment_name in {'filler_text', 'partial_filler_text'} and config.FILLER_TYPE == 'lorem':
         base_filename += "-lorem"
     
     # Add suffix for partial audio masking experiments (separate files per mask_type/mask_mode)

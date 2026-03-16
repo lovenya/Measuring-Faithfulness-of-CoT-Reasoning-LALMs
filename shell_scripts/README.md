@@ -17,3 +17,4 @@ This directory contains reproducibility scripts grouped by purpose.
 ## Current scripts
 
 - `envs/create_env_aflamingo_3.sh`: creates `env/aflamingo_3`, installs runtime dependencies, and bootstraps local NLTK data required by `main.py`.
+- `envs/create_env_qwen_omni_2.5.sh`: creates `env/qwen_omni_2.5`, installs runtime dependencies, and bootstraps local NLTK data required by `main.py`.
