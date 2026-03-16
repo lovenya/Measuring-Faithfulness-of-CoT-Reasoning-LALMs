@@ -43,6 +43,7 @@ def merge_part_files(
     filler_type: str | None = None,
     mask_type: str | None = None,
     mask_mode: str | None = None,
+    partial_filler_mode: str | None = None,
 ) -> int:
     """
     Validate parallel parts and merge to a single .jsonl file.
@@ -58,8 +59,11 @@ def merge_part_files(
     print(f"  - Run Mode: {'RESTRICTED' if restricted else 'FULL DATASET'}")
     if perturbation_source != "self":
         print(f"  - Perturbation Source: {perturbation_source.upper()}")
-    if experiment == "audio_masking":
+    canonical_experiment = "partial_audio_masking" if experiment == "audio_masking" else experiment
+    if canonical_experiment == "partial_audio_masking":
         print(f"  - Mask Type/Mode: {mask_type}/{mask_mode}")
+    if canonical_experiment == "partial_filler_text":
+        print(f"  - Partial Filler Mode: {partial_filler_mode}")
 
     if expected_parts is None:
         print(
@@ -88,6 +92,7 @@ def merge_part_files(
         filler_type=filler_type,
         mask_type=mask_type,
         mask_mode=mask_mode,
+        partial_filler_mode=partial_filler_mode,
     )
     print_report(report)
 
@@ -200,6 +205,13 @@ def main() -> int:
         help="Mask mode (required for audio_masking).",
     )
     parser.add_argument(
+        "--partial-filler-mode",
+        type=str,
+        default=None,
+        choices=["start", "end", "random"],
+        help="Mode for partial_filler_text (required when using canonical partial_filler_text).",
+    )
+    parser.add_argument(
         "--filler-type",
         type=str,
         default=None,
@@ -208,12 +220,17 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if args.experiment == "audio_masking":
+    canonical_experiment = "partial_audio_masking" if args.experiment == "audio_masking" else args.experiment
+
+    if canonical_experiment == "partial_audio_masking":
         if not args.mask_type or not args.mask_mode:
-            parser.error("audio_masking requires --mask-type and --mask-mode.")
+            parser.error("partial_audio_masking requires --mask-type and --mask-mode.")
     else:
         if args.mask_type or args.mask_mode:
-            print("WARNING: --mask-type/--mask-mode ignored for non-audio_masking experiments.")
+            print("WARNING: --mask-type/--mask-mode ignored for non-partial_audio_masking experiments.")
+
+    if canonical_experiment == "partial_filler_text" and args.experiment == "partial_filler_text" and not args.partial_filler_mode:
+        parser.error("partial_filler_text requires --partial-filler-mode.")
 
     # Filler type is mandatory for filler text experiments
     if "filler" in args.experiment and not args.filler_type:
@@ -233,6 +250,7 @@ def main() -> int:
         filler_type=args.filler_type,
         mask_type=args.mask_type,
         mask_mode=args.mask_mode,
+        partial_filler_mode=args.partial_filler_mode,
     )
 
     return merge_part_files(
@@ -249,6 +267,7 @@ def main() -> int:
         filler_type=args.filler_type,
         mask_type=args.mask_type,
         mask_mode=args.mask_mode,
+        partial_filler_mode=args.partial_filler_mode,
     )
 
 

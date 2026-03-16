@@ -10,9 +10,9 @@ Input path is auto-built:  results/{model}/jasco_masking/jasco_masking_{model}_j
 Output path is auto-built: results/{model}/jasco_masking/llm_judge_evaluations/jasco_masking_{model}_jasco_evaluated_by_{judge}.jsonl
 
 Usage:
-    python analysis/audio_interventions/jasco/jasco_evaluation_llm_as_a_judge.py --model qwen
-    python analysis/audio_interventions/jasco/jasco_evaluation_llm_as_a_judge.py --model qwen --judge mistral
-    python analysis/audio_interventions/jasco/jasco_evaluation_llm_as_a_judge.py --model salmonn --judge mistral
+    python analysis/audio_interventions/jasco/jasco_evaluation_llm_as_a_judge.py --model qwen_omni_2.5
+    python analysis/audio_interventions/jasco/jasco_evaluation_llm_as_a_judge.py --model qwen_omni_2.5 --judge mistral
+    python analysis/audio_interventions/jasco/jasco_evaluation_llm_as_a_judge.py --model aflamingo_3 --judge mistral
 """
 
 import argparse
@@ -148,7 +148,7 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument('--model', type=str, required=True,
-                        help="Model alias (e.g., 'qwen', 'salmonn', 'salmonn_7b').\n"
+                        help="Model alias (e.g., 'qwen_omni_2.5', 'aflamingo_3', 'salmonn_audio_7b').\n"
                              "Input path is auto-built: results/{model}/jasco_masking/jasco_masking_{model}_jasco.jsonl")
     parser.add_argument('--judge', type=str, default='mistral',
                         choices=['mistral'],

@@ -13,9 +13,9 @@ Conditions:
   speech_10..100 = speech masked N% (audio track preserved)
 
 Usage:
-    python analysis/audio_interventions/jasco/evaluate_jasco_results.py --model qwen
-    python analysis/audio_interventions/jasco/evaluate_jasco_results.py --model qwen --judge mistral --save-pdf
-    python analysis/audio_interventions/jasco/evaluate_jasco_results.py --model qwen --output-txt results/qwen/jasco_masking/summary.txt
+    python analysis/audio_interventions/jasco/evaluate_jasco_results.py --model qwen_omni_2.5
+    python analysis/audio_interventions/jasco/evaluate_jasco_results.py --model qwen_omni_2.5 --judge mistral --save-pdf
+    python analysis/audio_interventions/jasco/evaluate_jasco_results.py --model qwen_omni_2.5 --output-txt results/qwen_omni_2.5/jasco_masking/summary.txt
 """
 
 import os
@@ -242,7 +242,7 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument('--model', type=str, required=True,
-                        help="Model alias (e.g., 'qwen', 'salmonn', 'flamingo').")
+                        help="Model alias (e.g., 'qwen_omni_2.5', 'aflamingo_3', 'salmonn_audio_7b').")
     parser.add_argument('--judge', type=str, default='mistral',
                         help="Judge name used during evaluation (default: mistral).")
     parser.add_argument('--results-dir', type=str, default='results',

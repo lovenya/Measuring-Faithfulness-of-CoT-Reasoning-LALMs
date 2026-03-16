@@ -11,6 +11,23 @@ FILLER_EXPERIMENTS = {
     "flipped_partial_filler_text",
 }
 
+PARTIAL_FILLER_MODE_BY_EXPERIMENT = {
+    "partial_filler_text": "start",
+    "flipped_partial_filler_text": "end",
+    "random_partial_filler_text": "random",
+}
+
+INVALID_BASELINE_SUFFIXES = {
+    "dots",
+    "lorem",
+    "mistral",
+}
+
+
+def _is_clean_baseline_dataset_name(dataset_part: str) -> bool:
+    """Reject polluted baseline filenames like 'mmar-lorem'."""
+    return not any(dataset_part.endswith(f"-{suffix}") for suffix in INVALID_BASELINE_SUFFIXES)
+
 def load_results(model_name: str, results_dir: str, experiment_name: str, dataset_name: str, filler_type: str = 'dots', perturbation_source: str = 'self', restricted: bool = False) -> pd.DataFrame:
     """
     Loads experiment results from a model-specific JSONL file into a Pandas DataFrame.
@@ -32,12 +49,25 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
     Returns:
         pd.DataFrame: A DataFrame containing the loaded results.
     """
-    # Construct the model-specific path, e.g., 'results/qwen_omni/baseline/'
-    experiment_path = os.path.join(results_dir, model_name, experiment_name)
+    partial_filler_mode = PARTIAL_FILLER_MODE_BY_EXPERIMENT.get(experiment_name)
+    canonical_experiment_name = (
+        "partial_filler_text" if partial_filler_mode is not None else experiment_name
+    )
+
+    if canonical_experiment_name == "partial_filler_text":
+        experiment_path = os.path.join(
+            results_dir,
+            model_name,
+            canonical_experiment_name,
+            partial_filler_mode,
+        )
+    else:
+        # Construct the model-specific path, e.g., 'results/qwen_omni/baseline/'
+        experiment_path = os.path.join(results_dir, model_name, canonical_experiment_name)
     
     # --- FILENAME CONSTRUCTION ---
     # e.g., 'baseline_qwen_omni_mmar'
-    base_name = f"{experiment_name}_{model_name}_{dataset_name}"
+    base_name = f"{canonical_experiment_name}_{model_name}_{dataset_name}"
     
     # Append -restricted suffix (comes right after dataset name, before other suffixes)
     if restricted:
@@ -46,10 +76,16 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
     candidate_base_names = [base_name]
 
     if experiment_name in FILLER_EXPERIMENTS:
-        candidate_base_names = [f"{base_name}-{filler_type}"]
-        if filler_type == "dots":
-            # Backward compatibility for older unsuffixed dots outputs.
-            candidate_base_names.append(base_name)
+        if canonical_experiment_name == "partial_filler_text":
+            candidate_base_names = [f"{base_name}-{filler_type}_{partial_filler_mode}"]
+            if filler_type == "dots":
+                # Backward compatibility for older unsuffixed dots outputs.
+                candidate_base_names.append(f"{base_name}_{partial_filler_mode}")
+        else:
+            candidate_base_names = [f"{base_name}-{filler_type}"]
+            if filler_type == "dots":
+                # Backward compatibility for older unsuffixed dots outputs.
+                candidate_base_names.append(base_name)
 
     # Append suffix for Mistral perturbation source
     if perturbation_source == 'mistral':
@@ -59,6 +95,20 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
         os.path.join(experiment_path, f"{name}.jsonl")
         for name in candidate_base_names
     ]
+
+    if partial_filler_mode is not None and experiment_name != "partial_filler_text":
+        legacy_base_name = f"{experiment_name}_{model_name}_{dataset_name}"
+        if restricted:
+            legacy_base_name += "-restricted"
+        legacy_candidate_base_names = [f"{legacy_base_name}-{filler_type}"]
+        if filler_type == "dots":
+            legacy_candidate_base_names.append(legacy_base_name)
+        if perturbation_source == 'mistral':
+            legacy_candidate_base_names = [f"{name}-mistral" for name in legacy_candidate_base_names]
+        candidate_paths.extend(
+            os.path.join(results_dir, model_name, experiment_name, f"{name}.jsonl")
+            for name in legacy_candidate_base_names
+        )
     # --- END OF FILENAME CONSTRUCTION ---
 
     full_path = next((path for path in candidate_paths if os.path.exists(path)), candidate_paths[0])
@@ -128,6 +178,9 @@ def discover_datasets(model_name: str, results_dir: str, restricted: bool = Fals
         else:
             if has_restricted_suffix:
                 continue
+
+        if not _is_clean_baseline_dataset_name(dataset_part):
+            continue
 
         datasets.add(dataset_part)
 

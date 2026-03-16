@@ -8,8 +8,19 @@ import os
 import pandas as pd
 
 
+INVALID_BASELINE_SUFFIXES = {
+    "dots",
+    "lorem",
+    "mistral",
+}
+
+
 def _filler_suffix(filler_type: str) -> str:
     return f"-{filler_type}"
+
+
+def _is_clean_baseline_dataset_name(dataset_part: str) -> bool:
+    return not any(dataset_part.endswith(f"-{suffix}") for suffix in INVALID_BASELINE_SUFFIXES)
 
 def default_reference_mode(experiment: str) -> str:
     defaults = {
@@ -46,6 +57,9 @@ def discover_datasets(model_name: str, results_dir: str, restricted: bool = Fals
         else:
             if has_restricted_suffix:
                 continue
+
+        if not _is_clean_baseline_dataset_name(dataset_part):
+            continue
 
         datasets.add(dataset_part)
 

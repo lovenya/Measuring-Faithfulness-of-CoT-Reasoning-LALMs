@@ -28,6 +28,16 @@ local_nltk_data_path = os.path.join(PROJECT_ROOT, 'nltk_data')
 if os.path.exists(local_nltk_data_path):
     nltk.data.path.insert(0, local_nltk_data_path)
 
+INVALID_BASELINE_SUFFIXES = {
+    "dots",
+    "lorem",
+    "mistral",
+}
+
+
+def _is_clean_baseline_dataset_name(dataset_part: str) -> bool:
+    return not any(dataset_part.endswith(f"-{suffix}") for suffix in INVALID_BASELINE_SUFFIXES)
+
 
 def discover_datasets(model: str, results_dir: str) -> list[str]:
     """Find all datasets for a model by scanning the baseline directory."""
@@ -36,7 +46,8 @@ def discover_datasets(model: str, results_dir: str) -> list[str]:
     for f in os.listdir(baseline_dir):
         if f.endswith('.jsonl') and '.part_' not in f and '-restricted' not in f:
             name = f.replace(f'baseline_{model}_', '').replace('.jsonl', '')
-            datasets.add(name)
+            if _is_clean_baseline_dataset_name(name):
+                datasets.add(name)
     return sorted(datasets)
 
 

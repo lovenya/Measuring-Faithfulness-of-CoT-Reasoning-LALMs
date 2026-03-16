@@ -22,6 +22,20 @@ FILLER_EXPERIMENTS = {
     "flipped_partial_filler_text",
 }
 
+PARTIAL_FILLER_MODE_BY_EXPERIMENT = {
+    "partial_filler_text": None,
+    "random_partial_filler_text": "random",
+    "flipped_partial_filler_text": "end",
+}
+
+
+def _normalize_experiment_name(experiment: str) -> str:
+    if experiment == "audio_masking":
+        return "partial_audio_masking"
+    if experiment in PARTIAL_FILLER_MODE_BY_EXPERIMENT:
+        return "partial_filler_text"
+    return experiment
+
 
 def build_output_location(
     model: str,
@@ -33,11 +47,15 @@ def build_output_location(
     filler_type: str | None = None,
     mask_type: str | None = None,
     mask_mode: str | None = None,
+    partial_filler_mode: str | None = None,
     external_llm: str | None = None,
 ) -> tuple[str, str]:
     """
     Build (search_dir, base_filename) for outputs.
     """
+    canonical_experiment = _normalize_experiment_name(experiment)
+    resolved_partial_filler_mode = PARTIAL_FILLER_MODE_BY_EXPERIMENT.get(experiment, partial_filler_mode)
+
     if external_llm:
         # e.g. results/external_llm_perturbations/mistral/qwen_omni/mmau/raw/mistakes.jsonl
         search_dir = os.path.join(results_dir, "external_llm_perturbations", external_llm, model, dataset, "raw")
@@ -46,16 +64,22 @@ def build_output_location(
             base_filename += "-restricted"
         return search_dir, base_filename
 
-    if experiment == "audio_masking":
+    if canonical_experiment == "partial_audio_masking":
         if not mask_type or not mask_mode:
             raise ValueError(
-                "audio_masking requires --mask-type and --mask-mode for path resolution."
+                "partial_audio_masking requires --mask-type and --mask-mode for path resolution."
             )
-        search_dir = os.path.join(results_dir, model, experiment, mask_type, mask_mode)
+        search_dir = os.path.join(results_dir, model, canonical_experiment, mask_type, mask_mode)
+    elif canonical_experiment == "partial_filler_text":
+        if not resolved_partial_filler_mode:
+            raise ValueError(
+                "partial_filler_text requires --partial-filler-mode for path resolution."
+            )
+        search_dir = os.path.join(results_dir, model, canonical_experiment, resolved_partial_filler_mode)
     else:
-        search_dir = os.path.join(results_dir, model, experiment)
+        search_dir = os.path.join(results_dir, model, canonical_experiment)
 
-    base_filename = f"{experiment}_{model}_{dataset}"
+    base_filename = f"{canonical_experiment}_{model}_{dataset}"
     if restricted:
         base_filename += "-restricted"
 
@@ -65,8 +89,10 @@ def build_output_location(
     if experiment in FILLER_EXPERIMENTS and filler_type:
         base_filename += f"-{filler_type}"
 
-    if experiment == "audio_masking":
+    if canonical_experiment == "partial_audio_masking":
         base_filename += f"_{mask_type}_{mask_mode}"
+    elif canonical_experiment == "partial_filler_text":
+        base_filename += f"_{resolved_partial_filler_mode}"
 
     return search_dir, base_filename
 
@@ -150,6 +176,7 @@ def validate_parallel_completeness(
     filler_type: str | None = None,
     mask_type: str | None = None,
     mask_mode: str | None = None,
+    partial_filler_mode: str | None = None,
     external_llm: str | None = None,
 ) -> dict[str, Any]:
     """
@@ -160,7 +187,7 @@ def validate_parallel_completeness(
     if num_chains <= 0:
         raise ValueError("--num-chains must be a positive integer.")
 
-    if experiment == "audio_masking" and expected_entries_per_sample is None:
+    if _normalize_experiment_name(experiment) == "partial_audio_masking" and expected_entries_per_sample is None:
         expected_entries_per_sample = 11
 
     search_dir, base_filename = build_output_location(
@@ -173,6 +200,7 @@ def validate_parallel_completeness(
         filler_type=filler_type,
         mask_type=mask_type,
         mask_mode=mask_mode,
+        partial_filler_mode=partial_filler_mode,
         external_llm=external_llm,
     )
 
@@ -296,6 +324,7 @@ def validate_parallel_completeness(
             "filler_type": filler_type,
             "mask_type": mask_type,
             "mask_mode": mask_mode,
+            "partial_filler_mode": partial_filler_mode,
             "search_dir": search_dir,
             "base_filename": base_filename,
         },
@@ -325,8 +354,10 @@ def print_report(report: dict[str, Any]) -> None:
     print(f"  - Experiment: {cfg['experiment'].upper()}")
     print(f"  - Dataset: {cfg['dataset'].upper()}")
     print(f"  - Run Mode: {'RESTRICTED' if cfg['restricted'] else 'FULL DATASET'}")
-    if cfg["experiment"] == "audio_masking":
+    if _normalize_experiment_name(cfg["experiment"]) == "partial_audio_masking":
         print(f"  - Mask Type/Mode: {cfg['mask_type']}/{cfg['mask_mode']}")
+    if _normalize_experiment_name(cfg["experiment"]) == "partial_filler_text":
+        print(f"  - Partial Filler Mode: {cfg['partial_filler_mode']}")
     print(f"  - Expected Parts: {cfg['expected_parts'] if cfg['expected_parts'] is not None else 'N/A (Single File)'}")
     print(f"  - Num Chains: {cfg['num_chains']}")
     if cfg["expected_entries_per_sample"] is not None:
@@ -427,6 +458,12 @@ def main() -> int:
     parser.add_argument("--mask-type", type=str, default=None)
     parser.add_argument("--mask-mode", type=str, default=None)
     parser.add_argument(
+        "--partial-filler-mode",
+        type=str,
+        default=None,
+        choices=["start", "end", "random"],
+    )
+    parser.add_argument(
         "--external-llm",
         type=str,
         default=None,
@@ -441,9 +478,14 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    if args.experiment == "audio_masking":
+    if _normalize_experiment_name(args.experiment) == "partial_audio_masking":
         if not args.mask_type or not args.mask_mode:
-            parser.error("audio_masking requires --mask-type and --mask-mode.")
+            parser.error("partial_audio_masking requires --mask-type and --mask-mode.")
+
+    if _normalize_experiment_name(args.experiment) == "partial_filler_text":
+        resolved_mode = PARTIAL_FILLER_MODE_BY_EXPERIMENT.get(args.experiment, args.partial_filler_mode)
+        if not resolved_mode:
+            parser.error("partial_filler_text requires --partial-filler-mode.")
 
     # Filler type is mandatory for filler text experiments
     if "filler" in args.experiment and not args.filler_type:
@@ -473,6 +515,7 @@ def main() -> int:
                 filler_type=args.filler_type,
                 mask_type=args.mask_type,
                 mask_mode=args.mask_mode,
+                partial_filler_mode=args.partial_filler_mode,
                 external_llm=args.external_llm,
             )
 

@@ -42,14 +42,24 @@ local_nltk_data_path = os.path.join(PROJECT_ROOT, 'nltk_data')
 if os.path.exists(local_nltk_data_path):
     nltk.data.path.insert(0, local_nltk_data_path)
 
+INVALID_BASELINE_SUFFIXES = {
+    "dots",
+    "lorem",
+    "mistral",
+}
+
+
+def _is_clean_baseline_dataset_name(dataset_part: str) -> bool:
+    return not any(dataset_part.endswith(f"-{suffix}") for suffix in INVALID_BASELINE_SUFFIXES)
+
 
 # ---- Experiment definitions ----
-# Each entry: (experiment_name, has_perturbation_source_variants, has_filler_type_variants)
+# Each entry: (experiment_name, has_perturbation_source_variants, has_filler_type_variants, mode_subdirs)
 DEPENDENT_EXPERIMENTS = [
-    ("early_answering",              False, False),
-    ("adding_mistakes",              True,  False),
-    ("paraphrasing",                 True,  False),
-    ("random_partial_filler_text",   False, True),
+    ("early_answering",      False, False, [None]),
+    ("adding_mistakes",      True,  False, [None]),
+    ("paraphrasing",         True,  False, [None]),
+    ("partial_filler_text",  False, True,  ["start", "end", "random"]),
 ]
 
 
@@ -61,7 +71,8 @@ def discover_datasets(model: str, results_dir: str) -> list[str]:
         if f.endswith('.jsonl') and '.part_' not in f and '-restricted' not in f:
             # e.g. baseline_flamingo_hf_mmar.jsonl -> mmar
             name = f.replace(f'baseline_{model}_', '').replace('.jsonl', '')
-            datasets.add(name)
+            if _is_clean_baseline_dataset_name(name):
+                datasets.add(name)
     return sorted(datasets)
 
 
@@ -157,49 +168,55 @@ def process_one_dataset(model: str, dataset: str, results_dir: str,
     print(f"    -> {total_kept}/{total_read} trials kept")
 
     # ---- Step 2: Filter each dependent experiment ----
-    for exp_name, has_pert_source, has_filler_type in DEPENDENT_EXPERIMENTS:
-        exp_dir = os.path.join(results_dir, model, exp_name)
-        if not os.path.isdir(exp_dir):
+    for exp_name, has_pert_source, has_filler_type, mode_subdirs in DEPENDENT_EXPERIMENTS:
+        base_exp_dir = os.path.join(results_dir, model, exp_name)
+        if not os.path.isdir(base_exp_dir):
             continue
 
-        # Build list of file variants to filter
-        variants = []
-
-        # Base file (self) plus legacy unsuffixed dots back-compat.
-        base = f"{exp_name}_{model}_{dataset}"
-        variants.append(f"{base}.jsonl")
-
-        # Perturbation source variants (e.g. -mistral)
-        if has_pert_source:
-            variants.append(f"{base}-mistral.jsonl")
-
-        # Filler type variants.
-        if has_filler_type:
-            variants.append(f"{base}-dots.jsonl")
-            variants.append(f"{base}-lorem.jsonl")
-
-        for variant_filename in variants:
-            input_path = os.path.join(exp_dir, variant_filename)
-            if not os.path.exists(input_path):
+        for mode in mode_subdirs:
+            exp_dir = os.path.join(base_exp_dir, mode) if mode else base_exp_dir
+            if not os.path.isdir(exp_dir):
                 continue
 
-            # Output: insert -restricted before any suffix
-            # e.g. adding_mistakes_flamingo_hf_mmar-mistral.jsonl
-            #   -> adding_mistakes_flamingo_hf_mmar-restricted-mistral.jsonl
-            # e.g. random_partial_filler_text_flamingo_hf_mmar-lorem.jsonl
-            #   -> random_partial_filler_text_flamingo_hf_mmar-restricted-lorem.jsonl
-            # e.g. early_answering_flamingo_hf_mmar.jsonl
-            #   -> early_answering_flamingo_hf_mmar-restricted.jsonl
+            # Build list of file variants to filter
+            variants = []
 
-            # Find where the base dataset name ends to insert -restricted
-            base_dataset_end = f"{exp_name}_{model}_{dataset}"
-            rest = variant_filename[len(base_dataset_end):]  # e.g. "-mistral.jsonl" or ".jsonl"
-            restricted_filename = f"{base_dataset_end}-restricted{rest}"
-            output_path = os.path.join(exp_dir, restricted_filename)
+            # Base file (self) plus legacy unsuffixed dots back-compat.
+            base = f"{exp_name}_{model}_{dataset}"
+            variants.append(f"{base}.jsonl")
 
-            tr, tk = filter_jsonl(input_path, output_path, valid_chains)
-            status = "✓" if tk > 0 else "⚠ EMPTY"
-            print(f"  {status} {exp_name:40s} {variant_filename:55s} -> {tk}/{tr}")
+            # Perturbation source variants (e.g. -mistral)
+            if has_pert_source:
+                variants.append(f"{base}-mistral.jsonl")
+
+            # Filler type variants.
+            if has_filler_type:
+                variants = []
+                for filler_type in ("dots", "lorem"):
+                    variants.append(f"{base}-{filler_type}_{mode}.jsonl")
+
+            for variant_filename in variants:
+                input_path = os.path.join(exp_dir, variant_filename)
+                if not os.path.exists(input_path):
+                    continue
+
+                # Output: insert -restricted before any suffix
+                # e.g. adding_mistakes_flamingo_hf_mmar-mistral.jsonl
+                #   -> adding_mistakes_flamingo_hf_mmar-restricted-mistral.jsonl
+                # e.g. partial_filler_text_flamingo_hf_mmar-lorem_random.jsonl
+                #   -> partial_filler_text_flamingo_hf_mmar-restricted-lorem_random.jsonl
+                # e.g. early_answering_flamingo_hf_mmar.jsonl
+                #   -> early_answering_flamingo_hf_mmar-restricted.jsonl
+
+                # Find where the base dataset name ends to insert -restricted
+                base_dataset_end = f"{exp_name}_{model}_{dataset}"
+                rest = variant_filename[len(base_dataset_end):]  # e.g. "-mistral.jsonl" or ".jsonl"
+                restricted_filename = f"{base_dataset_end}-restricted{rest}"
+                output_path = os.path.join(exp_dir, restricted_filename)
+
+                tr, tk = filter_jsonl(input_path, output_path, valid_chains)
+                status = "✓" if tk > 0 else "⚠ EMPTY"
+                print(f"  {status} {exp_name:40s} {variant_filename:55s} -> {tk}/{tr}")
 
     print(f"\n  Done with {model}/{dataset}.")
 
