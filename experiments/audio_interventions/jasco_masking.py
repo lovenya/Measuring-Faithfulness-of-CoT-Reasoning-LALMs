@@ -44,18 +44,22 @@ def run_trial(model, processor, tokenizer, model_utils, audio_path: str) -> dict
     Returns the model's free-form response.
     """
     messages = [
-        {"role": "user", "content": f"audio\\n\\n{JASCO_PROMPT}"},
+        {"role": "user", "content": f"audio\n\n{JASCO_PROMPT}"},
     ]
 
     response = model_utils.run_inference(
-        model, processor, messages, audio_path,
-        max_new_tokens=512, do_sample=True, temperature=1.0, top_p=0.9
+        model,
+        processor,
+        messages,
+        audio_path,
+        max_new_tokens=512,
+        do_sample=False,
     )
 
     return {
         "prompt": JASCO_PROMPT,
         "audio_path": audio_path,
-        "model_output": response,
+        "model_output": response.strip() if isinstance(response, str) else response,
     }
 
 
@@ -78,6 +82,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     logging.info(f"  Model:   {config.MODEL_ALIAS.upper()}")
     logging.info(f"  Chains:  {num_chains}")
     logging.info(f"  Output:  {output_path}")
+    logging.info("  Generation: deterministic (do_sample=False)")
 
     # --- Build the list of all audio conditions to iterate ---
     # Each sample in jasco_masked_standardized.jsonl has an 'audio_paths' dict
@@ -94,7 +99,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     completed_trials = set()
     if os.path.exists(output_path):
         logging.info("Found existing results file. Checking for completed work...")
-        with open(output_path, 'r') as f:
+        with open(output_path, 'r', encoding='utf-8') as f:
             for line in f:
                 try:
                     data = json.loads(line)
@@ -122,7 +127,7 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     logging.info(f"  Samples: {total_samples}")
 
     # --- Main Experiment Loop ---
-    with open(output_path, 'a') as f:
+    with open(output_path, 'a', encoding='utf-8') as f:
         for sample_idx, sample in enumerate(tqdm(samples, desc="Audio Samples")):
             sample_id = sample['id']
             audio_paths = sample.get('audio_paths', {})

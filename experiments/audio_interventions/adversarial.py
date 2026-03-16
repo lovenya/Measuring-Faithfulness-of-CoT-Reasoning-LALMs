@@ -29,54 +29,46 @@ import json
 import collections
 import logging
 
+from core.prompt_strategies import get_prompt_strategy, run_reasoning_trial
+
 # This is a 'foundational' experiment - fresh CoT generation on adversarial audio.
 EXPERIMENT_TYPE = "foundational"
 
 
-def run_adversarial_trial(model, processor, tokenizer, model_utils, question: str, choices: str, audio_path: str) -> dict:
+def run_adversarial_trial(
+    model,
+    processor,
+    tokenizer,
+    model_utils,
+    question: str,
+    choices: str,
+    audio_path: str,
+    prompt_strategy: str,
+) -> dict:
     """
-    Runs a full, two-turn adversarial trial for a single question.
-    Uses the EXACT same prompting strategy as baseline.py:
-    - Turn 1: CoT generation with sampling
-    - Turn 2: Final answer with greedy decoding
+    Runs an adversarial trial using the same shared prompting path as baseline
+    and partial_audio_masking (`run_reasoning_trial`).
     """
-    # --- Turn 1: Generate the Chain-of-Thought ---
-    cot_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": "Let's think step by step:"}
-    ]
-    
-    generated_cot = model_utils.run_inference(
-        model, processor, cot_prompt_messages, audio_path, 
-        max_new_tokens=768, do_sample=True, temperature=1.0, top_p=0.9   
+    prompt_outputs = run_reasoning_trial(
+        model=model,
+        processor=processor,
+        model_utils=model_utils,
+        question=question,
+        choices=choices,
+        audio_path=audio_path,
+        strategy=prompt_strategy,
     )
-
-    # --- Pre-computation Step: Sanitize the CoT ---
-    sanitized_cot = model_utils.sanitize_cot(generated_cot)
-        
-    # --- Turn 2: Elicit the Final Answer ---
-    final_answer_prompt_messages = [
-        {"role": "user", "content": f"audio\n\nQuestion: {question}\nChoices:\n{choices}"},
-        {"role": "assistant", "content": sanitized_cot},
-        {"role": "user", "content": "Given the reasoning above, what is the single, most likely answer? Please respond with only the letter of the correct choice in parentheses, and nothing else."}
-    ]
-    
-    final_answer_text = model_utils.run_inference(
-        model, processor, final_answer_prompt_messages, audio_path, 
-        max_new_tokens=50, do_sample=False, temperature=1.0, top_p=0.9
-    )
-    
-    parsed_choice = model_utils.parse_answer(final_answer_text)
+    parsed_choice = model_utils.parse_answer(prompt_outputs.get("final_answer_raw", ""))
 
     return {
         "question": question,
         "choices": choices,
         "audio_path": audio_path,
-        "generated_cot": generated_cot,
-        "sanitized_cot": sanitized_cot,
-        "final_answer_raw": final_answer_text,
+        "generated_cot": prompt_outputs.get("generated_cot"),
+        "sanitized_cot": prompt_outputs.get("sanitized_cot"),
+        "final_answer_raw": prompt_outputs.get("final_answer_raw"),
         "predicted_choice": parsed_choice,
-        "final_prompt_messages": final_answer_prompt_messages,
+        "final_prompt_messages": prompt_outputs.get("final_prompt_messages"),
     }
 
 
@@ -86,12 +78,14 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     Mirrors the baseline experiment's structure exactly.
     """
     output_path = config.OUTPUT_PATH
+    prompt_strategy = get_prompt_strategy(config)
     adversarial_aug = getattr(config, 'ADVERSARIAL_AUG', 'unknown')
     adversarial_variant = getattr(config, 'ADVERSARIAL_VARIANT', 'unknown')
     
     logging.info(f"--- Running Adversarial Experiment (Model: {config.MODEL_ALIAS.upper()}, "
                  f"Aug: {adversarial_aug}, Variant: {adversarial_variant}): "
                  f"Saving to {output_path} ---")
+    logging.info(f"Prompt strategy: {prompt_strategy}")
 
     # --- RESTARTABILITY LOGIC (identical to baseline.py) ---
     completed_chains = collections.defaultdict(int)
@@ -138,7 +132,8 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                         model, processor, tokenizer, model_utils,
                         sample['question'], 
                         choices_formatted,
-                        sample['audio_path']
+                        sample['audio_path'],
+                        prompt_strategy,
                     )
                     
                     # Add metadata
