@@ -247,7 +247,7 @@ def main():
     config.USE_EXTERNAL_PERTURBATIONS = args.use_external_perturbations
     config.EXTERNAL_LLM = args.external_llm
     config.PERTURBATION_FILE = args.perturbation_file
-    
+
     # Validate: --external-llm is required when --use-external-perturbations is set
     if config.USE_EXTERNAL_PERTURBATIONS and not config.EXTERNAL_LLM:
         logging.error("FATAL: --external-llm is required when --use-external-perturbations is set.")
@@ -266,6 +266,8 @@ def main():
             pert_filename = None
         
         if pert_filename:
+            if config.RESTRICTED:
+                pert_filename = pert_filename.replace('.jsonl', '-restricted.jsonl')
             config.PERTURBATION_FILE = os.path.join(
                 config.RESULTS_DIR, 'external_llm_perturbations', config.EXTERNAL_LLM,
                 requested_model_alias, args.dataset, 'raw', pert_filename
@@ -290,6 +292,18 @@ def main():
     # Adversarial audio settings
     config.ADVERSARIAL_AUG = args.adversarial_aug
     config.ADVERSARIAL_VARIANT = args.adversarial_variant
+
+    if experiment_name == 'adversarial':
+        if not config.ADVERSARIAL_AUG or not config.ADVERSARIAL_VARIANT:
+            logging.error(
+                "FATAL: adversarial experiment requires both --adversarial-aug and --adversarial-variant."
+            )
+            sys.exit(1)
+        if not args.dataset.startswith('sakura-'):
+            logging.error(
+                "FATAL: adversarial experiment currently only supports sakura-* datasets."
+            )
+            sys.exit(1)
 
     # Prompt variance test settings
     config.STRATEGY = args.strategy
@@ -325,9 +339,9 @@ def main():
     if config.USE_EXTERNAL_PERTURBATIONS and config.EXTERNAL_LLM:
         base_filename += f"-{config.EXTERNAL_LLM}"
     
-    # Add suffix for filler experiments only (do not tag unrelated experiments like baseline).
-    if experiment_name in {'filler_text', 'partial_filler_text'} and config.FILLER_TYPE == 'lorem':
-        base_filename += "-lorem"
+    # Add explicit filler type suffix for filler experiments only.
+    if experiment_name in {'filler_text', 'partial_filler_text'}:
+        base_filename += f"-{config.FILLER_TYPE}"
     
     # Add suffix for partial audio masking experiments (separate files per mask_type/mask_mode)
     if experiment_name == 'partial_audio_masking':
@@ -484,6 +498,9 @@ def main():
                 logging.info(f"[ADVERSARIAL] Using adversarial dataset: {dataset_path}")
             else:
                 dataset_path = config.DATASET_MAPPING[args.dataset]
+
+            if not os.path.exists(dataset_path):
+                raise FileNotFoundError(f"Dataset file not found: {dataset_path}")
             
             data_samples = load_dataset(dataset_path)
             # Apply sample range slicing if specified (for splitting slow models across jobs)

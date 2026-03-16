@@ -15,6 +15,13 @@ import json
 import os
 from typing import Any
 
+FILLER_EXPERIMENTS = {
+    "filler_text",
+    "partial_filler_text",
+    "random_partial_filler_text",
+    "flipped_partial_filler_text",
+}
+
 
 def build_output_location(
     model: str,
@@ -35,6 +42,8 @@ def build_output_location(
         # e.g. results/external_llm_perturbations/mistral/qwen_omni/mmau/raw/mistakes.jsonl
         search_dir = os.path.join(results_dir, "external_llm_perturbations", external_llm, model, dataset, "raw")
         base_filename = experiment # mistakes or paraphrased
+        if restricted:
+            base_filename += "-restricted"
         return search_dir, base_filename
 
     if experiment == "audio_masking":
@@ -53,8 +62,8 @@ def build_output_location(
     if perturbation_source == "mistral":
         base_filename += "-mistral"
 
-    if filler_type == "lorem":
-        base_filename += "-lorem"
+    if experiment in FILLER_EXPERIMENTS and filler_type:
+        base_filename += f"-{filler_type}"
 
     if experiment == "audio_masking":
         base_filename += f"_{mask_type}_{mask_mode}"

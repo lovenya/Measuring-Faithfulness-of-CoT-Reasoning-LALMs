@@ -100,12 +100,21 @@ def get_perturbation_path(model: str, dataset: str, experiment: str, restricted:
         pert_suffix = "mistakes"
     else:
         pert_suffix = "paraphrased"
+    if restricted:
+        pert_suffix += "-restricted"
     return os.path.join(EXTERNAL_LLM_DIR, model, dataset, "raw", f"{pert_suffix}.jsonl")
 
 
 def get_output_path(model: str, dataset: str, experiment: str, restricted: bool) -> str:
     """Get path for combined output file in the new directory structure."""
-    return os.path.join(EXTERNAL_LLM_DIR, model, dataset, "combined", f"{experiment}_combined.jsonl")
+    suffix = "-restricted" if restricted else ""
+    return os.path.join(
+        EXTERNAL_LLM_DIR,
+        model,
+        dataset,
+        "combined",
+        f"{experiment}_combined{suffix}.jsonl",
+    )
 
 
 def load_jsonl(path: str) -> list[dict]:

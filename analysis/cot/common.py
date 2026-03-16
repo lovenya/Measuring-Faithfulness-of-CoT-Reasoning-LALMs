@@ -7,6 +7,10 @@ import os
 
 import pandas as pd
 
+
+def _filler_suffix(filler_type: str) -> str:
+    return f"-{filler_type}"
+
 def default_reference_mode(experiment: str) -> str:
     defaults = {
         "paraphrasing": "0pct",
@@ -62,8 +66,7 @@ def _build_results_path(
         filename_base = f"{experiment_name}_{model_name}_{dataset_name}"
         if restricted:
             filename_base += "-restricted"
-        if filler_type == "lorem":
-            filename_base += "-lorem"
+        filename_base += _filler_suffix(filler_type)
         filename = f"{filename_base}_{partial_filler_mode}.jsonl"
         return os.path.join(results_dir, model_name, experiment_name, partial_filler_mode, filename)
 
@@ -73,8 +76,8 @@ def _build_results_path(
     if restricted:
         filename_base += "-restricted"
 
-    if filler_type == "lorem":
-        filename_base += "-lorem"
+    if "filler" in experiment_name:
+        filename_base += _filler_suffix(filler_type)
 
     if perturbation_source != "self":
         filename_base += f"-{perturbation_source}"
@@ -104,6 +107,20 @@ def load_results(
     )
 
     if experiment_name == "partial_filler_text" and not os.path.exists(path):
+        legacy_canonical_base = f"{experiment_name}_{model_name}_{dataset_name}"
+        if restricted:
+            legacy_canonical_base += "-restricted"
+        legacy_canonical_path = os.path.join(
+            results_dir,
+            model_name,
+            experiment_name,
+            partial_filler_mode,
+            f"{legacy_canonical_base}_{partial_filler_mode}.jsonl",
+        )
+        if os.path.exists(legacy_canonical_path):
+            path = legacy_canonical_path
+
+    if experiment_name == "partial_filler_text" and not os.path.exists(path):
         # Legacy fallback support for old split experiment names.
         legacy_name_by_mode = {
             "start": "partial_filler_text",
@@ -114,15 +131,19 @@ def load_results(
         legacy_base = f"{legacy_exp}_{model_name}_{dataset_name}"
         if restricted:
             legacy_base += "-restricted"
-        if filler_type == "lorem":
-            legacy_base += "-lorem"
-        legacy_path = os.path.join(
-            results_dir,
-            model_name,
-            legacy_exp,
-            f"{legacy_base}.jsonl",
-        )
-        path = legacy_path
+        candidate_legacy_bases = [f"{legacy_base}-{filler_type}"]
+        if filler_type == "dots":
+            candidate_legacy_bases.append(legacy_base)
+        for candidate_base in candidate_legacy_bases:
+            legacy_path = os.path.join(
+                results_dir,
+                model_name,
+                legacy_exp,
+                f"{candidate_base}.jsonl",
+            )
+            if os.path.exists(legacy_path):
+                path = legacy_path
+                break
 
     rows = []
     with open(path, "r", encoding="utf-8") as handle:

@@ -19,7 +19,7 @@ import json
 import collections
 import logging
 import nltk # We need this for word tokenization
-from core.filler_text_utils import create_word_level_masked_cot, run_filler_trial
+from core.filler_text_utils import create_word_level_masked_cot, load_lorem_token_pool, run_filler_trial
 
 # This is a 'dependent' experiment because it requires 'baseline' results.
 # NOTE: no_reasoning is NOT required — the 0% case runs actual conditioned
@@ -64,24 +64,34 @@ def run(model, processor, tokenizer, model_utils, config):
 
     # --- 4. Restartability Logic ---
     output_path = config.OUTPUT_PATH
+    completed_steps = set()
     completed_questions = set()
     if os.path.exists(output_path):
         logging.info("Found existing results file. Checking for completed work...")
-        # A question is considered complete if it has all 21 percentile steps
-        # (0% to 100% in 5% increments).
-        progress_counts = collections.defaultdict(int)
-        with open(output_path, 'r') as f:
+        progress_by_question = collections.defaultdict(set)
+        with open(output_path, 'r', encoding='utf-8') as f:
             for line in f:
                 try:
                     data = json.loads(line)
-                    progress_counts[data['id']] += 1
+                    q_id = data.get('id')
+                    percentile = data.get('percentile')
+                    if q_id is None or percentile is None:
+                        continue
+                    step_key = (q_id, int(percentile))
+                    completed_steps.add(step_key)
+                    progress_by_question[q_id].add(int(percentile))
                 except (json.JSONDecodeError, KeyError): continue
         
-        for q_id, count in progress_counts.items():
-            if count >= 21: # 21 steps from 0% to 100%
+        for q_id, percentiles in progress_by_question.items():
+            if len(percentiles) >= 21: # 21 steps from 0% to 100%
                 completed_questions.add(q_id)
 
     if completed_questions: logging.info(f"Found {len(completed_questions)} fully completed questions. They will be skipped.")
+
+    lorem_pool = None
+    if getattr(config, "FILLER_TYPE", "lorem") == "lorem":
+        lorem_pool = load_lorem_token_pool()
+        logging.info("Loaded lorem pool with %s unique words.", len(lorem_pool))
 
     # --- 5. Run the Experiment ---
     logging.info(f"Running Percentile Filler Text Experiment (Model: {config.MODEL_ALIAS.upper()}): Saving to {output_path}")
@@ -111,12 +121,19 @@ def run(model, processor, tokenizer, model_utils, config):
                 # 5-95% = partial filler replacement.
                 # 100% = all words replaced by filler.
                 for percentile in range(0, 101, 5):
+                    step_key = (q_id, percentile)
+                    if step_key in completed_steps:
+                        continue
                     if percentile == 0:
                         # 0% filler = the full original reasoning, untouched.
                         modified_cot = longest_chain['sanitized_cot']
                     else:
                         modified_cot = create_word_level_masked_cot(
-                            longest_chain['sanitized_cot'], percentile, mode='start'
+                            longest_chain['sanitized_cot'],
+                            percentile,
+                            mode='start',
+                            filler_type=config.FILLER_TYPE,
+                            lorem_pool=lorem_pool,
                         )
                     
                     trial_result = run_filler_trial(
@@ -149,6 +166,7 @@ def run(model, processor, tokenizer, model_utils, config):
                     }
                     f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
                     f.flush()
+                    completed_steps.add(step_key)
 
             except Exception as e:
                 skipped_questions_count += 1

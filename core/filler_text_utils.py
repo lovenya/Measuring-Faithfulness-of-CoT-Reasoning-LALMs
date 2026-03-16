@@ -74,22 +74,23 @@ def create_word_level_masked_cot(cot_text: str, percentile: int, mode: str, fill
             return random.choice(lorem_pool)
         return "..."
 
+    def get_filler_tokens(count: int) -> list[str]:
+        if count <= 0:
+            return []
+        if filler_type == 'lorem' and lorem_pool:
+            return [random.choice(lorem_pool) for _ in range(count)]
+        return ["..."] * count
+
     if mode == 'start':
         if num_to_replace > 0:
-            if filler_type == 'lorem' and lorem_pool:
-                filler_tokens = [random.choice(lorem_pool) for _ in range(num_to_replace)]
-                new_words = filler_tokens + words[num_to_replace:]
-            else:
-                new_words = ["..."] + words[num_to_replace:]
+            filler_tokens = get_filler_tokens(num_to_replace)
+            new_words = filler_tokens + words[num_to_replace:]
         else:
             new_words = words
     elif mode == 'end':
         if num_to_replace > 0:
-            if filler_type == 'lorem' and lorem_pool:
-                filler_tokens = [random.choice(lorem_pool) for _ in range(num_to_replace)]
-                new_words = words[:-num_to_replace] + filler_tokens
-            else:
-                new_words = words[:-num_to_replace] + ["..."]
+            filler_tokens = get_filler_tokens(num_to_replace)
+            new_words = words[:-num_to_replace] + filler_tokens
         else:
             new_words = words
     elif mode == 'random':

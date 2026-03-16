@@ -4,6 +4,13 @@ import os
 import json
 import pandas as pd
 
+FILLER_EXPERIMENTS = {
+    "filler_text",
+    "partial_filler_text",
+    "random_partial_filler_text",
+    "flipped_partial_filler_text",
+}
+
 def load_results(model_name: str, results_dir: str, experiment_name: str, dataset_name: str, filler_type: str = 'dots', perturbation_source: str = 'self', restricted: bool = False) -> pd.DataFrame:
     """
     Loads experiment results from a model-specific JSONL file into a Pandas DataFrame.
@@ -36,18 +43,25 @@ def load_results(model_name: str, results_dir: str, experiment_name: str, datase
     if restricted:
         base_name += "-restricted"
     
-    # Append suffix for lorem filler type
-    if filler_type == 'lorem':
-        base_name += "-lorem"
-    
+    candidate_base_names = [base_name]
+
+    if experiment_name in FILLER_EXPERIMENTS:
+        candidate_base_names = [f"{base_name}-{filler_type}"]
+        if filler_type == "dots":
+            # Backward compatibility for older unsuffixed dots outputs.
+            candidate_base_names.append(base_name)
+
     # Append suffix for Mistral perturbation source
     if perturbation_source == 'mistral':
-        base_name += "-mistral"
-    
-    filename = f"{base_name}.jsonl"
+        candidate_base_names = [f"{name}-mistral" for name in candidate_base_names]
+
+    candidate_paths = [
+        os.path.join(experiment_path, f"{name}.jsonl")
+        for name in candidate_base_names
+    ]
     # --- END OF FILENAME CONSTRUCTION ---
-    
-    full_path = os.path.join(experiment_path, filename)
+
+    full_path = next((path for path in candidate_paths if os.path.exists(path)), candidate_paths[0])
 
     try:
         # Read line-by-line, skipping any corrupted lines gracefully.

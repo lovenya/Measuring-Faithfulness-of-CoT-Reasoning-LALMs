@@ -165,7 +165,7 @@ def process_one_dataset(model: str, dataset: str, results_dir: str,
         # Build list of file variants to filter
         variants = []
 
-        # Base file (self / dots)
+        # Base file (self) plus legacy unsuffixed dots back-compat.
         base = f"{exp_name}_{model}_{dataset}"
         variants.append(f"{base}.jsonl")
 
@@ -173,8 +173,9 @@ def process_one_dataset(model: str, dataset: str, results_dir: str,
         if has_pert_source:
             variants.append(f"{base}-mistral.jsonl")
 
-        # Filler type variants (e.g. -lorem)
+        # Filler type variants.
         if has_filler_type:
+            variants.append(f"{base}-dots.jsonl")
             variants.append(f"{base}-lorem.jsonl")
 
         for variant_filename in variants:

@@ -89,21 +89,24 @@ def run(model, processor, tokenizer, model_utils, config):
         samples_to_process = all_baseline_trials
 
     output_path = config.OUTPUT_PATH
+    completed_steps = set()
     completed_chains = set()
     if os.path.exists(output_path):
         logging.info("Found existing results file. Checking for completed work...")
-        progress_counts = collections.defaultdict(int)
+        progress_counts = collections.defaultdict(set)
         with open(output_path, "r", encoding="utf-8") as handle:
             for line in handle:
                 try:
                     row = json.loads(line)
-                    progress_counts[(row["id"], row["chain_id"])] += 1
+                    step_key = (row["id"], row["chain_id"], int(row["percent_replaced"]))
+                    completed_steps.add(step_key)
+                    progress_counts[(row["id"], row["chain_id"])].add(int(row["percent_replaced"]))
                 except (json.JSONDecodeError, KeyError):
                     continue
 
-        for chain_key, count in progress_counts.items():
+        for chain_key, steps in progress_counts.items():
             # 21 percent points from 0 to 100 inclusive in steps of 5.
-            if count >= 21:
+            if len(steps) >= 21:
                 completed_chains.add(chain_key)
 
     if completed_chains:
@@ -143,6 +146,9 @@ def run(model, processor, tokenizer, model_utils, config):
                 sanitized_cot = baseline_trial["sanitized_cot"]
 
                 for percentile in range(0, 101, 5):
+                    step_key = (q_id, chain_id, percentile)
+                    if step_key in completed_steps:
+                        continue
                     if config.VERBOSE:
                         logging.info("  - Processing %s%% replacement...", percentile)
 
@@ -186,6 +192,7 @@ def run(model, processor, tokenizer, model_utils, config):
 
                     handle.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
                     handle.flush()
+                    completed_steps.add(step_key)
 
             except Exception:
                 skipped_trials_count += 1

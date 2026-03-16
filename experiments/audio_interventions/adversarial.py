@@ -88,21 +88,25 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
     logging.info(f"Prompt strategy: {prompt_strategy}")
 
     # --- RESTARTABILITY LOGIC (identical to baseline.py) ---
-    completed_chains = collections.defaultdict(int)
+    completed_chains = collections.defaultdict(set)
     if os.path.exists(output_path):
         logging.info("Found existing results file. Checking for completed work...")
         with open(output_path, 'r') as f:
             for line in f:
                 try:
                     data = json.loads(line)
-                    completed_chains[data['id']] += 1
-                except json.JSONDecodeError:
+                    row_id = data.get("id")
+                    row_chain = data.get("chain_id")
+                    if row_id is None or row_chain is None:
+                        continue
+                    completed_chains[row_id].add(int(row_chain))
+                except (json.JSONDecodeError, KeyError, ValueError):
                     logging.warning(f"Found a corrupted line in {output_path}. It will be ignored.")
                     continue
     
     fully_completed_ids = {
-        q_id for q_id, count in completed_chains.items() 
-        if count >= config.NUM_CHAINS_PER_QUESTION
+        q_id for q_id, chain_ids in completed_chains.items()
+        if len(chain_ids) >= config.NUM_CHAINS_PER_QUESTION
     }
     
     if fully_completed_ids:
@@ -120,11 +124,11 @@ def run(model, processor, tokenizer, model_utils, data_samples, config):
                 
                 choices_formatted = model_utils.format_choices_for_prompt(sample['choices'])
                 
-                chains_to_generate = config.NUM_CHAINS_PER_QUESTION - completed_chains[sample['id']]
-                
-                for j in range(chains_to_generate):
-                    current_chain_num = completed_chains[sample['id']] + j + 1
-                    chain_id = current_chain_num - 1
+                for j in range(config.NUM_CHAINS_PER_QUESTION):
+                    if j in completed_chains[sample['id']]:
+                        continue
+                    current_chain_num = j + 1
+                    chain_id = j
                     if config.VERBOSE:
                         logging.info(f"  - Generating chain {current_chain_num}/{config.NUM_CHAINS_PER_QUESTION}...")
                     

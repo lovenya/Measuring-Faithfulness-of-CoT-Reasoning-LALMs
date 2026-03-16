@@ -153,6 +153,7 @@ def run(model, processor, tokenizer, model_utils, config):
 
     # --- 3. Restartability Logic ---
     output_path = config.OUTPUT_PATH
+    completed_steps = set()
     completed_chains = set()
     if os.path.exists(output_path):
         logging.info("Found existing results file. Checking for completed work...")
@@ -160,6 +161,8 @@ def run(model, processor, tokenizer, model_utils, config):
             for line in f:
                 try:
                     data = json.loads(line)
+                    step_key = (data['id'], data['chain_id'], data['num_sentences_paraphrased'])
+                    completed_steps.add(step_key)
                     # A chain is considered complete if we have the result for its final paraphrased sentence.
                     if data['num_sentences_paraphrased'] == data['total_sentences_in_chain']:
                         completed_chains.add((data['id'], data['chain_id']))
@@ -207,6 +210,9 @@ def run(model, processor, tokenizer, model_utils, config):
                 # We loop from 0 to total_sentences.
                 # 0 sentences paraphrased = full original CoT (run actual conditioned inference).
                 for num_to_paraphrase in range(0, total_sentences + 1):
+                    step_key = (q_id, chain_id, num_to_paraphrase)
+                    if step_key in completed_steps:
+                        continue
                     if config.VERBOSE:
                         logging.info(f"  - Paraphrasing {num_to_paraphrase}/{total_sentences} sentences...")
 
@@ -279,6 +285,7 @@ def run(model, processor, tokenizer, model_utils, config):
                     
                     f.write(json.dumps(final_ordered_result, ensure_ascii=False) + "\n")
                     f.flush()
+                    completed_steps.add(step_key)
 
             except Exception as e:
                 skipped_trials_count += 1

@@ -278,6 +278,8 @@ def main():
     
     if args.output is None:
         pert_suffix = "mistakes" if args.mode == "mistakes" else "paraphrased"
+        if args.restricted:
+            pert_suffix += "-restricted"
         perturbations_dir = os.path.join(
             args.results_dir, "external_llm_perturbations", "mistral",
             args.model, args.dataset, "raw"
