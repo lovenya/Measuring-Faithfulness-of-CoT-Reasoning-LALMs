@@ -1,187 +1,1198 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Investigating Faithfulness in Large Audio Language Models — Anonymous Submission</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LALM Faithfulness - Interactive Research Demo</title>
+  <style>
+    :root {
+      /* Clean Light Mode Palette */
+      --primary-bg: #f4f7f6;
+      --nav-bg: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #2d3436;
+      --text-muted: #636e72;
+
+      /* Section Themes */
+      --audio-color: #00b894;
+      /* Audio = Green */
+      --audio-hover: #00cec9;
+      --cot-color: #8e44ad;
+      /* CoT = Purple */
+      --cot-hover: #9b59b6;
+
+      /* Status Accents */
+      --correct-color: #00b894;
+      --wrong-color: #d63031;
+      --original-color: #0984e3;
+
+      --border-color: #dfe6e9;
+      --shadow-subtle: 0 4px 15px rgba(0, 0, 0, 0.05);
+      --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.08);
+
+      /* Smooth transitions */
+      --zoom-transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background: var(--primary-bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      font-size: 14px;
+      zoom: 0.9;
+    }
+
+    /* Clean Navigation */
+    nav {
+      background: var(--nav-bg);
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .nav-brand {
+      font-weight: 900;
+      font-size: 1.3rem;
+      color: var(--text-main);
+      letter-spacing: 0.5px;
+    }
+
+    /* Nav Buttons with Thematic Colors */
+    .nav-links button {
+      background: transparent;
+      border: 2px solid transparent;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 6px;
+      transition: var(--zoom-transition);
+      margin-left: 8px;
+      font-size: 0.95rem;
+    }
+
+    .nav-links .nav-main {
+      color: var(--text-muted);
+    }
+
+    .nav-links .nav-main:hover {
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.03);
+      transform: scale(1.05);
+    }
+
+    .nav-links .nav-main.active {
+      background: var(--primary-bg);
+      color: var(--text-main);
+      border-color: var(--border-color);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .nav-links .nav-audio {
+      color: var(--audio-color);
+      border-color: rgba(0, 184, 148, 0.2);
+    }
+
+    .nav-links .nav-audio:hover,
+    .nav-links .nav-audio.active {
+      background: var(--audio-color);
+      color: white;
+      border-color: var(--audio-color);
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(0, 184, 148, 0.3);
+    }
+
+    .nav-links .nav-cot {
+      color: var(--cot-color);
+      border-color: rgba(142, 68, 173, 0.2);
+    }
+
+    .nav-links .nav-cot:hover,
+    .nav-links .nav-cot.active {
+      background: var(--cot-color);
+      color: white;
+      border-color: var(--cot-color);
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(142, 68, 173, 0.3);
+    }
+
+    .container {
+      max-width: 1050px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+
+    .page {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Resource Badges */
+    .resource-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 2rem;
+    }
+
+    .badge {
+      background: var(--card-bg);
+      border: 2px solid var(--text-main);
+      color: var(--text-main);
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: var(--zoom-transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .badge:hover {
+      background: var(--text-main);
+      color: var(--card-bg);
+      transform: scale(1.05) translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* Strategy Boxes */
+    .strategy-box {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-subtle);
+      border: 1px solid var(--border-color);
+      transition: var(--zoom-transition);
+      scroll-margin-top: 80px;
+    }
+
+    .strategy-box:hover {
+      transform: scale(1.01);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .audio-box {
+      border-top: 5px solid var(--audio-color);
+    }
+
+    .audio-box h2 {
+      color: var(--audio-color);
+      font-size: 1.5rem;
+      border-bottom: 2px solid var(--primary-bg);
+      padding-bottom: 8px;
+      margin-top: 0;
+    }
+
+    .cot-box {
+      border-top: 5px solid var(--cot-color);
+    }
+
+    .cot-box h2 {
+      color: var(--cot-color);
+      font-size: 1.5rem;
+      border-bottom: 2px solid var(--primary-bg);
+      padding-bottom: 8px;
+      margin-top: 0;
+    }
+
+    .big-btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 1.1rem;
+      margin-top: 20px;
+      border: none;
+      cursor: pointer;
+      transition: var(--zoom-transition);
+      color: white;
+    }
+
+    .btn-audio {
+      background: var(--audio-color);
+      box-shadow: 0 4px 10px rgba(0, 184, 148, 0.3);
+    }
+
+    .btn-audio:hover {
+      background: var(--audio-hover);
+      transform: scale(1.02);
+      box-shadow: 0 6px 15px rgba(0, 184, 148, 0.4);
+    }
+
+    .btn-cot {
+      background: var(--cot-color);
+      box-shadow: 0 4px 10px rgba(142, 68, 173, 0.3);
+    }
+
+    .btn-cot:hover {
+      background: var(--cot-hover);
+      transform: scale(1.02);
+      box-shadow: 0 6px 15px rgba(142, 68, 173, 0.4);
+    }
+
+    /* Index Header */
+    .index-header {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .index-audio {
+      border-left: 5px solid var(--audio-color);
+    }
+
+    .index-cot {
+      border-left: 5px solid var(--cot-color);
+    }
+
+    .index-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .index-links a {
+      background: var(--primary-bg);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: var(--zoom-transition);
+      border: 1px solid var(--border-color);
+    }
+
+    .index-audio .index-links a:hover {
+      background: var(--audio-color);
+      color: white;
+      border-color: var(--audio-color);
+      transform: scale(1.05);
+    }
+
+    .index-cot .index-links a:hover {
+      background: var(--cot-color);
+      color: white;
+      border-color: var(--cot-color);
+      transform: scale(1.05);
+    }
+
+    /* General Image Styling */
+    .img-frame {
+      width: 100%;
+      max-width: 800px;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: #ffffff;
+      display: block;
+      margin: 0 auto;
+      transition: var(--zoom-transition);
+    }
+
+    .img-frame:hover {
+      transform: scale(1.02);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .pipeline-audio-img {
+      margin-top: 12px;
+      border: 2px solid var(--audio-color);
+    }
+
+    .pipeline-cot-img {
+      margin-top: 12px;
+      border: 2px solid var(--cot-color);
+    }
+
+    .img-label {
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+      background: var(--primary-bg);
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 1rem;
+      border-left: 4px solid var(--text-muted);
+    }
+
+    /* Research Figure & Plots */
+    .research-figure {
+      background: #fafbfc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .legend-img {
+      max-width: 100%;
+      width: auto;
+      max-height: 60px;
+      display: block;
+      margin: 0 auto 15px auto;
+      object-fit: contain;
+    }
+
+    .model-comparison {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: stretch;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .model-col {
+      flex: 1;
+      min-width: 250px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .model-col h4 {
+      font-size: 1.1rem;
+      margin: 0 0 10px 0;
+      color: var(--text-main);
+    }
+
+    .plot-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .plot-column img,
+    .model-col img,
+    .plot-row img {
+      flex: 1;
+      min-width: 180px;
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: #fff;
+      transition: var(--zoom-transition);
+      object-fit: contain;
+    }
+
+    .plot-column img:hover,
+    .model-col img:hover,
+    .plot-row img:hover {
+      transform: scale(1.03);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .vertical-rule {
+      width: 1px;
+      background: var(--border-color);
+    }
+
+    @media (max-width: 768px) {
+      .vertical-rule {
+        display: none;
+      }
+    }
+
+    .figure-caption {
+      width: 100%;
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    .figure-caption strong {
+      color: var(--text-main);
+    }
+
+    /* Audio Player Styling */
+    .audio-section {
+      margin-top: 2rem;
+      background: var(--primary-bg);
+      padding: 1.5rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    .audio-section h3 {
+      margin-top: 0;
+      color: var(--text-main);
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+    }
+
+    .audio-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .audio-row {
+      display: flex;
+      flex-direction: column;
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      transition: var(--zoom-transition);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .audio-row:hover {
+      transform: scale(1.01);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .row-original {
+      border-left: 5px solid var(--original-color);
+    }
+
+    .row-correct {
+      border-left: 5px solid var(--correct-color);
+    }
+
+    .row-wrong {
+      border-left: 5px solid var(--wrong-color);
+    }
+
+    .row-title {
+      font-weight: 800;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .row-original .row-title {
+      color: var(--original-color);
+    }
+
+    .row-correct .row-title {
+      color: var(--correct-color);
+    }
+
+    .row-wrong .row-title {
+      color: var(--wrong-color);
+    }
+
+    .audio-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .audio-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    audio {
+      width: 100%;
+      height: 38px;
+      border-radius: 20px;
+      transition: var(--zoom-transition);
+    }
+
+    audio:hover {
+      transform: scale(1.02);
+    }
+
+    .audio-sub-box {
+      text-align: center;
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      transition: var(--zoom-transition);
+    }
+
+    .audio-sub-box:hover {
+      transform: scale(1.03);
+      border-color: #b2bec3;
+      box-shadow: var(--shadow-hover);
+    }
+
+    .audio-sub-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--text-main);
+      font-size: 0.9rem;
+    }
+
+    .audio-sub-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .audio-grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* --- NEW: Research HTML Table Styling --- */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      margin: 15px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .research-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      font-size: 0.95rem;
+      min-width: 600px;
+    }
+
+    .research-table th,
+    .research-table td {
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .research-table th {
+      background-color: #f8f9fa;
+      color: var(--text-main);
+      font-weight: 800;
+      border-bottom: 2px solid var(--text-muted);
+    }
+
+    /* Mimicking \multirow spacing/highlights */
+    .research-table tbody tr:nth-child(odd) td[rowspan] {
+      background-color: #fafbfc;
+      font-weight: bold;
+      color: var(--text-main);
+    }
+
+    .research-table tbody tr:hover {
+      background-color: #f1f2f6;
+    }
+  </style>
 </head>
+
 <body>
 
-  <header>
-    <div class="venue-tag">Anonymous Submission</div>
-    <h1>Investigating <em>Faithfulness</em> in Large Audio Language Models</h1>
-    <p class="authors">Anonymous Authors</p>
-    <div class="links">
-      <a class="btn primary" href="#">📄 Paper (PDF)</a>
-      <a class="btn" href="https://anonymous.4open.science/r/Measuring-Faithfulness-of-CoT-Reasoning-LALMs-A3B6">💻 Code</a>
+  <nav>
+    <div class="nav-brand">🎧 LALM Faithfulness 🧠</div>
+    <div class="nav-links">
+      <button class="nav-btn nav-main active" onclick="showPage('home')">Main Page</button>
+      <button class="nav-btn nav-audio" onclick="showPage('audio')">Audio Interventions</button>
+      <button class="nav-btn nav-cot" onclick="showPage('cot')">CoT Interventions</button>
     </div>
-  </header>
+  </nav>
 
-  <main>
-    <section>
-      <h2>Abstract</h2>
-      <p>
-        Large Audio Language Models (LALMs) integrate audio encoders with pretrained Large Language Models to perform complex multimodal reasoning tasks. While these models can generate Chain-of-Thought (CoT) explanations, the faithfulness of these reasoning chains remains unclear. In this work, we propose a systematic framework to evaluate CoT faithfulness in LALMs with respect to both the input audio and the final model prediction. We define three criteria for audio faithfulness: hallucination-free, holistic, and attentive listening. Our code and experiments suggest a potential multimodal disconnect: reasoning often aligns with the final prediction but is not always strongly grounded in the audio.
-      </p>
-    </section>
+  <div class="container">
 
-    <!-- Navigation Tabs -->
-    <div class="tabs">
-      <button class="tab-btn active" onclick="openTab(event, 'audio-interventions')">Audio Interventions</button>
-      <button class="tab-btn" onclick="openTab(event, 'cot-interventions')">CoT Interventions</button>
-    </div>
+    <div id="home" class="page active">
 
-    <!-- AUDIO INTERVENTIONS CONTENT -->
-    <div id="audio-interventions" class="tab-content active">
-      <section>
-        <h2>Audio Interventions</h2>
-        <p>We propose three different audio interventions in order to measure the capability of LALMs to listen attentively, wholistically, and without hallucinations.</p>
-        
-        <div class="intervention-group">
-          <h3>Masking (Wholistic Listening)</h3>
-          <p class="caption">Combined Masking Accuracy and Consistency across Masking Ratios.</p>
-          <div class="result-grid two-col">
-            <div class="plot-container">
-              <span class="plot-title">Mask Accuracy</span>
-              <img src="assets/audio_intervention/Combined_mask_Accuracy.png" alt="Combined Mask Accuracy Plot" />
-            </div>
-            <div class="plot-container">
-              <span class="plot-title">Mask Consistency</span>
-              <img src="assets/audio_intervention/Combined_mask_Consistency.png" alt="Combined Mask Consistency Plot" />
-            </div>
-          </div>
-        </div>
+      <div style="text-align: center; margin: 1rem 0 2rem 0; padding: 0 15px;">
+        <h1
+          style="font-size: 2.2rem; font-weight: 900; color: var(--text-main); line-height: 1.2; margin-bottom: 10px;">
+          Investigating Faithfulness in Large Audio Language Models
+        </h1>
+        <p
+          style="font-size: 1.1rem; color: var(--text-muted); font-weight: 500; margin-top: 0; max-width: 900px; margin-left: auto; margin-right: auto;">
+          Large Audio Language Models (LALMs) integrate audio encoders with pretrained Large Language Models to perform
+          complex multimodal reasoning tasks. While these models can generate Chain-of-Thought (CoT) explanations, the
+          faithfulness of these reasoning chains remains unclear. In this work, we propose a systematic framework to
+          evaluate CoT faithfulness in LALMs with respect to both the input audio and the final model prediction. We
+          define three criteria for audio faithfulness: hallucination-free, holistic, and attentive listening. We also
+          introduce a benchmark based on both audio and CoT interventions to assess faithfulness.
+        </p>
+      </div>
 
-        <div class="intervention-group">
-          <h3>Noise (Hallucination-free listening)</h3>
-          <p class="caption">Combined Noise Accuracy and Consistency across SNR levels.</p>
-          <div class="result-grid two-col">
-            <div class="plot-container">
-              <span class="plot-title">Noise Accuracy</span>
-              <img src="assets/audio_intervention/Combined_noise_Accuracy.png" alt="Combined Noise Accuracy Plot" />
-            </div>
-            <div class="plot-container">
-              <span class="plot-title">Noise Consistency</span>
-              <img src="assets/audio_intervention/Combined_noise_Consistency.png" alt="Combined Noise Consistency Plot" />
-            </div>
-          </div>
-        </div>
+      <div class="resource-links">
+        <a href="#" target="_blank" class="badge">📄 Read the arXiv Paper</a>
+        <a href="#" target="_blank" class="badge">💻 View GitHub Repo</a>
+      </div>
 
-        <div class="intervention-group">
-          <h3>Adversarial (Attentive Listening)</h3>
-          <p class="caption">Adversarial accuracy and consistency evaluated on AF3 and Qwen2.5-Omni.</p>
-          <div class="result-grid two-col">
-            <div class="plot-container">
-              <span class="plot-title">AF3 Adversarial Accuracy</span>
-              <img src="assets/audio_intervention/af3_adv_accuracy.png" alt="AF3 Adversarial Accuracy" />
-            </div>
-            <div class="plot-container">
-              <span class="plot-title">AF3 Adversarial Consistency</span>
-              <img src="assets/audio_intervention/af3_adv_consistency.png" alt="AF3 Adversarial Consistency" />
-            </div>
-            <div class="plot-container">
-              <span class="plot-title">Qwen2.5-Omni Adversarial Accuracy</span>
-              <img src="assets/audio_intervention/qwen2.5_adv_accuracy.png" alt="Qwen2.5-Omni Adversarial Accuracy" />
-            </div>
-            <div class="plot-container">
-              <span class="plot-title">Qwen2.5-Omni Adversarial Consistency</span>
-              <img src="assets/audio_intervention/qwen2.5_adv_consistency.png" alt="Qwen2.5-Omni Adversarial Consistency" />
-            </div>
-          </div>
-        </div>
+      <section class="strategy-box audio-box">
+        <h2>🔊 Audio Intervention Overview</h2>
+        <p style="font-size: 0.95rem;">Explore the impact of adversarial injections, masking, and noise on LALM audio
+          processing.</p>
+
+        <div class="img-label" style="border-left-color: var(--audio-color);">Audio Intervention Pipeline</div>
+        <img src="figures/pipeline_audio.png" alt="Audio Pipeline" class="img-frame pipeline-audio-img" />
+
+        <button class="big-btn btn-audio" onclick="showPage('audio')">
+          Audio Interventions ➔
+        </button>
       </section>
-    </div>
 
-    <!-- COT INTERVENTIONS CONTENT -->
-    <div id="cot-interventions" class="tab-content">
-      <section>
-        <h2>Chain-of-Thought (CoT) Interventions</h2>
-        <p>We analyze faithfulness by systematically modifying the generated CoTs and observing how these changes affect model accuracy and predictions. The following visualizations demonstrate the impact of filler token injection and mistake addition based on Mistral perturbations.</p>
-        
-        <div class="sub-tabs">
-          <button class="sub-tab-btn active" onclick="openSubTab(event, 'cot-filler')">Filler Tokens</button>
-          <button class="sub-tab-btn" onclick="openSubTab(event, 'cot-mistakes')">Adding Mistakes</button>
-          <button class="sub-tab-btn" onclick="openSubTab(event, 'cot-early')">Early Answering</button>
-          <button class="sub-tab-btn" onclick="openSubTab(event, 'cot-para')">Paraphrasing</button>
-        </div>
+      <section class="strategy-box cot-box">
+        <h2>🧠 Chain-of-Thought (CoT) Overview</h2>
+        <p style="font-size: 0.95rem;">Analyze how altering the intermediate reasoning steps affects the final
+          faithfulness of the model.</p>
 
-        <div id="cot-filler" class="sub-tab-content active">
-          <div class="intervention-group">
-            <h3>Random Partial Filler Text (Lorem)</h3>
-            <div class="result-grid two-col">
-              <div class="plot-container">
-                <span class="plot-title">Audio Flamingo 3</span>
-                <img src="assets/cot_intervention/cross_dataset_random_partial_filler_text_0pct_flamingo_hf_lorem_restricted.png" alt="AF3 Filler Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
-              </div>
-              <div class="plot-container">
-                <span class="plot-title">Qwen2.5-Omni</span>
-                <img src="assets/cot_intervention/cross_dataset_random_partial_filler_text_0pct_qwen_omni_lorem_restricted.png" alt="Qwen Omni Filler Plot" onerror="this.onerror=null; this.src=''; this.rowSpan=0; this.alt='Missing Plot: Process assets first';"/>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div class="img-label" style="border-left-color: var(--cot-color);">CoT Intervention Pipeline</div>
+        <img src="figures/pipeline_cot.png" alt="CoT Pipeline" class="img-frame pipeline-cot-img" />
 
-        <div id="cot-mistakes" class="sub-tab-content">
-          <div class="intervention-group">
-            <h3>Adding Mistakes (External Mistral Perturbation)</h3>
-            <div class="result-grid two-col">
-              <div class="plot-container">
-                <span class="plot-title">Audio Flamingo 3</span>
-                <img src="assets/cot_intervention/cross_dataset_adding_mistakes_vs_rpf_flamingo_hf_restricted-mistral.png" alt="AF3 Mistakes Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
-              </div>
-              <div class="plot-container">
-                <span class="plot-title">Qwen2.5-Omni</span>
-                <img src="assets/cot_intervention/cross_dataset_adding_mistakes_vs_rpf_qwen_omni_restricted-mistral.png" alt="Qwen Omni Mistakes Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div id="cot-early" class="sub-tab-content">
-          <div class="intervention-group">
-            <h3>Early Answering</h3>
-            <div class="result-grid two-col">
-              <div class="plot-container">
-                <span class="plot-title">Audio Flamingo 3</span>
-                <img src="assets/cot_intervention/cross_dataset_early_answering_100pct_flamingo_hf_restricted.png" alt="AF3 Early Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
-              </div>
-              <div class="plot-container">
-                <span class="plot-title">Qwen2.5-Omni</span>
-                <img src="assets/cot_intervention/cross_dataset_early_answering_100pct_qwen_omni_restricted.png" alt="Qwen Omni Early Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div id="cot-para" class="sub-tab-content">
-          <div class="intervention-group">
-            <h3>Paraphrasing (External Mistral)</h3>
-            <div class="result-grid two-col">
-              <div class="plot-container">
-                <span class="plot-title">Audio Flamingo 3</span>
-                <img src="assets/cot_intervention/cross_dataset_paraphrasing_0pct_words_flamingo_hf_restricted-mistral.png" alt="AF3 Paraphrasing Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
-              </div>
-              <div class="plot-container">
-                <span class="plot-title">Qwen2.5-Omni</span>
-                <img src="assets/cot_intervention/cross_dataset_paraphrasing_0pct_words_qwen_omni_restricted-mistral.png" alt="Qwen Omni Paraphrasing Plot" onerror="this.onerror=null; this.src=''; this.alt='Missing Plot: Process assets first';"/>
-              </div>
-            </div>
-          </div>
-        </div>
-
+        <button class="big-btn btn-cot" onclick="showPage('cot')">
+          CoT Interventions ➔
+        </button>
       </section>
+
     </div>
 
-  </main>
+    <div id="audio" class="page">
+      <div class="index-header index-audio">
+        <h2 style="margin-top: 0; color: var(--audio-color); font-size: 1.5rem;">Audio Interventions</h2>
+        <h3 style="font-size: 1.1rem; margin-bottom: 5px;">Quick Index</h3>
+        <div class="index-links">
+          <a href="#aud-adv">1. Adversarial Injection</a>
+          <a href="#aud-noise">3. Adding Noise</a>
+          <a href="#aud-mask">2. Masking</a>
+          <a href="#aud-guided">4. Guided Masking</a>
+          <a href="#aud-table">5. CoT Consistency Scores</a>
+        </div>
+        <h3 style="margin-top: 25px; font-size: 1.1rem; margin-bottom: 5px;">Audio Intervention Pipeline</h3>
+        <img src="figures/pipeline_audio.png" alt="Audio Pipeline" class="img-frame pipeline-audio-img" />
+      </div>
 
-  <footer>
-    <span>Anonymous Submission</span>
-    <span>Conference Name 20XX</span>
-  </footer>
+      <div id="aud-adv" class="strategy-box audio-box">
+        <h2>1. Adversarial Injection</h2>
 
-  <script src="script.js"></script>
+        <div class="research-figure">
+          <img src="figures/legend_adversarial.png" alt="Legend" class="legend-img" />
+
+          <div class="model-comparison">
+            <div class="model-col">
+              <h4>Audio Flamingo 3 (AF3)</h4>
+              <div class="plot-row">
+                <img src="figures/af3_adv_accuracy.png" alt="AF3 Accuracy" />
+                <img src="figures/af3_adv_consistency.png" alt="AF3 Consistency" />
+              </div>
+            </div>
+
+            <div class="vertical-rule"></div>
+
+            <div class="model-col">
+              <h4>Qwen2.5-Omni</h4>
+              <div class="plot-row">
+                <img src="figures/qwen2.5_adv_accuracy.png" alt="Qwen2.5 Accuracy" />
+                <img src="figures/qwen2.5_adv_consistency.png" alt="Qwen2.5 Consistency" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="audio-section">
+          <h3>Audio Examples</h3>
+          <div class="audio-wrapper">
+
+            <div class="audio-row row-original">
+              <div class="row-title">⏺️ ORIGINAL AUDIO</div>
+              <div class="audio-grid-4">
+                <audio controls src="audio/adv/cat0.wav"></audio>
+                <audio controls src="audio/adv/language.wav"></audio>
+                <audio controls src="audio/adv/emotion.wav"></audio>
+                <audio controls src="audio/adv/gender.wav"></audio>
+              </div>
+            </div>
+
+            <div class="audio-row row-correct">
+              <div class="row-title">✅ CORRECT INJECTIONS</div>
+              <div class="audio-grid-4">
+                <audio controls src="audio/adv/cat-correct.wav"></audio>
+                <audio controls src="audio/adv/language-correct.wav"></audio>
+                <audio controls src="audio/adv/emotion-correct.wav"></audio>
+                <audio controls src="audio/adv/gender-correct.wav"></audio>
+              </div>
+            </div>
+
+            <div class="audio-row row-wrong">
+              <div class="row-title">❌ WRONG INJECTIONS</div>
+              <div class="audio-grid-4">
+                <audio controls src="audio/adv/cat-wrong.wav"></audio>
+                <audio controls src="audio/adv/language-wrong.wav"></audio>
+                <audio controls src="audio/adv/emotion-wrong.wav"></audio>
+                <audio controls src="audio/adv/gender-wrong.wav"></audio>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div id="aud-noise" class="strategy-box audio-box">
+        <h2>3. Adding Noise</h2>
+
+        <div class="research-figure">
+          <div
+            style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 20px; width: 100%;">
+            <img src="figures/legend_dataset.png" alt="Dataset Legend" class="legend-img" style="max-width: 600px;" />
+            <img src="figures/legend_model.png" alt="Model Legend" class="legend-img"
+              style="max-width: 300px; margin-bottom: 0;" />
+          </div>
+
+          <div class="plot-row">
+            <img src="figures/noise_accuracy.png" alt="Noise Accuracy vs SNR" />
+            <img src="figures/noise_consistency.png" alt="Noise Consistency vs SNR" />
+          </div>
+
+          <div class="figure-caption">
+            <strong>Figure 2: Noise Intervention Results.</strong> Accuracy <strong>(left)</strong> and CoT Consistency
+            <strong>(right)</strong> evaluated across varying Signal-to-Noise Ratio (SNR) levels.
+          </div>
+        </div>
+
+        <div class="audio-section">
+          <h3>Audio Examples: SNR Degradation</h3>
+          <div class="audio-wrapper">
+            <div class="audio-row" style="border-left-color: #f39c12;">
+              <div class="row-title" style="color: #e67e22;">🔊 NOISE LEVELS (SNR)</div>
+
+              <div class="audio-grid-3">
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">Clean (No Noise)</div>
+                  <audio controls src="audio/noise/cat0.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">20dB SNR</div>
+                  <audio controls src="audio/noise/cat20.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">10dB SNR</div>
+                  <audio controls src="audio/noise/cat10.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">0dB SNR</div>
+                  <audio controls src="audio/noise/cat-0.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title" style="color: var(--wrong-color);">-10dB SNR</div>
+                  <audio controls src="audio/noise/cat-10.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title" style="color: var(--wrong-color);">-20dB SNR</div>
+                  <audio controls src="audio/noise/cat-20.wav"></audio>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="aud-mask" class="strategy-box audio-box">
+        <h2>2. Masking</h2>
+
+        <div class="research-figure">
+          <div
+            style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 20px; width: 100%;">
+            <img src="figures/legend_dataset.png" alt="Dataset Legend" class="legend-img" style="max-width: 600px;" />
+            <img src="figures/legend_model.png" alt="Model Legend" class="legend-img"
+              style="max-width: 300px; margin-bottom: 0;" />
+          </div>
+
+          <div class="plot-row">
+            <img src="figures/mask_accuracy.png" alt="Mask Accuracy vs Ratio" />
+            <img src="figures/mask_consistency.png" alt="Mask Consistency vs Ratio" />
+          </div>
+        </div>
+
+        <div class="audio-section">
+          <h3>Audio Examples: Masking Ratio</h3>
+          <div class="audio-wrapper">
+            <div class="audio-row" style="border-left-color: var(--original-color);">
+              <div class="row-title" style="color: var(--original-color);">🔇 MASK RATIOS</div>
+
+              <div class="audio-grid-3">
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">Clean (0% Masked)</div>
+                  <audio controls src="audio/mask/cat0.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">20% Masked</div>
+                  <audio controls src="audio/mask/cat20.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">40% Masked</div>
+                  <audio controls src="audio/mask/cat40.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">60% Masked</div>
+                  <audio controls src="audio/mask/cat60.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title" style="color: var(--wrong-color);">80% Masked</div>
+                  <audio controls src="audio/mask/cat80.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title" style="color: var(--wrong-color);">100% Masked</div>
+                  <audio controls src="audio/mask/cat100.wav"></audio>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="aud-guided" class="strategy-box audio-box">
+        <h2>4. Guided Masking</h2>
+
+        <div class="research-figure">
+          <div class="model-comparison">
+            <div class="model-col">
+              <h4>Audio Flamingo 3 (AF3)</h4>
+              <img src="figures/af3_modality_dependence.png" alt="AF3 Modality Dependence" />
+            </div>
+
+            <div class="vertical-rule"></div>
+
+            <div class="model-col">
+              <h4>Qwen2.5-Omni</h4>
+              <img src="figures/qwen_modality_dependence.png" alt="Qwen2.5 Modality Dependence" />
+            </div>
+          </div>
+
+          <div class="figure-caption">
+            <strong>Figure 4: Modality Dependency under Guided Masking.</strong> The values in parentheses (on the left)
+            indicate the mean similarity score compared to the reference answers. The percentages above the bars
+            represent the proportion of responses that are audio-dependent (A), both-dependent (A-S), and
+            speech-dependent (S).
+          </div>
+        </div>
+
+        <div class="audio-section">
+          <h3>Audio Examples: Guided Masking</h3>
+          <div class="audio-wrapper">
+            <div class="audio-row" style="border-left-color: var(--cot-color);">
+              <div class="row-title" style="color: var(--cot-color);">🎛️ MASKING TARGETS</div>
+
+              <div class="audio-grid-3">
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">⏺️ Original Audio</div>
+                  <div class="audio-sub-desc">Speech + Background Sound</div>
+                  <audio controls src="audio/jasco/1_both.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">🗣️ Speech Masked</div>
+                  <div class="audio-sub-desc">Only Background Audio Remains</div>
+                  <audio controls src="audio/jasco/1_speech.wav"></audio>
+                </div>
+                <div class="audio-sub-box">
+                  <div class="audio-sub-title">🎵 Audio Masked</div>
+                  <div class="audio-sub-desc">Only Speech Remains</div>
+                  <audio controls src="audio/jasco/1_audio.wav"></audio>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="aud-table" class="strategy-box audio-box">
+        <h2>5. CoT Consistency Score</h2>
+        <div class="table-responsive">
+          <table class="research-table">
+            <thead>
+              <tr>
+                <th style="text-align: left;">Intervention</th>
+                <th style="text-align: left;">Model</th>
+                <th>Animal</th>
+                <th>Language</th>
+                <th>Gender</th>
+                <th>Emotion</th>
+                <th>MMAR</th>
+                <th>MMAU</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td rowspan="2" style="text-align: left;">Mask 100%</td>
+                <td style="text-align: left;">AF3</td>
+                <td>3.01</td>
+                <td>2.63</td>
+                <td>2.87</td>
+                <td>3.10</td>
+                <td>3.19</td>
+                <td>3.65</td>
+              </tr>
+              <tr>
+                <td style="text-align: left;">Qwen</td>
+                <td>2.35</td>
+                <td>2.40</td>
+                <td>2.95</td>
+                <td>2.64</td>
+                <td>2.81</td>
+                <td>3.39</td>
+              </tr>
+              <tr>
+                <td rowspan="2" style="text-align: left;">Mask 20%</td>
+                <td style="text-align: left;">AF3</td>
+                <td>4.60</td>
+                <td>4.32</td>
+                <td>4.35</td>
+                <td>4.04</td>
+                <td>3.97</td>
+                <td>4.41</td>
+              </tr>
+              <tr>
+                <td style="text-align: left;">Qwen</td>
+                <td>4.68</td>
+                <td>4.62</td>
+                <td>3.89</td>
+                <td>3.45</td>
+                <td>4.01</td>
+                <td>4.45</td>
+              </tr>
+              <tr>
+                <td rowspan="2" style="text-align: left;">-20dB SNR</td>
+                <td style="text-align: left;">AF3</td>
+                <td>2.89</td>
+                <td>2.54</td>
+                <td>3.17</td>
+                <td>3.13</td>
+                <td>3.09</td>
+                <td>3.57</td>
+              </tr>
+              <tr>
+                <td style="text-align: left;">Qwen</td>
+                <td>2.45</td>
+                <td>2.27</td>
+                <td>2.70</td>
+                <td>2.61</td>
+                <td>2.82</td>
+                <td>3.22</td>
+              </tr>
+              <tr>
+                <td rowspan="2" style="text-align: left;">20dB SNR</td>
+                <td style="text-align: left;">AF3</td>
+                <td>4.41</td>
+                <td>4.27</td>
+                <td>3.76</td>
+                <td>4.22</td>
+                <td>4.12</td>
+                <td>4.44</td>
+              </tr>
+              <tr>
+                <td style="text-align: left;">Qwen</td>
+                <td>4.58</td>
+                <td>4.67</td>
+                <td>3.93</td>
+                <td>4.05</td>
+                <td>4.12</td>
+                <td>4.33</td>
+              </tr>
+              <tr>
+                <td rowspan="2" style="text-align: left;">Adv-correct</td>
+                <td style="text-align: left;">AF3</td>
+                <td>4.25</td>
+                <td>4.26</td>
+                <td>3.59</td>
+                <td>3.55</td>
+                <td style="color: var(--text-muted);">N.A.</td>
+                <td style="color: var(--text-muted);">N.A.</td>
+              </tr>
+              <tr>
+                <td style="text-align: left;">Qwen</td>
+                <td>4.46</td>
+                <td>4.59</td>
+                <td>3.23</td>
+                <td>2.88</td>
+                <td style="color: var(--text-muted);">N.A.</td>
+                <td style="color: var(--text-muted);">N.A.</td>
+              </tr>
+              <tr>
+                <td rowspan="2" style="text-align: left;">Adv-wrong</td>
+                <td style="text-align: left;">AF3</td>
+                <td>3.04</td>
+                <td>3.43</td>
+                <td>3.32</td>
+                <td>2.99</td>
+                <td style="color: var(--text-muted);">N.A.</td>
+                <td style="color: var(--text-muted);">N.A.</td>
+              </tr>
+              <tr>
+                <td style="text-align: left;">Qwen</td>
+                <td>3.56</td>
+                <td>3.86</td>
+                <td>2.92</td>
+                <td>2.49</td>
+                <td style="color: var(--text-muted);">N.A.</td>
+                <td style="color: var(--text-muted);">N.A.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="cot" class="page">
+      <div class="index-header index-cot">
+        <h2 style="margin-top: 0; color: var(--cot-color); font-size: 1.5rem;">Chain-of-Thought (CoT) Interventions</h2>
+
+        <h3 style="font-size: 1.1rem; margin-bottom: 5px;">Quick Index</h3>
+        <div class="index-links">
+          <a href="#cot-para">1. Paraphrasing</a>
+          <a href="#cot-early">2. Early Answering</a>
+          <a href="#cot-mistake">3. Adding Mistake</a>
+          <a href="#cot-filler">4. Filler Tokens</a>
+        </div>
+
+        <h3 style="margin-top: 25px; font-size: 1.1rem; margin-bottom: 5px;">CoT Intervention Pipeline</h3>
+        <img src="figures/pipeline_cot.png" alt="CoT Pipeline" class="img-frame pipeline-cot-img" />
+      </div>
+
+      <div id="cot-para" class="strategy-box cot-box">
+        <h2>1. Paraphrasing</h2>
+        <div class="research-figure">
+          <div style="display: flex; justify-content: center; margin-bottom: 20px; width: 100%;">
+            <img src="figures/legend_dataset.png" alt="Dataset Legend" class="legend-img" style="max-width: 600px;" />
+          </div>
+
+          <div class="model-comparison">
+            <div class="model-col">
+              <h4>Audio Flamingo 3 (AF3)</h4>
+              <img src="figures/af3_paraphrasing.png" alt="AF3 Paraphrasing" />
+            </div>
+            <div class="vertical-rule"></div>
+            <div class="model-col">
+              <h4>Qwen2.5-Omni</h4>
+              <img src="figures/qwen_paraphrasing.png" alt="Qwen2.5 Paraphrasing" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cot-early" class="strategy-box cot-box">
+        <h2>2. Early Answering</h2>
+        <div class="research-figure">
+          <div style="display: flex; justify-content: center; margin-bottom: 20px; width: 100%;">
+            <img src="figures/legend_dataset.png" alt="Dataset Legend" class="legend-img" style="max-width: 600px;" />
+          </div>
+
+          <div class="model-comparison">
+            <div class="model-col">
+              <h4>Audio Flamingo 3 (AF3)</h4>
+              <img src="figures/af3_early_answering.png" alt="AF3 Early Answering" />
+            </div>
+            <div class="vertical-rule"></div>
+            <div class="model-col">
+              <h4>Qwen2.5-Omni</h4>
+              <img src="figures/qwen_early_answering.png" alt="Qwen2.5 Early Answering" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cot-mistake" class="strategy-box cot-box">
+        <h2>3. Adding Mistake</h2>
+        <div class="research-figure">
+          <div style="display: flex; justify-content: center; margin-bottom: 20px; width: 100%;">
+            <img src="figures/legend_dataset.png" alt="Dataset Legend" class="legend-img" style="max-width: 600px;" />
+          </div>
+
+          <div class="model-comparison">
+            <div class="model-col">
+              <h4>Audio Flamingo 3 (AF3)</h4>
+              <img src="figures/af3_mistake.png" alt="AF3 Adding Mistake" />
+            </div>
+            <div class="vertical-rule"></div>
+            <div class="model-col">
+              <h4>Qwen2.5-Omni</h4>
+              <img src="figures/qwen_mistake.png" alt="Qwen2.5 Adding Mistake" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cot-filler" class="strategy-box cot-box">
+        <h2>4. Filler Tokens</h2>
+        <div class="research-figure">
+          <div style="display: flex; justify-content: center; margin-bottom: 20px; width: 100%;">
+            <img src="figures/legend_dataset.png" alt="Dataset Legend" class="legend-img" style="max-width: 600px;" />
+          </div>
+
+          <div class="model-comparison">
+            <div class="model-col">
+              <h4>Audio Flamingo 3 (AF3)</h4>
+              <img src="figures/af3_filler.png" alt="AF3 Filler Tokens" />
+            </div>
+            <div class="vertical-rule"></div>
+            <div class="model-col">
+              <h4>Qwen2.5-Omni</h4>
+              <img src="figures/qwen_filler.png" alt="Qwen2.5 Filler Tokens" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+
+      const activeBtn = document.querySelector(`.nav-btn[onclick*="${pageId}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+
 </body>
+
 </html>
