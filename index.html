@@ -164,6 +164,14 @@
       margin-bottom: 2rem;
     }
 
+    .resource-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+
     .badge {
       background: var(--card-bg);
       border: 2px solid var(--text-main);
@@ -185,6 +193,28 @@
       color: var(--card-bg);
       transform: scale(1.05) translateY(-2px);
       box-shadow: var(--shadow-hover);
+    }
+
+    .review-notice {
+      max-width: 760px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: #fff7e8;
+      border: 1px solid #f0c36d;
+      color: #7a5615;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      box-shadow: var(--shadow-subtle);
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .review-notice.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
     }
 
     /* Strategy Boxes */
@@ -660,9 +690,20 @@
         </p>
       </div>
 
-      <div class="resource-links">
-        <a href="#" target="_blank" class="badge">📄 Read the arXiv Paper</a>
-        <a href="#" target="_blank" class="badge">💻 View GitHub Repo</a>
+      <div class="resource-actions">
+        <div class="resource-links">
+          <a href="#"
+            class="badge"
+            onclick="showReviewNotice(event)"
+            title="Paper availability notice">📄 Read the arXiv Paper</a>
+          <a href="https://anonymous.4open.science/r/Measuring-Faithfulness-of-CoT-Reasoning-LALMs-A3B6/README.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="badge">💻 View GitHub Repo</a>
+        </div>
+        <div id="review-notice" class="review-notice" aria-live="polite">
+          The paper is under double-blind review at Interspeech 2026. We will make the paper publicly available soon.
+        </div>
       </div>
 
       <section class="strategy-box audio-box">
@@ -1181,6 +1222,8 @@
   </div>
 
   <script>
+    let reviewNoticeTimeout;
+
     function showPage(pageId) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -1190,6 +1233,19 @@
       if (activeBtn) activeBtn.classList.add('active');
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showReviewNotice(event) {
+      event.preventDefault();
+
+      const notice = document.getElementById('review-notice');
+      if (!notice) return;
+
+      notice.classList.add('visible');
+      clearTimeout(reviewNoticeTimeout);
+      reviewNoticeTimeout = setTimeout(() => {
+        notice.classList.remove('visible');
+      }, 4500);
     }
   </script>
 
