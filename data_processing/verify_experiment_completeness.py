@@ -494,7 +494,7 @@ def main() -> int:
             f"(experiment='{args.experiment}'). Use --filler-type dots or --filler-type lorem."
         )
 
-    datasets = ["mmar", "sakura-animal", "sakura-emotion", "sakura-gender", "sakura-language", "mmau"] if args.dataset == "all" else [args.dataset]
+    datasets = ["mmar", "sakura-animal", "sakura-emotion", "sakura-gender", "sakura-language", "mmau", "jasco"] if args.dataset == "all" else [args.dataset]
 
     all_pass = True
     for ds in datasets:
