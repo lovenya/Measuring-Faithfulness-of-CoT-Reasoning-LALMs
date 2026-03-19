@@ -39,7 +39,8 @@ def run(model, processor, tokenizer, model_utils, config):
         return
             
     logging.info(f"Reading baseline data from '{baseline_results_path}'...")
-    all_baseline_trials = [json.loads(line) for line in open(baseline_results_path, 'r')]
+    with open(baseline_results_path, 'r') as f:
+        all_baseline_trials = [json.loads(line) for line in f]
         
     # --- 2. Apply Command-Line Filters ---
     if config.NUM_CHAINS_PER_QUESTION > 0:
