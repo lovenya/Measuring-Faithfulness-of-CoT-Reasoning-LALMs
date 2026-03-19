@@ -26,11 +26,15 @@ def get_noisy_audio_path(original_audio_path: str, snr_db: int, dataset_name: st
     stem = original.stem
     noisy_filename = f"{stem}_snr_{snr_db}db.wav"
 
-    if dataset_name.startswith("sakura-"):
-        track = dataset_name.replace("sakura-", "")
+    # Strip -noisy suffix so this works correctly whether the caller passes
+    # "mmar" or "mmar-noisy" as the dataset name.
+    base_dataset = dataset_name.replace("-noisy", "")
+
+    if base_dataset.startswith("sakura-"):
+        track = base_dataset.replace("sakura-", "")
         noisy_dir = Path(f"data/sakura_noisy/{track}/audio")
     else:
-        noisy_dir = Path(f"data/{dataset_name}_noisy/audio")
+        noisy_dir = Path(f"data/{base_dataset}_noisy/audio")
 
     return str(noisy_dir / noisy_filename)
 
